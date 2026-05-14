@@ -1,0 +1,39 @@
+target/
+storage/
+.idea/
+.vscode/
+*.iml
+*.log
+procedimentos-import.sql
+
+# Maven
+target/
+
+# Logs
+logs/
+*.log
+
+# IntelliJ
+.idea/
+*.iml
+
+# NetBeans
+nbproject/private/
+build/
+dist/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# VSCode
+.vscode/
+
+# Java
+*.class
+
+# Environment
+.env
+
+# OS
+Thumbs.db
+.DS_Store

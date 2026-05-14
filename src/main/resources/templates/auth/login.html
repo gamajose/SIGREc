@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Login')}"></head>
+<body>
+<main class="page" style="max-width: 460px;">
+  <div class="panel mt-5">
+    <h1 class="h4 brand-mark mb-1">SIGREc TFD/APAC</h1>
+    <p class="text-secondary mb-4">Acesso interno de regulacao municipal.</p>
+    <div class="alert alert-danger" th:if="${param.error}">Usuario ou senha invalidos.</div>
+    <div class="alert alert-success" th:if="${param.logout}">Sessao encerrada.</div>
+    <form th:action="@{/login}" method="post">
+      <label class="form-label">Usuario</label>
+      <input class="form-control mb-3" name="username" autocomplete="username" required autofocus>
+      <label class="form-label">Senha</label>
+      <input class="form-control mb-4" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn btn-success w-100">Entrar</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

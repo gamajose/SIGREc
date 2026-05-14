@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Unidades')}"></head>
+<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <h1 class="h3">Unidades solicitantes</h1>
+  <div class="panel mb-3">
+    <form class="row g-2" method="post" th:action="@{/unidades}">
+      <div class="col-md-4"><input class="form-control" name="nome" placeholder="Nome do estabelecimento" required></div>
+      <div class="col-md-2"><input class="form-control" name="cnes" placeholder="CNES"></div>
+      <div class="col-md-2"><input class="form-control" name="municipio" placeholder="Municipio" required></div>
+      <div class="col-md-1"><input class="form-control" name="uf" placeholder="UF" maxlength="2" required></div>
+      <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone"></div>
+      <div class="col-md-10"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
+      <div class="col-md-2"><button class="btn btn-success w-100">Salvar</button></div>
+    </form>
+  </div>
+  <div class="panel"><table class="table"><thead><tr><th>Nome</th><th>CNES</th><th>Municipio</th><th>UF</th><th>Responsavel</th><th>Status</th></tr></thead>
+    <tbody><tr th:each="i : ${itens}"><td th:text="${i.nome}"></td><td th:text="${i.cnes}"></td><td th:text="${i.municipio}"></td><td th:text="${i.uf}"></td><td th:text="${i.responsavel}"></td><td th:text="${i.ativo ? 'Ativa' : 'Inativa'}"></td></tr></tbody>
+  </table></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>

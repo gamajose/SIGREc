@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Usuarios')}"></head>
+<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <h1 class="h3">Usuarios e permissoes</h1>
+  <div class="panel mb-3">
+    <form class="row g-2" method="post" th:action="@{/usuarios}">
+      <div class="col-md-3"><input class="form-control" name="nome" placeholder="Nome" required></div>
+      <div class="col-md-2"><input class="form-control" name="username" placeholder="Usuario" required></div>
+      <div class="col-md-2"><input class="form-control" name="senha" type="password" placeholder="Senha inicial" required></div>
+      <div class="col-md-3"><select class="form-select" name="unidade_id"><option value="">Unidade</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option></select></div>
+      <div class="col-md-2"><button class="btn btn-success w-100">Criar</button></div>
+      <div class="col-12">
+        <label class="form-check form-check-inline" th:each="r:${roles}">
+          <input class="form-check-input" type="checkbox" name="roles" th:value="${r.id}">
+          <span class="form-check-label" th:text="${r.nome}"></span>
+        </label>
+      </div>
+    </form>
+  </div>
+  <div class="panel">
+    <table class="table">
+      <thead><tr><th>Nome</th><th>Usuario</th><th>Unidade</th><th>Perfis</th><th>Status</th><th></th></tr></thead>
+      <tbody><tr th:each="u:${usuarios}">
+        <td th:text="${u.nome}"></td><td th:text="${u.username}"></td><td th:text="${u.unidade_nome}"></td><td th:text="${u.roles}"></td><td th:text="${u.ativo ? 'Ativo' : 'Inativo'}"></td>
+        <td><form method="post" th:action="@{/usuarios/{id}/toggle(id=${u.id})}"><button class="btn btn-sm btn-outline-secondary">Alternar</button></form></td>
+      </tr></tbody>
+    </table>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>

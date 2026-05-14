@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Procedimentos')}"></head>
+<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <h1 class="h3">Procedimentos</h1>
+  <div class="panel mb-3">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-10"><input class="form-control" name="q" th:value="${q}" placeholder="Codigo ou descricao"></div>
+      <div class="col-md-2"><button class="btn btn-outline-success w-100">Buscar</button></div>
+    </form>
+    <form class="row g-2" method="post" th:action="@{/procedimentos}">
+      <div class="col-md-2"><input class="form-control" name="codigo" placeholder="Codigo" required></div>
+      <div class="col-md-6"><input class="form-control" name="descricao" placeholder="Descricao" required></div>
+      <div class="col-md-2"><input class="form-control" name="tipo" placeholder="Tipo"></div>
+      <div class="col-md-1"><input class="form-control" name="valor" placeholder="Valor"></div>
+      <div class="col-md-1"><button class="btn btn-success w-100">Salvar</button></div>
+    </form>
+  </div>
+  <div class="panel"><table class="table table-hover"><thead><tr><th>Codigo</th><th>Descricao</th><th>Tipo</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+    <tbody><tr th:each="i : ${itens}"><td th:text="${i.codigo}"></td><td th:text="${i.descricao}"></td><td th:text="${i.tipo}"></td><td th:text="${i.valor}"></td><td th:text="${i.ativo ? 'Ativo' : 'Inativo'}"></td><td><form method="post" th:action="@{/procedimentos/{id}/toggle(id=${i.id})}"><button class="btn btn-sm btn-outline-secondary">Alternar</button></form></td></tr></tbody>
+  </table></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>

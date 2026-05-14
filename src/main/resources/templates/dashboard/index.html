@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Dashboard')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h3 mb-1">Fila TFD/APAC</h1>
+      <p class="text-secondary mb-0">Entrada, analise, autorizacao, impressao e historico regulatorio.</p>
+    </div>
+    <div class="btn-group">
+      <a class="btn btn-success" th:href="@{/solicitacoes/nova/TFD}">Nova TFD</a>
+      <a class="btn btn-outline-success" th:href="@{/solicitacoes/nova/APAC}">Nova APAC</a>
+    </div>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-md-3" th:each="c : ${contadores}">
+      <div class="panel">
+        <div class="text-secondary small" th:text="${c.status}">STATUS</div>
+        <div class="display-6" th:text="${c.total}">0</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2 class="h5 mb-3">Movimentacoes recentes</h2>
+    <table class="table table-hover">
+      <thead><tr><th>Protocolo</th><th>Paciente</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Entrada</th></tr></thead>
+      <tbody>
+      <tr th:each="s : ${recentes}">
+        <td><a th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_protocolo}"></a></td>
+        <td th:text="${s.paciente_nome}"></td>
+        <td th:text="${s.tipo_solicitacao}"></td>
+        <td><span class="badge" th:classappend="'priority-' + ${s.prioridade}" th:text="${s.prioridade}"></span></td>
+        <td th:text="${s.status}"></td>
+        <td th:text="${#temporals.format(s.data_entrada, 'dd/MM/yyyy HH:mm')}"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

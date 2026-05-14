@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Nova solicitacao')}"></head>
+<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<main class="page">
+  <h1 class="h3" th:text="'Nova solicitacao ' + ${tipo}">Nova solicitacao</h1>
+  <form class="panel" method="post" th:action="@{/solicitacoes}">
+    <input type="hidden" name="tipo_solicitacao" th:value="${tipo}">
+    <div class="section-title">Dados principais</div>
+    <div class="row g-2">
+      <div class="col-md-6"><label class="form-label">Paciente</label><select class="form-select" name="paciente_id" required><option value="">Selecione</option><option th:each="p:${pacientes}" th:value="${p.id}" th:text="${p.nome + ' - CNS ' + (p.cns ?: '')}"></option></select></div>
+      <div class="col-md-6"><label class="form-label">Unidade solicitante</label><select class="form-select" name="unidade_solicitante_id" required><option value="">Selecione</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome + ' - CNES ' + (u.cnes ?: '')}"></option></select></div>
+      <div class="col-md-6"><label class="form-label">Profissional solicitante</label><select class="form-select" name="profissional_solicitante_id"><option value="">Selecione</option><option th:each="p:${profissionais}" th:value="${p.id}" th:text="${p.nome}"></option></select></div>
+      <div class="col-md-6"><label class="form-label">Procedimento principal</label><select class="form-select" name="procedimento_principal_id"><option value="">Selecione</option><option th:each="p:${procedimentos}" th:value="${p.id}" th:text="${p.codigo + ' - ' + p.descricao}"></option></select></div>
+      <div class="col-md-2"><label class="form-label">CID principal</label><input class="form-control" name="cid10_principal"></div>
+      <div class="col-md-2"><label class="form-label">CID secundario</label><input class="form-control" name="cid10_secundario"></div>
+      <div class="col-md-3"><label class="form-label">Prioridade</label><select class="form-select" name="prioridade"><option>NORMAL</option><option>ALTA</option><option>URGENTE</option></select></div>
+      <div class="col-md-12"><label class="form-label">Diagnostico</label><textarea class="form-control" name="descricao_diagnostico"></textarea></div>
+      <div class="col-md-12"><label class="form-label">Justificativa</label><textarea class="form-control" name="justificativa"></textarea></div>
+    </div>
+
+    <div th:if="${tipo == 'TFD'}">
+      <div class="section-title">TFD</div>
+      <div class="row g-2">
+        <div class="col-md-12"><label class="form-label">Tratamentos previos</label><textarea class="form-control" name="tratamentos_previos"></textarea></div>
+        <div class="col-md-12"><label class="form-label">Procedimento/exame indicado</label><textarea class="form-control" name="procedimento_exame_indicado"></textarea></div>
+        <div class="col-md-12"><label class="form-label">Sinais e sintomas</label><textarea class="form-control" name="sinais_sintomas"></textarea></div>
+        <div class="col-md-3 form-check mt-3"><input class="form-check-input" name="necessita_acompanhante" type="checkbox"> <label class="form-check-label">Necessita acompanhante</label></div>
+        <div class="col-md-5"><input class="form-control" name="acompanhante_nome" placeholder="Nome do acompanhante"></div>
+        <div class="col-md-2"><input class="form-control" type="date" name="acompanhante_data_nascimento"></div>
+        <div class="col-md-2"><input class="form-control" name="acompanhante_cpf" placeholder="CPF"></div>
+        <div class="col-md-3"><input class="form-control" name="acompanhante_telefone" placeholder="Telefone"></div>
+        <div class="col-md-4"><input class="form-control" name="destino" placeholder="Destino"></div>
+        <div class="col-md-12"><label class="form-label">Justificativa medica</label><textarea class="form-control" name="justificativa_medica"></textarea></div>
+      </div>
+    </div>
+
+    <div th:if="${tipo == 'APAC'}">
+      <div class="section-title">APAC</div>
+      <div class="row g-2">
+        <div class="col-md-2"><input class="form-control" name="prontuario" placeholder="Prontuario"></div>
+        <div class="col-md-2"><input class="form-control" name="raca_cor" placeholder="Raca/cor"></div>
+        <div class="col-md-4"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
+        <div class="col-md-2"><input class="form-control" name="ibge" placeholder="IBGE"></div>
+        <div class="col-md-2"><input class="form-control" name="quantidade" type="number" min="1" value="1"></div>
+        <div class="col-md-12"><textarea class="form-control" name="causas_associadas" placeholder="Causas associadas"></textarea></div>
+        <div class="col-md-12"><textarea class="form-control" name="observacoes" placeholder="Observacoes"></textarea></div>
+        <div class="col-md-3"><input class="form-control" type="date" name="data_solicitacao"></div>
+        <div class="col-md-3"><input class="form-control" name="numero_apac" placeholder="Numero APAC"></div>
+        <div class="col-md-3"><input class="form-control" type="date" name="validade_inicio"></div>
+        <div class="col-md-3"><input class="form-control" type="date" name="validade_fim"></div>
+        <div class="col-md-8"><input class="form-control" name="estabelecimento_executante" placeholder="Estabelecimento executante"></div>
+        <div class="col-md-4"><input class="form-control" name="cnes_executante" placeholder="CNES executante"></div>
+      </div>
+    </div>
+    <div class="mt-4"><button class="btn btn-success">Enviar para regulacao</button></div>
+  </form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>

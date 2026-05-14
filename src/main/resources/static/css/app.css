@@ -1,0 +1,72 @@
+:root {
+  --ink: #17202a;
+  --muted: #667085;
+  --line: #d0d5dd;
+  --brand: #14532d;
+  --brand-2: #0f766e;
+  --surface: #f6f8fa;
+}
+
+body {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.topbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand-mark {
+  color: var(--brand);
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 20px 0 12px;
+  color: var(--brand);
+}
+
+.badge-status {
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.priority-URGENTE {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.priority-ALTA {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.priority-NORMAL {
+  background: #dcfce7;
+  color: #166534;
+}
+
+textarea {
+  min-height: 96px;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
