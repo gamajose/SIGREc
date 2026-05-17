@@ -12,12 +12,13 @@
       <div class="col-md-2"><input class="form-control" name="municipio" placeholder="Municipio" required></div>
       <div class="col-md-1"><input class="form-control" name="uf" placeholder="UF" maxlength="2" required></div>
       <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone"></div>
-      <div class="col-md-10"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
+      <div class="col-md-7"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
+      <div class="col-md-3"><select class="form-select" name="tipo_unidade"><option value="SOLICITANTE">Solicitante</option><option value="AUTORIZADORA">Autorizadora</option><option value="AMBAS">Ambas</option></select></div>
       <div class="col-md-2"><button class="btn btn-success w-100">Salvar</button></div>
     </form>
   </div>
-  <div class="panel"><table class="table"><thead><tr><th>Nome</th><th>CNES</th><th>Municipio</th><th>UF</th><th>Responsavel</th><th>Status</th></tr></thead>
-    <tbody><tr th:each="i : ${itens}"><td th:text="${i.nome}"></td><td th:text="${i.cnes}"></td><td th:text="${i.municipio}"></td><td th:text="${i.uf}"></td><td th:text="${i.responsavel}"></td><td th:text="${i.ativo ? 'Ativa' : 'Inativa'}"></td></tr></tbody>
+  <div class="panel"><table class="table"><thead><tr><th>Nome</th><th>CNES</th><th>Municipio</th><th>UF</th><th>Tipo</th><th>Responsavel</th><th>Status</th></tr></thead>
+    <tbody><tr th:each="i : ${itens}"><td th:text="${i.nome}"></td><td th:text="${i.cnes}"></td><td th:text="${i.municipio}"></td><td th:text="${i.uf}"></td><td th:text="${i.tipo_unidade}"></td><td th:text="${i.responsavel}"></td><td th:text="${i.ativo ? 'Ativa' : 'Inativa'}"></td></tr></tbody>
   </table></div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>

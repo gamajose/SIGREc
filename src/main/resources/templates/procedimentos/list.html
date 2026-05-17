@@ -6,6 +6,10 @@
   <div th:replace="~{layout/fragments :: alerts}"></div>
   <h1 class="h3">Procedimentos</h1>
   <div class="panel mb-3">
+    <form method="post" th:if="${adminLogado}" th:action="@{/procedimentos/importar-txt}" class="mb-3">
+      <button class="btn btn-success">Importar exames 0202 do TXT</button>
+      <span class="text-secondary ms-2">Lê codigo, nome e valor do arquivo tb_procedimento.txt.</span>
+    </form>
     <form class="row g-2 mb-3" method="get">
       <div class="col-md-10"><input class="form-control" name="q" th:value="${q}" placeholder="Codigo ou descricao"></div>
       <div class="col-md-2"><button class="btn btn-outline-success w-100">Buscar</button></div>

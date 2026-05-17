@@ -30,8 +30,15 @@ public class SolicitacaoController {
     public String minhas(@RequestParam(defaultValue = "") String status,
                          @RequestParam(defaultValue = "") String tipo,
                          @RequestParam(defaultValue = "") String q,
+                         Authentication auth,
                          Model model) {
-        model.addAttribute("itens", solicitacaoService.fila(status, tipo, q));
+        model.addAttribute("itens", solicitacaoService.filaDoUsuario(
+                status,
+                tipo,
+                q,
+                currentUserService.id(auth),
+                currentUserService.unidadeId(auth),
+                currentUserService.isAdmin(auth)));
         model.addAttribute("status", status);
         model.addAttribute("tipo", tipo);
         model.addAttribute("q", q);
@@ -44,6 +51,7 @@ public class SolicitacaoController {
         model.addAttribute("tipo", tipo.toUpperCase());
         model.addAttribute("pacientes", lookupService.pacientes(q));
         model.addAttribute("unidades", lookupService.unidades());
+        model.addAttribute("unidadesAutorizadoras", lookupService.unidadesAutorizadoras());
         model.addAttribute("profissionais", lookupService.profissionais());
         model.addAttribute("procedimentos", lookupService.procedimentos(""));
         return "solicitacoes/form";
@@ -57,7 +65,10 @@ public class SolicitacaoController {
     }
 
     @GetMapping("/solicitacoes/{id}")
-    public String detalhe(@PathVariable Long id, Model model) {
+    public String detalhe(@PathVariable Long id, Model model, Authentication auth) {
+        if (!solicitacaoService.podeAcessar(id, currentUserService.id(auth), currentUserService.unidadeId(auth), currentUserService.isAdmin(auth))) {
+            return "redirect:/solicitacoes";
+        }
         var solicitacao = solicitacaoService.detalhe(id);
         model.addAttribute("solicitacao", solicitacao);
         if ("TFD".equals(solicitacao.get("tipo_solicitacao"))) {

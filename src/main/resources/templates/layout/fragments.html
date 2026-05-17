@@ -17,19 +17,85 @@
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-auto">
         <li class="nav-item"><a class="nav-link" th:href="@{/solicitacoes}">Solicitacoes</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/regulacao/fila}">Regulacao</a></li>
+        <li class="nav-item" th:if="${adminLogado}"><a class="nav-link" th:href="@{/regulacao/fila}">Regulacao</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/pacientes}">Pacientes</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/unidades}">Unidades</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/profissionais}">Profissionais</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/procedimentos}">Procedimentos</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/relatorios}">Relatorios</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/usuarios}">Usuarios</a></li>
+        <li class="nav-item" th:if="${adminLogado}"><a class="nav-link" th:href="@{/relatorios}">Relatorios</a></li>
+        <li class="nav-item" th:if="${adminLogado}"><a class="nav-link" th:href="@{/tickets}">Tickets</a></li>
       </ul>
-      <span class="navbar-text me-3" th:text="${usuarioLogado}"></span>
+      <a th:if="${adminLogado}" class="btn btn-success btn-sm me-2" th:href="@{/usuarios}">Criar usuario</a>
+      <a th:if="${!adminLogado}" class="btn btn-outline-success btn-sm me-2" th:href="@{/suporte}">Suporte</a>
+      <a th:if="${adminLogado}" class="btn btn-outline-secondary btn-sm me-2 position-relative" th:href="@{/tickets}">
+        Notificacoes
+        <span th:if="${ticketsAbertos > 0}" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" th:text="${ticketsAbertos}"></span>
+      </a>
+      <button class="profile-button me-2" type="button" data-bs-toggle="modal" data-bs-target="#perfilModal" title="Perfil">
+        <span th:text="${#strings.substring(usuarioLogado,0,1).toUpperCase()}">U</span>
+      </button>
       <form th:action="@{/logout}" method="post"><button class="btn btn-outline-secondary btn-sm">Sair</button></form>
     </div>
   </div>
+  <div class="modal fade" id="perfilModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form th:action="@{/perfil}" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title">Perfil</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info" th:if="${!adminLogado}">Para alterar seus dados, abra uma solicitacao no suporte.</div>
+            <label class="form-label">Nome</label>
+            <input class="form-control mb-2" name="nome" th:value="${perfilLogado.nome}" th:readonly="${!adminLogado}">
+            <label class="form-label">E-mail</label>
+            <input class="form-control mb-2" name="email" type="email" th:value="${perfilLogado.email}" th:readonly="${!adminLogado}">
+            <label class="form-label">Endereco</label>
+            <input class="form-control mb-2" name="endereco" th:value="${perfilLogado.endereco}" th:readonly="${!adminLogado}">
+            <label class="form-label" th:if="${adminLogado}">Nova senha</label>
+            <input class="form-control" th:if="${adminLogado}" name="senha" type="password" placeholder="Deixe vazio para manter">
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-outline-success" th:if="${!adminLogado}" th:href="@{/suporte}">Solicitar alteracao</a>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+            <button class="btn btn-success" th:if="${adminLogado}">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </nav>
+<div th:fragment="profileModal">
+  <div class="modal fade" id="perfilModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form th:action="@{/perfil}" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title">Perfil</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info" th:if="${!adminLogado}">Para alterar seus dados, abra uma solicitacao no suporte.</div>
+            <label class="form-label">Nome</label>
+            <input class="form-control mb-2" name="nome" th:value="${perfilLogado.nome}" th:readonly="${!adminLogado}">
+            <label class="form-label">E-mail</label>
+            <input class="form-control mb-2" name="email" type="email" th:value="${perfilLogado.email}" th:readonly="${!adminLogado}">
+            <label class="form-label">Endereco</label>
+            <input class="form-control mb-2" name="endereco" th:value="${perfilLogado.endereco}" th:readonly="${!adminLogado}">
+            <label class="form-label" th:if="${adminLogado}">Nova senha</label>
+            <input class="form-control" th:if="${adminLogado}" name="senha" type="password" placeholder="Deixe vazio para manter">
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-outline-success" th:if="${!adminLogado}" th:href="@{/suporte}">Solicitar alteracao</a>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+            <button class="btn btn-success" th:if="${adminLogado}">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 <div th:fragment="alerts">
   <div class="alert alert-success" th:if="${ok}" th:text="${ok}"></div>
   <div class="alert alert-danger" th:if="${erro}" th:text="${erro}"></div>

@@ -70,3 +70,13 @@ textarea {
 .table td, .table th {
   vertical-align: middle;
 }
+
+.profile-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: var(--brand);
+  font-weight: 800;
+}

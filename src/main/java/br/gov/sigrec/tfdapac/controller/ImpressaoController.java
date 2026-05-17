@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
-@PreAuthorize("hasAnyRole('ADMIN','REGULACAO','AUTORIZADOR')")
+@PreAuthorize("hasRole('ADMIN')")
 public class ImpressaoController {
     private final SolicitacaoService solicitacaoService;
     private final PdfService pdfService;

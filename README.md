@@ -32,6 +32,14 @@ mvn spring-boot:run
 http://localhost:8080
 ```
 
+Ao executar localmente no Windows, a aplicacao tenta abrir esse endereco automaticamente no navegador. Em servidor, use `SIGREC_OPEN_BROWSER=false`.
+
+Tambem e possivel iniciar como software local pelo arquivo:
+
+```powershell
+.\SIGREc.bat
+```
+
 Usuario inicial:
 
 ```text
@@ -50,6 +58,7 @@ Troque a senha antes de usar com dados reais.
 - Geracao de PDF preenchido para TFD/APAC e armazenamento do arquivo.
 - Anexos por solicitacao.
 - Relatorios de fila, status, unidade, reimpressoes e exportacao CSV.
+- API JWT em `/requisicoes` para listagem, criacao, edicao, status e historico.
 
 ## Variaveis principais
 

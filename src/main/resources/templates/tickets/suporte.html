@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Suporte')}"></head>
+<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <h1 class="h3">Suporte</h1>
+  <div class="panel mb-3">
+    <form method="post" th:action="@{/suporte}" class="row g-2">
+      <div class="col-md-4"><input class="form-control" name="assunto" placeholder="Assunto" required></div>
+      <div class="col-md-8"><input class="form-control" name="mensagem" placeholder="Descreva a solicitacao" required></div>
+      <div class="col-12"><button class="btn btn-success">Enviar solicitacao</button></div>
+    </form>
+  </div>
+  <div class="panel">
+    <h2 class="h5">Minhas solicitacoes</h2>
+    <table class="table">
+      <thead><tr><th>Data</th><th>Assunto</th><th>Status</th><th>Resposta</th></tr></thead>
+      <tbody><tr th:each="t:${tickets}">
+        <td th:text="${t.criado_em}"></td><td th:text="${t.assunto}"></td><td th:text="${t.status}"></td><td th:text="${t.resposta}"></td>
+      </tr></tbody>
+    </table>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>

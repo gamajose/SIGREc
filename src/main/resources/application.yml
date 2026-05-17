@@ -18,3 +18,7 @@ server:
     include-message: always
 sigrec:
   storage-path: ${SIGREC_STORAGE_PATH:./storage}
+  open-browser: ${SIGREC_OPEN_BROWSER:false}
+  desktop: ${SIGREC_DESKTOP:true}
+  jwt-secret: ${SIGREC_JWT_SECRET:troque-este-segredo-em-producao-com-32-caracteres}
+  jwt-expiration-minutes: ${SIGREC_JWT_EXPIRATION_MINUTES:480}

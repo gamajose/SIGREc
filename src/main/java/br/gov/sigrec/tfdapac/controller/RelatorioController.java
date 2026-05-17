@@ -9,9 +9,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import com.lowagie.text.Document;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+
+import java.io.ByteArrayOutputStream;
 
 @Controller
-@PreAuthorize("hasAnyRole('ADMIN','REGULACAO','AUTORIZADOR','AUDITORIA')")
+@PreAuthorize("hasRole('ADMIN')")
 public class RelatorioController {
     private final JdbcTemplate jdbcTemplate;
 
@@ -71,6 +78,48 @@ public class RelatorioController {
                 .contentType(new MediaType("text", "csv"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("fila-tfd-apac.csv").build().toString())
                 .body(csv.toString());
+    }
+
+    @GetMapping("/relatorios/fila.pdf")
+    public ResponseEntity<byte[]> filaPdf() throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4.rotate(), 24, 24, 24, 24);
+        PdfWriter.getInstance(document, out);
+        document.open();
+        document.add(new Paragraph("Relatorio de fila TFD/APAC"));
+        document.add(new Paragraph(" "));
+        PdfPTable table = new PdfPTable(7);
+        table.setWidthPercentage(100);
+        table.addCell("Protocolo");
+        table.addCell("Tipo");
+        table.addCell("Paciente");
+        table.addCell("Unidade solicitante");
+        table.addCell("Unidade autorizadora");
+        table.addCell("Prioridade");
+        table.addCell("Status");
+        jdbcTemplate.queryForList("""
+                select s.numero_protocolo, s.tipo_solicitacao, p.nome paciente, u.nome unidade,
+                       coalesce(ua.nome, '') autorizadora, s.prioridade, s.status
+                from regulacao_tfd.solicitacoes s
+                join regulacao_tfd.pacientes p on p.id = s.paciente_id
+                join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
+                left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
+                order by s.data_entrada desc
+                """).forEach(r -> {
+            table.addCell(escape(r.get("numero_protocolo")));
+            table.addCell(escape(r.get("tipo_solicitacao")));
+            table.addCell(escape(r.get("paciente")));
+            table.addCell(escape(r.get("unidade")));
+            table.addCell(escape(r.get("autorizadora")));
+            table.addCell(escape(r.get("prioridade")));
+            table.addCell(escape(r.get("status")));
+        });
+        document.add(table);
+        document.close();
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline().filename("fila-tfd-apac.pdf").build().toString())
+                .body(out.toByteArray());
     }
 
     private String escape(Object value) {

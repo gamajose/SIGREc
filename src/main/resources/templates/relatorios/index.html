@@ -5,7 +5,10 @@
 <main class="page">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Relatorios</h1>
-    <a class="btn btn-outline-success" th:href="@{/relatorios/fila.csv}">Exportar fila CSV</a>
+    <div class="btn-group">
+      <a class="btn btn-outline-success" th:href="@{/relatorios/fila.csv}">Exportar CSV</a>
+      <a class="btn btn-success" target="_blank" th:href="@{/relatorios/fila.pdf}">Salvar/imprimir PDF</a>
+    </div>
   </div>
   <div class="row g-3">
     <div class="col-md-4"><div class="panel"><h2 class="h5">Fila por status</h2><table class="table"><tr th:each="r:${porStatus}"><td th:text="${r.status}"></td><td th:text="${r.total}"></td></tr></table></div></div>

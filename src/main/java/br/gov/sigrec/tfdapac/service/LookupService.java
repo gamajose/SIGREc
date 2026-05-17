@@ -27,6 +27,14 @@ public class LookupService {
         return jdbcTemplate.queryForList("select * from regulacao_tfd.unidades_saude order by nome");
     }
 
+    public List<Map<String, Object>> unidadesAutorizadoras() {
+        return jdbcTemplate.queryForList("""
+                select * from regulacao_tfd.unidades_saude
+                where ativo and tipo_unidade in ('AUTORIZADORA', 'AMBAS')
+                order by nome
+                """);
+    }
+
     public List<Map<String, Object>> profissionais() {
         return jdbcTemplate.queryForList("select * from regulacao_tfd.profissionais where ativo order by nome");
     }

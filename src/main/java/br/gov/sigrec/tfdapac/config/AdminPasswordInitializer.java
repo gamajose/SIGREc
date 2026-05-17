@@ -14,10 +14,12 @@ public class AdminPasswordInitializer {
             String hash = passwordEncoder.encode("admin123");
             jdbcTemplate.update("""
                     update regulacao_tfd.usuarios
-                    set senha_hash = ?
+                    set senha_hash = ?,
+                        password_hash = coalesce(password_hash, ?),
+                        role = 'ADMIN'
                     where username = 'admin'
                       and senha_hash = '$2a$10$8c0lZA6Wv7dP1eMyd1sOjuowDmhRcqXyd7gYM8AIkWIXUkDkcc5v2'
-                    """, hash);
+                    """, hash, hash);
         };
     }
 }

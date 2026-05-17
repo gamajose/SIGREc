@@ -1,6 +1,7 @@
 package br.gov.sigrec.tfdapac.config;
 
 import br.gov.sigrec.tfdapac.service.AuditService;
+import br.gov.sigrec.tfdapac.repository.UserAccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -31,31 +33,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    UserDetailsService userDetailsService(JdbcTemplate jdbcTemplate) {
+    UserDetailsService userDetailsService(UserAccountRepository userAccountRepository) {
         return username -> {
-            var users = jdbcTemplate.query("""
-                    select id, username, senha_hash, ativo
-                    from regulacao_tfd.usuarios
-                    where username = ?
-                    """, (rs, rowNum) -> new DbUser(
-                    rs.getLong("id"),
-                    rs.getString("username"),
-                    rs.getString("senha_hash"),
-                    rs.getBoolean("ativo")
-            ), username);
-            if (users.isEmpty()) {
-                throw new UsernameNotFoundException("Usuario nao encontrado");
-            }
-            DbUser dbUser = users.getFirst();
-            List<SimpleGrantedAuthority> authorities = jdbcTemplate.query("""
-                    select r.nome
-                    from regulacao_tfd.roles r
-                    join regulacao_tfd.user_roles ur on ur.role_id = r.id
-                    where ur.usuario_id = ?
-                    """, (rs, rowNum) -> new SimpleGrantedAuthority(rs.getString("nome")), dbUser.id());
-            return User.withUsername(dbUser.username())
-                    .password(dbUser.password())
-                    .disabled(!dbUser.active())
+            var dbUser = userAccountRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado"));
+            List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + dbUser.getRole().name()));
+            return User.withUsername(dbUser.getUsername())
+                    .password(dbUser.getPasswordHash())
+                    .disabled(!Boolean.TRUE.equals(dbUser.getAtivo()))
                     .authorities(authorities)
                     .build();
         };
@@ -72,15 +57,20 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http,
                                             AuditService auditService,
-                                            JdbcTemplate jdbcTemplate) throws Exception {
+                                            JdbcTemplate jdbcTemplate,
+                                            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/requisicoes/**"))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/token").permitAll()
                         .requestMatchers("/css/**", "/login").permitAll()
+                        .requestMatchers("/requisicoes/**").hasAnyRole("ADMIN", "COLABORADOR")
                         .requestMatchers("/usuarios/**", "/parametros/**").hasRole("ADMIN")
-                        .requestMatchers("/regulacao/**").hasAnyRole("ADMIN", "REGULACAO", "AUTORIZADOR", "AUDITORIA")
-                        .requestMatchers("/impressao/**").hasAnyRole("ADMIN", "REGULACAO", "AUTORIZADOR")
+                        .requestMatchers("/regulacao/**", "/relatorios/**", "/impressao/**").hasRole("ADMIN")
+                        .requestMatchers("/pacientes/**", "/solicitacoes/**", "/unidades/**", "/profissionais/**", "/procedimentos/**", "/anexos/**").hasAnyRole("ADMIN", "COLABORADOR")
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/login")
                         .successHandler(successHandler(auditService, jdbcTemplate))
@@ -105,8 +95,5 @@ public class SecurityConfig {
             auditService.login(request.getParameter("username"), false, request);
             response.sendRedirect("/login?error");
         };
-    }
-
-    private record DbUser(Long id, String username, String password, boolean active) {
     }
 }

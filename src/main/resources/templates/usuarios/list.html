@@ -7,26 +7,34 @@
   <h1 class="h3">Usuarios e permissoes</h1>
   <div class="panel mb-3">
     <form class="row g-2" method="post" th:action="@{/usuarios}">
-      <div class="col-md-3"><input class="form-control" name="nome" placeholder="Nome" required></div>
       <div class="col-md-2"><input class="form-control" name="username" placeholder="Usuario" required></div>
+      <div class="col-md-3"><input class="form-control" name="email" type="email" placeholder="E-mail"></div>
       <div class="col-md-2"><input class="form-control" name="senha" type="password" placeholder="Senha inicial" required></div>
       <div class="col-md-3"><select class="form-select" name="unidade_id"><option value="">Unidade</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option></select></div>
-      <div class="col-md-2"><button class="btn btn-success w-100">Criar</button></div>
-      <div class="col-12">
-        <label class="form-check form-check-inline" th:each="r:${roles}">
-          <input class="form-check-input" type="checkbox" name="roles" th:value="${r.id}">
-          <span class="form-check-label" th:text="${r.nome}"></span>
-        </label>
-      </div>
+      <div class="col-md-2 form-check mt-2"><input class="form-check-input" type="checkbox" name="admin"> <label class="form-check-label">E admin?</label></div>
+      <div class="col-md-2 form-check mt-2"><input class="form-check-input" type="checkbox" name="colaborador" checked> <label class="form-check-label">Unidade colaboradora?</label></div>
+      <div class="col-md-1"><button class="btn btn-success w-100">Criar</button></div>
     </form>
   </div>
   <div class="panel">
     <table class="table">
-      <thead><tr><th>Nome</th><th>Usuario</th><th>Unidade</th><th>Perfis</th><th>Status</th><th></th></tr></thead>
-      <tbody><tr th:each="u:${usuarios}">
-        <td th:text="${u.nome}"></td><td th:text="${u.username}"></td><td th:text="${u.unidade_nome}"></td><td th:text="${u.roles}"></td><td th:text="${u.ativo ? 'Ativo' : 'Inativo'}"></td>
-        <td><form method="post" th:action="@{/usuarios/{id}/toggle(id=${u.id})}"><button class="btn btn-sm btn-outline-secondary">Alternar</button></form></td>
-      </tr></tbody>
+      <thead><tr><th>Usuario</th><th>E-mail</th><th>Unidade</th><th>Perfil</th><th>Status</th><th>Acoes</th></tr></thead>
+      <tbody>
+      <tr th:each="u:${usuarios}">
+        <form method="post" th:action="@{/usuarios/{id}(id=${u.id})}">
+          <td th:text="${u.username}"></td>
+          <td><input class="form-control form-control-sm" name="email" th:value="${u.email}"></td>
+          <td><select class="form-select form-select-sm" name="unidade_id"><option value="">Sem unidade</option><option th:each="un:${unidades}" th:value="${un.id}" th:text="${un.nome}" th:selected="${un.id == u.unidade_id}"></option></select></td>
+          <td><select class="form-select form-select-sm" name="role"><option th:each="r:${roles}" th:value="${r}" th:text="${r}" th:selected="${r.name() == u.role}"></option></select></td>
+          <td class="text-nowrap"><input class="form-check-input" type="checkbox" name="ativo" th:checked="${u.ativo}"> Ativo</td>
+          <td class="text-nowrap">
+            <input class="form-control form-control-sm mb-1" name="senha" type="password" placeholder="Nova senha">
+            <button class="btn btn-sm btn-outline-success">Salvar</button>
+        </form>
+            <form method="post" th:action="@{/usuarios/{id}/delete(id=${u.id})}" class="d-inline"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>
+          </td>
+      </tr>
+      </tbody>
     </table>
   </div>
 </main>

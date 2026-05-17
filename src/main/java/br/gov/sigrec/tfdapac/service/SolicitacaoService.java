@@ -22,10 +22,11 @@ public class SolicitacaoService {
 
     public List<Map<String, Object>> fila(String status, String tipo, String termo) {
         return jdbcTemplate.queryForList("""
-                select s.*, p.nome paciente_nome, p.cns paciente_cns, u.nome unidade_nome, pr.codigo procedimento_codigo, pr.descricao procedimento_descricao
+                select s.*, p.nome paciente_nome, p.cns paciente_cns, u.nome unidade_nome, ua.nome unidade_autorizadora_nome, pr.codigo procedimento_codigo, pr.descricao procedimento_descricao
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
+                left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
                 left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
                 where (? = '' or s.status = ?)
                   and (? = '' or s.tipo_solicitacao = ?)
@@ -36,6 +37,28 @@ public class SolicitacaoService {
                 """, nvl(status), nvl(status), nvl(tipo), nvl(tipo), nvl(termo), like(termo), like(termo), like(termo));
     }
 
+    public List<Map<String, Object>> filaDoUsuario(String status, String tipo, String termo, Long usuarioId, Long unidadeId, boolean admin) {
+        if (admin) {
+            return fila(status, tipo, termo);
+        }
+        return jdbcTemplate.queryForList("""
+                select s.*, p.nome paciente_nome, p.cns paciente_cns, u.nome unidade_nome, ua.nome unidade_autorizadora_nome, pr.codigo procedimento_codigo, pr.descricao procedimento_descricao
+                from regulacao_tfd.solicitacoes s
+                join regulacao_tfd.pacientes p on p.id = s.paciente_id
+                join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
+                left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
+                left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
+                where (? = '' or s.status = ?)
+                  and (? = '' or s.tipo_solicitacao = ?)
+                  and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ? or coalesce(pr.descricao,'') ilike ?)
+                  and (s.usuario_criacao = ? or (? is not null and s.unidade_solicitante_id = ?))
+                order by
+                  case s.prioridade when 'URGENTE' then 1 when 'ALTA' then 2 when 'NORMAL' then 3 else 4 end,
+                  s.data_entrada
+                """, nvl(status), nvl(status), nvl(tipo), nvl(tipo), nvl(termo), like(termo), like(termo), like(termo),
+                usuarioId, unidadeId, unidadeId);
+    }
+
     public Map<String, Object> detalhe(Long id) {
         return jdbcTemplate.queryForMap("""
                 select s.*, p.nome paciente_nome, p.cns paciente_cns, p.cpf paciente_cpf, p.rg paciente_rg,
@@ -43,6 +66,7 @@ public class SolicitacaoService {
                        p.endereco paciente_endereco, p.municipio paciente_municipio, p.uf paciente_uf, p.cep paciente_cep,
                        p.telefone paciente_telefone, p.email paciente_email,
                        u.nome unidade_nome, u.cnes unidade_cnes, u.municipio unidade_municipio, u.uf unidade_uf,
+                       ua.nome unidade_autorizadora_nome, ua.cnes unidade_autorizadora_cnes,
                        ps.nome profissional_solicitante_nome, ps.cpf_cns profissional_solicitante_doc,
                        ps.conselho profissional_solicitante_conselho, ps.registro_conselho profissional_solicitante_registro,
                        pa.nome profissional_autorizador_nome,
@@ -50,11 +74,25 @@ public class SolicitacaoService {
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
+                left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
                 left join regulacao_tfd.profissionais ps on ps.id = s.profissional_solicitante_id
                 left join regulacao_tfd.profissionais pa on pa.id = s.profissional_autorizador_id
                 left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
                 where s.id = ?
                 """, id);
+    }
+
+    public boolean podeAcessar(Long id, Long usuarioId, Long unidadeId, boolean admin) {
+        if (admin) {
+            return true;
+        }
+        Integer total = jdbcTemplate.queryForObject("""
+                select count(*)
+                from regulacao_tfd.solicitacoes
+                where id = ?
+                  and (usuario_criacao = ? or (? is not null and unidade_solicitante_id = ?))
+                """, Integer.class, id, usuarioId, unidadeId, unidadeId);
+        return total != null && total > 0;
     }
 
     public Map<String, Object> tfd(Long id) {
@@ -91,16 +129,17 @@ public class SolicitacaoService {
         String protocolo = protocolService.next(tipo);
         Long id = jdbcTemplate.queryForObject("""
                 insert into regulacao_tfd.solicitacoes
-                (numero_protocolo, tipo_solicitacao, paciente_id, unidade_solicitante_id, profissional_solicitante_id,
+                (numero_protocolo, tipo_solicitacao, paciente_id, unidade_solicitante_id, unidade_autorizadora_id, profissional_solicitante_id,
                  procedimento_principal_id, cid10_principal, cid10_secundario, descricao_diagnostico, justificativa,
                  prioridade, status, data_envio, usuario_criacao, usuario_ultima_alteracao)
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENVIADA', current_timestamp, ?, ?)
+                values (?, ?, ?, ?, coalesce(?, (select id from regulacao_tfd.unidades_saude where tipo_unidade in ('AUTORIZADORA','AMBAS') order by id limit 1)), ?, ?, ?, ?, ?, ?, ?, 'ENVIADA', current_timestamp, ?, ?)
                 returning id
                 """, Long.class,
                 protocolo,
                 tipo,
                 longValue(form, "paciente_id"),
                 longValue(form, "unidade_solicitante_id"),
+                nullableLong(form, "unidade_autorizadora_id"),
                 nullableLong(form, "profissional_solicitante_id"),
                 nullableLong(form, "procedimento_principal_id"),
                 form.get("cid10_principal"),
@@ -137,6 +176,83 @@ public class SolicitacaoService {
         }
         historico(id, usuarioId, null, "ENVIADA", "CRIACAO", "Solicitacao enviada para regulacao");
         return id;
+    }
+
+    @Transactional
+    public void atualizar(Long id, Map<String, String> form, Long usuarioId) {
+        String status = jdbcTemplate.queryForObject("select status from regulacao_tfd.solicitacoes where id = ?", String.class, id);
+        if (!"RASCUNHO".equals(status) && !"ENVIADA".equals(status) && !"DEVOLVIDA_CORRECAO".equals(status)) {
+            throw new IllegalStateException("Somente requisicoes em rascunho, enviadas ou devolvidas podem ser editadas.");
+        }
+        jdbcTemplate.update("""
+                update regulacao_tfd.solicitacoes
+                set paciente_id = coalesce(?, paciente_id),
+                    unidade_solicitante_id = coalesce(?, unidade_solicitante_id),
+                    profissional_solicitante_id = ?,
+                    procedimento_principal_id = ?,
+                    cid10_principal = ?,
+                    cid10_secundario = ?,
+                    descricao_diagnostico = ?,
+                    justificativa = ?,
+                    prioridade = coalesce(?, prioridade),
+                    usuario_ultima_alteracao = ?
+                where id = ?
+                """,
+                nullableLong(form, "paciente_id"),
+                nullableLong(form, "unidade_solicitante_id"),
+                nullableLong(form, "profissional_solicitante_id"),
+                nullableLong(form, "procedimento_principal_id"),
+                form.get("cid10_principal"),
+                form.get("cid10_secundario"),
+                form.get("descricao_diagnostico"),
+                form.get("justificativa"),
+                form.get("prioridade"),
+                usuarioId,
+                id);
+        String tipo = jdbcTemplate.queryForObject("select tipo_solicitacao from regulacao_tfd.solicitacoes where id = ?", String.class, id);
+        if ("TFD".equals(tipo)) {
+            jdbcTemplate.update("""
+                    update regulacao_tfd.solicitacao_tfd
+                    set tratamentos_previos = ?,
+                        procedimento_exame_indicado = ?,
+                        sinais_sintomas = ?,
+                        necessita_acompanhante = ?,
+                        acompanhante_nome = ?,
+                        acompanhante_data_nascimento = ?,
+                        acompanhante_cpf = ?,
+                        acompanhante_telefone = ?,
+                        destino = ?,
+                        justificativa_medica = ?
+                    where solicitacao_id = ?
+                    """, form.get("tratamentos_previos"), form.get("procedimento_exame_indicado"),
+                    form.get("sinais_sintomas"), booleanValue(form, "necessita_acompanhante"),
+                    form.get("acompanhante_nome"), date(form.get("acompanhante_data_nascimento")),
+                    form.get("acompanhante_cpf"), form.get("acompanhante_telefone"),
+                    form.get("destino"), form.get("justificativa_medica"), id);
+        } else {
+            jdbcTemplate.update("""
+                    update regulacao_tfd.solicitacao_apac
+                    set prontuario = ?,
+                        raca_cor = ?,
+                        responsavel = ?,
+                        ibge = ?,
+                        quantidade = ?,
+                        causas_associadas = ?,
+                        observacoes = ?,
+                        data_solicitacao = ?,
+                        numero_apac = ?,
+                        validade_inicio = ?,
+                        validade_fim = ?,
+                        estabelecimento_executante = ?,
+                        cnes_executante = ?
+                    where solicitacao_id = ?
+                    """, form.get("prontuario"), form.get("raca_cor"), form.get("responsavel"),
+                    form.get("ibge"), intValue(form, "quantidade", 1), form.get("causas_associadas"),
+                    form.get("observacoes"), date(form.get("data_solicitacao")),
+                    form.get("numero_apac"), date(form.get("validade_inicio")), date(form.get("validade_fim")),
+                    form.get("estabelecimento_executante"), form.get("cnes_executante"), id);
+        }
+        historico(id, usuarioId, status, status, "EDICAO", form.getOrDefault("observacao", "Requisicao atualizada"));
     }
 
     @Transactional
@@ -205,6 +321,11 @@ public class SolicitacaoService {
     private Integer intValue(Map<String, String> form, String key, int defaultValue) {
         String value = form.get(key);
         return StringUtils.hasText(value) ? Integer.valueOf(value) : defaultValue;
+    }
+
+    private Boolean booleanValue(Map<String, String> form, String key) {
+        String value = form.get(key);
+        return "true".equalsIgnoreCase(value) || "on".equalsIgnoreCase(value) || "sim".equalsIgnoreCase(value);
     }
 
     private Date date(String value) {
