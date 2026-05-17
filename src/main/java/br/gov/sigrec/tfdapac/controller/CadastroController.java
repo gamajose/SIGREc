@@ -4,7 +4,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import br.gov.sigrec.tfdapac.service.ProcedimentoTxtImportService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,18 +11,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Date;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Map;
 
 @Controller
 public class CadastroController {
-    private final JdbcTemplate jdbcTemplate;
-    private final ProcedimentoTxtImportService procedimentoTxtImportService;
 
-    public CadastroController(JdbcTemplate jdbcTemplate, ProcedimentoTxtImportService procedimentoTxtImportService) {
+    private final JdbcTemplate jdbcTemplate;
+
+    public CadastroController(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.procedimentoTxtImportService = procedimentoTxtImportService;
     }
 
     @GetMapping("/pacientes")
@@ -128,13 +125,6 @@ public class CadastroController {
         return "redirect:/procedimentos";
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/procedimentos/importar-txt")
-    public String importarProcedimentosTxt(RedirectAttributes ra) {
-        int total = procedimentoTxtImportService.importar0202(Path.of("tb_procedimento.txt"));
-        ra.addFlashAttribute("ok", total + " procedimentos 0202 importados do tb_procedimento.txt.");
-        return "redirect:/procedimentos?q=0202";
-    }
 
     private String like(String q) {
         return "%" + q + "%";
