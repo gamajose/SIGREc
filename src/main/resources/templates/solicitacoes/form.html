@@ -1,60 +1,252 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/fragments :: head('Nova solicitacao')}"></head>
-<body><nav th:replace="~{layout/fragments :: nav}"></nav>
-<main class="page">
-  <h1 class="h3" th:text="'Nova solicitacao ' + ${tipo}">Nova solicitacao</h1>
-  <form class="panel" method="post" th:action="@{/solicitacoes}">
-    <input type="hidden" name="tipo_solicitacao" th:value="${tipo}">
-    <div class="section-title">Dados principais</div>
-    <div class="row g-2">
-      <div class="col-md-6"><label class="form-label">Paciente</label><select class="form-select" name="paciente_id" required><option value="">Selecione</option><option th:each="p:${pacientes}" th:value="${p.id}" th:text="${p.nome + ' - CNS ' + (p.cns ?: '')}"></option></select></div>
-      <div class="col-md-6"><label class="form-label">Unidade solicitante</label><select class="form-select" name="unidade_solicitante_id" required><option value="">Selecione</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome + ' - CNES ' + (u.cnes ?: '')}"></option></select></div>
-      <div class="col-md-6"><label class="form-label">Unidade autorizadora</label><select class="form-select" name="unidade_autorizadora_id"><option value="">Padrao do sistema</option><option th:each="u:${unidadesAutorizadoras}" th:value="${u.id}" th:text="${u.nome + ' - ' + u.tipo_unidade}"></option></select></div>
-      <div class="col-md-6"><label class="form-label">Profissional solicitante</label><select class="form-select" name="profissional_solicitante_id"><option value="">Selecione</option><option th:each="p:${profissionais}" th:value="${p.id}" th:text="${p.nome}"></option></select></div>
-      <div class="col-md-6"><label class="form-label">Procedimento principal</label><select class="form-select" name="procedimento_principal_id"><option value="">Selecione</option><option th:each="p:${procedimentos}" th:value="${p.id}" th:text="${p.codigo + ' - ' + p.descricao}"></option></select></div>
-      <div class="col-md-2"><label class="form-label">CID principal</label><input class="form-control" name="cid10_principal"></div>
-      <div class="col-md-2"><label class="form-label">CID secundario</label><input class="form-control" name="cid10_secundario"></div>
-      <div class="col-md-3"><label class="form-label">Prioridade</label><select class="form-select" name="prioridade"><option>NORMAL</option><option>ALTA</option><option>URGENTE</option></select></div>
-      <div class="col-md-12"><label class="form-label">Diagnostico</label><textarea class="form-control" name="descricao_diagnostico"></textarea></div>
-      <div class="col-md-12"><label class="form-label">Justificativa</label><textarea class="form-control" name="justificativa"></textarea></div>
-    </div>
+    <head th:replace="~{layout/fragments :: head('Nova solicitacao')}"></head>
+    <body><nav th:replace="~{layout/fragments :: nav}"></nav>
+        <main class="page">
+            <h1 class="h3" th:text="'Nova solicitacao ' + ${tipo}">Nova solicitacao</h1>
+            <form class="panel" method="post" th:action="@{/solicitacoes}">
+                <input type="hidden" name="tipo_solicitacao" th:value="${tipo}">
+                <div class="section-title">Dados principais</div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Paciente</label>
 
-    <div th:if="${tipo == 'TFD'}">
-      <div class="section-title">TFD</div>
-      <div class="row g-2">
-        <div class="col-md-12"><label class="form-label">Tratamentos previos</label><textarea class="form-control" name="tratamentos_previos"></textarea></div>
-        <div class="col-md-12"><label class="form-label">Procedimento/exame indicado</label><textarea class="form-control" name="procedimento_exame_indicado"></textarea></div>
-        <div class="col-md-12"><label class="form-label">Sinais e sintomas</label><textarea class="form-control" name="sinais_sintomas"></textarea></div>
-        <div class="col-md-3 form-check mt-3"><input class="form-check-input" name="necessita_acompanhante" type="checkbox"> <label class="form-check-label">Necessita acompanhante</label></div>
-        <div class="col-md-5"><input class="form-control" name="acompanhante_nome" placeholder="Nome do acompanhante"></div>
-        <div class="col-md-2"><input class="form-control" type="date" name="acompanhante_data_nascimento"></div>
-        <div class="col-md-2"><input class="form-control" name="acompanhante_cpf" placeholder="CPF"></div>
-        <div class="col-md-3"><input class="form-control" name="acompanhante_telefone" placeholder="Telefone"></div>
-        <div class="col-md-4"><input class="form-control" name="destino" placeholder="Destino"></div>
-        <div class="col-md-12"><label class="form-label">Justificativa medica</label><textarea class="form-control" name="justificativa_medica"></textarea></div>
-      </div>
-    </div>
+                        <input type="hidden" name="paciente_id" id="paciente_id" required>
 
-    <div th:if="${tipo == 'APAC'}">
-      <div class="section-title">APAC</div>
-      <div class="row g-2">
-        <div class="col-md-2"><input class="form-control" name="prontuario" placeholder="Prontuario"></div>
-        <div class="col-md-2"><input class="form-control" name="raca_cor" placeholder="Raca/cor"></div>
-        <div class="col-md-4"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
-        <div class="col-md-2"><input class="form-control" name="ibge" placeholder="IBGE"></div>
-        <div class="col-md-2"><input class="form-control" name="quantidade" type="number" min="1" value="1"></div>
-        <div class="col-md-12"><textarea class="form-control" name="causas_associadas" placeholder="Causas associadas"></textarea></div>
-        <div class="col-md-12"><textarea class="form-control" name="observacoes" placeholder="Observacoes"></textarea></div>
-        <div class="col-md-3"><input class="form-control" type="date" name="data_solicitacao"></div>
-        <div class="col-md-3"><input class="form-control" name="numero_apac" placeholder="Numero APAC"></div>
-        <div class="col-md-3"><input class="form-control" type="date" name="validade_inicio"></div>
-        <div class="col-md-3"><input class="form-control" type="date" name="validade_fim"></div>
-        <div class="col-md-8"><input class="form-control" name="estabelecimento_executante" placeholder="Estabelecimento executante"></div>
-        <div class="col-md-4"><input class="form-control" name="cnes_executante" placeholder="CNES executante"></div>
-      </div>
-    </div>
-    <div class="mt-4"><button class="btn btn-success">Enviar para regulacao</button></div>
-  </form>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>
+                        <input class="form-control"
+                               type="text"
+                               id="paciente_busca"
+                               placeholder="Digite nome, CPF ou CNS do paciente"
+                               autocomplete="off">
+
+                        <div id="paciente_resultados"
+                             class="list-group mt-1"
+                             style="position: absolute; z-index: 1000; width: 48%; display: none;">
+                        </div>
+                    </div>
+                    <div class="col-md-6"><label class="form-label">Unidade solicitante</label><select class="form-select" name="unidade_solicitante_id" required><option value="">Selecione</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome + ' - CNES ' + (u.cnes ?: '')}"></option></select></div>
+                    <div class="col-md-6"><label class="form-label">Unidade autorizadora</label><select class="form-select" name="unidade_autorizadora_id"><option value="">Padrao do sistema</option><option th:each="u:${unidadesAutorizadoras}" th:value="${u.id}" th:text="${u.nome + ' - ' + u.tipo_unidade}"></option></select></div>
+                    <div class="col-md-6"><label class="form-label">Profissional solicitante</label><select class="form-select" name="profissional_solicitante_id"><option value="">Selecione</option><option th:each="p:${profissionais}" th:value="${p.id}" th:text="${p.nome}"></option></select></div>
+                    <div class="col-md-6" style="position: relative;">
+                        <label class="form-label">Procedimento principal</label>
+
+                        <input type="hidden" name="procedimento_codigo" id="procedimento_codigo">
+
+                        <input class="form-control"
+                               type="text"
+                               id="procedimento_busca"
+                               placeholder="Digite código ou descrição do procedimento"
+                               autocomplete="off">
+
+                        <div id="procedimento_resultados"
+                             class="list-group mt-1"
+                             style="position: absolute; z-index: 1000; width: 100%; display: none;">
+                        </div>
+                    </div>
+                    <div class="col-md-2"><label class="form-label">CID principal</label><input class="form-control" name="cid10_principal"></div>
+                    <div class="col-md-2"><label class="form-label">CID secundario</label><input class="form-control" name="cid10_secundario"></div>
+                    <div class="col-md-3"><label class="form-label">Prioridade</label><select class="form-select" name="prioridade"><option>NORMAL</option><option>ALTA</option><option>URGENTE</option></select></div>
+                    <div class="col-md-12"><label class="form-label">Diagnostico</label><textarea class="form-control" name="descricao_diagnostico"></textarea></div>
+                    <div class="col-md-12"><label class="form-label">Justificativa</label><textarea class="form-control" name="justificativa"></textarea></div>
+                </div>
+
+                <div th:if="${tipo == 'TFD'}">
+                    <div class="section-title">TFD</div>
+                    <div class="row g-2">
+                        <div class="col-md-12"><label class="form-label">Tratamentos previos</label><textarea class="form-control" name="tratamentos_previos"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Procedimento/exame indicado</label><textarea class="form-control" name="procedimento_exame_indicado"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Sinais e sintomas</label><textarea class="form-control" name="sinais_sintomas"></textarea></div>
+                        <div class="col-md-3 form-check mt-3"><input class="form-check-input" name="necessita_acompanhante" type="checkbox"> <label class="form-check-label">Necessita acompanhante</label></div>
+                        <div class="col-md-5"><input class="form-control" name="acompanhante_nome" placeholder="Nome do acompanhante"></div>
+                        <div class="col-md-2"><input class="form-control" type="date" name="acompanhante_data_nascimento"></div>
+                        <div class="col-md-2"><input class="form-control" name="acompanhante_cpf" placeholder="CPF"></div>
+                        <div class="col-md-3"><input class="form-control" name="acompanhante_telefone" placeholder="Telefone"></div>
+                        <div class="col-md-4"><input class="form-control" name="destino" placeholder="Destino"></div>
+                        <div class="col-md-12"><label class="form-label">Justificativa medica</label><textarea class="form-control" name="justificativa_medica"></textarea></div>
+                    </div>
+                </div>
+
+                <div th:if="${tipo == 'APAC'}">
+                    <div class="section-title">APAC</div>
+                    <div class="row g-2">
+                        <div class="col-md-2"><input class="form-control" name="prontuario" placeholder="Prontuario"></div>
+                        <div class="col-md-2"><input class="form-control" name="raca_cor" placeholder="Raca/cor"></div>
+                        <div class="col-md-4"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
+                        <div class="col-md-2"><input class="form-control" name="ibge" placeholder="IBGE"></div>
+                        <div class="col-md-2"><input class="form-control" name="quantidade" type="number" min="1" value="1"></div>
+                        <div class="col-md-12"><textarea class="form-control" name="causas_associadas" placeholder="Causas associadas"></textarea></div>
+                        <div class="col-md-12"><textarea class="form-control" name="observacoes" placeholder="Observacoes"></textarea></div>
+                        <div class="col-md-3"><input class="form-control" type="date" name="data_solicitacao"></div>
+                        <div class="col-md-3"><input class="form-control" name="numero_apac" placeholder="Numero APAC"></div>
+                        <div class="col-md-3"><input class="form-control" type="date" name="validade_inicio"></div>
+                        <div class="col-md-3"><input class="form-control" type="date" name="validade_fim"></div>
+                        <div class="col-md-8"><input class="form-control" name="estabelecimento_executante" placeholder="Estabelecimento executante"></div>
+                        <div class="col-md-4"><input class="form-control" name="cnes_executante" placeholder="CNES executante"></div>
+                    </div>
+                </div>
+                <div class="mt-4"><button class="btn btn-success">Enviar para regulacao</button></div>
+            </form>
+        </main>
+        <script>
+            const procedimentoBusca = document.getElementById("procedimento_busca");
+            const procedimentoCodigo = document.getElementById("procedimento_codigo");
+            const procedimentoResultados = document.getElementById("procedimento_resultados");
+
+            let procedimentoTimer = null;
+
+            function limparProcedimentoSelecionado() {
+                procedimentoCodigo.value = "";
+            }
+
+            function esconderResultadosProcedimento() {
+                procedimentoResultados.style.display = "none";
+                procedimentoResultados.innerHTML = "";
+            }
+
+            function buscarProcedimentos() {
+                const q = procedimentoBusca.value.trim();
+
+                limparProcedimentoSelecionado();
+
+                if (q.length < 2) {
+                    esconderResultadosProcedimento();
+                    return;
+                }
+
+                fetch("/api/procedimentos?q=" + encodeURIComponent(q))
+                        .then(response => response.json())
+                        .then(procedimentos => {
+                            procedimentoResultados.innerHTML = "";
+
+                            if (!procedimentos || procedimentos.length === 0) {
+                                procedimentoResultados.innerHTML =
+                                        '<div class="list-group-item text-muted">Nenhum procedimento encontrado</div>';
+                                procedimentoResultados.style.display = "block";
+                                return;
+                            }
+
+                            procedimentos.forEach(p => {
+                                const item = document.createElement("button");
+                                item.type = "button";
+                                item.className = "list-group-item list-group-item-action";
+
+                                const codigo = p.codigo || "";
+                                const descricao = p.descricao || "";
+                                const valor = p.valor != null ? p.valor : "";
+                                const origem = p.origem || "";
+
+                                item.textContent = codigo + " - " + descricao + " | Valor: " + valor + " | " + origem;
+
+                                item.addEventListener("click", function () {
+                                    procedimentoCodigo.value = codigo;
+                                    procedimentoBusca.value = codigo + " - " + descricao;
+                                    esconderResultadosProcedimento();
+                                });
+
+                                procedimentoResultados.appendChild(item);
+                            });
+
+                            procedimentoResultados.style.display = "block";
+                        })
+                        .catch(() => {
+                            procedimentoResultados.innerHTML =
+                                    '<div class="list-group-item text-danger">Erro ao buscar procedimentos</div>';
+                            procedimentoResultados.style.display = "block";
+                        });
+            }
+
+            procedimentoBusca.addEventListener("input", function () {
+                clearTimeout(procedimentoTimer);
+                procedimentoTimer = setTimeout(buscarProcedimentos, 300);
+            });
+
+            document.addEventListener("click", function (event) {
+                if (!procedimentoBusca.contains(event.target) && !procedimentoResultados.contains(event.target)) {
+                    esconderResultadosProcedimento();
+                }
+            });
+        </script>
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <script>
+            const pacienteBusca = document.getElementById("paciente_busca");
+            const pacienteId = document.getElementById("paciente_id");
+            const pacienteResultados = document.getElementById("paciente_resultados");
+
+            let pacienteTimer = null;
+
+            function limparPacienteSelecionado() {
+                pacienteId.value = "";
+            }
+
+            function esconderResultadosPaciente() {
+                pacienteResultados.style.display = "none";
+                pacienteResultados.innerHTML = "";
+            }
+
+            function buscarPacientes() {
+                const q = pacienteBusca.value.trim();
+
+                limparPacienteSelecionado();
+
+                if (q.length < 2) {
+                    esconderResultadosPaciente();
+                    return;
+                }
+
+                fetch("/api/pacientes?q=" + encodeURIComponent(q))
+                        .then(response => response.json())
+                        .then(pacientes => {
+                            pacienteResultados.innerHTML = "";
+
+                            if (!pacientes || pacientes.length === 0) {
+                                pacienteResultados.innerHTML =
+                                        '<div class="list-group-item text-muted">Nenhum paciente encontrado</div>';
+                                pacienteResultados.style.display = "block";
+                                return;
+                            }
+
+                            pacientes.forEach(p => {
+                                const item = document.createElement("button");
+                                item.type = "button";
+                                item.className = "list-group-item list-group-item-action";
+
+                                const nome = p.nome || "";
+                                const cpf = p.cpf || "";
+                                const cns = p.cns || "";
+
+                                item.textContent = nome + " | CPF: " + cpf + " | CNS: " + cns;
+
+                                item.addEventListener("click", function () {
+                                    pacienteId.value = p.id;
+                                    pacienteBusca.value = item.textContent;
+                                    esconderResultadosPaciente();
+                                });
+
+                                pacienteResultados.appendChild(item);
+                            });
+
+                            pacienteResultados.style.display = "block";
+                        })
+                        .catch(() => {
+                            pacienteResultados.innerHTML =
+                                    '<div class="list-group-item text-danger">Erro ao buscar pacientes</div>';
+                            pacienteResultados.style.display = "block";
+                        });
+            }
+
+            pacienteBusca.addEventListener("input", function () {
+                clearTimeout(pacienteTimer);
+                pacienteTimer = setTimeout(buscarPacientes, 300);
+            });
+
+            document.addEventListener("click", function (event) {
+                if (!pacienteBusca.contains(event.target) && !pacienteResultados.contains(event.target)) {
+                    esconderResultadosPaciente();
+                }
+            });
+        </script>
+    </body>
+</html>
+

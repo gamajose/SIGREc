@@ -8,6 +8,7 @@ import java.util.Map;
 
 @Service
 public class LookupService {
+
     private final JdbcTemplate jdbcTemplate;
 
     public LookupService(JdbcTemplate jdbcTemplate) {
@@ -46,7 +47,8 @@ public class LookupService {
     public List<Map<String, Object>> procedimentos(String termo) {
         String q = like(termo);
         return jdbcTemplate.queryForList("""
-                select * from regulacao_tfd.procedimentos
+                select codigo, descricao, tipo, valor, ativo, origem
+                from regulacao_tfd.vw_procedimentos_unificados
                 where ativo and (? = '%%' or codigo ilike ? or descricao ilike ?)
                 order by descricao limit 100
                 """, q, q, q);

@@ -1,5 +1,6 @@
 package br.gov.sigrec.tfdapac.controller;
 
+import org.springframework.web.bind.annotation.ResponseBody;
 import br.gov.sigrec.tfdapac.service.CurrentUserService;
 import br.gov.sigrec.tfdapac.service.LookupService;
 import br.gov.sigrec.tfdapac.service.SolicitacaoService;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @Controller
 public class SolicitacaoController {
+
     private final SolicitacaoService solicitacaoService;
     private final LookupService lookupService;
     private final CurrentUserService currentUserService;
@@ -28,10 +30,10 @@ public class SolicitacaoController {
 
     @GetMapping("/solicitacoes")
     public String minhas(@RequestParam(defaultValue = "") String status,
-                         @RequestParam(defaultValue = "") String tipo,
-                         @RequestParam(defaultValue = "") String q,
-                         Authentication auth,
-                         Model model) {
+            @RequestParam(defaultValue = "") String tipo,
+            @RequestParam(defaultValue = "") String q,
+            Authentication auth,
+            Model model) {
         model.addAttribute("itens", solicitacaoService.filaDoUsuario(
                 status,
                 tipo,
@@ -55,6 +57,24 @@ public class SolicitacaoController {
         model.addAttribute("profissionais", lookupService.profissionais());
         model.addAttribute("procedimentos", lookupService.procedimentos(""));
         return "solicitacoes/form";
+    }
+
+    @GetMapping("/api/pacientes")
+    @ResponseBody
+    public java.util.List<java.util.Map<String, Object>> buscarPacientes(@RequestParam(defaultValue = "") String q) {
+        return lookupService.pacientes(q);
+    }
+
+    @GetMapping("/api/procedimentos")
+    @ResponseBody
+    public java.util.List<java.util.Map<String, Object>> buscarProcedimentos(@RequestParam(defaultValue = "") String q) {
+        return lookupService.procedimentos(q);
+    }
+
+    @GetMapping("/api/profissionais")
+    @ResponseBody
+    public java.util.List<java.util.Map<String, Object>> buscarProfissionais(@RequestParam(defaultValue = "") String q) {
+        return lookupService.profissionais(q);
     }
 
     @PostMapping("/solicitacoes")

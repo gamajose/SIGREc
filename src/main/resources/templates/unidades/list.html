@@ -5,7 +5,7 @@
 <main class="page">
   <div th:replace="~{layout/fragments :: alerts}"></div>
   <h1 class="h3">Unidades solicitantes</h1>
-  <div class="panel mb-3">
+  <div class="panel mb-3" th:if="${adminLogado}">
     <form class="row g-2" method="post" th:action="@{/unidades}">
       <div class="col-md-4"><input class="form-control" name="nome" placeholder="Nome do estabelecimento" required></div>
       <div class="col-md-2"><input class="form-control" name="cnes" placeholder="CNES"></div>

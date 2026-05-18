@@ -11,6 +11,7 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalModelAdvice {
+
     private final JdbcTemplate jdbcTemplate;
 
     public GlobalModelAdvice(JdbcTemplate jdbcTemplate) {
@@ -27,6 +28,20 @@ public class GlobalModelAdvice {
         return authentication != null && authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch("ROLE_ADMIN"::equals);
+    }
+
+    @ModelAttribute("reguladorLogado")
+    public boolean reguladorLogado(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_REGULADOR"::equals);
+    }
+
+    @ModelAttribute("solicitanteLogado")
+    public boolean solicitanteLogado(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_SOLICITANTE"::equals);
     }
 
     @ModelAttribute("perfilLogado")
@@ -47,6 +62,26 @@ public class GlobalModelAdvice {
             return 0;
         }
         return jdbcTemplate.queryForObject("select count(*) from regulacao_tfd.tickets_suporte where status = 'ABERTO'", Integer.class);
+    }
+
+    @ModelAttribute("notificacoesNaoLidas")
+    public Integer notificacoesNaoLidas(Authentication authentication) {
+        if (authentication == null) {
+            return 0;
+        }
+
+        Long usuarioId = jdbcTemplate.queryForObject("""
+            select id
+            from regulacao_tfd.usuarios
+            where username = ?
+            """, Long.class, authentication.getName());
+
+        return jdbcTemplate.queryForObject("""
+            select count(*)
+            from regulacao_tfd.notificacoes
+            where usuario_id = ?
+              and lida = false
+            """, Integer.class, usuarioId);
     }
 
     @ModelAttribute("statusSolicitacao")

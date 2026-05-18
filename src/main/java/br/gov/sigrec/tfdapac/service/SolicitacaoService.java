@@ -12,12 +12,20 @@ import java.util.Map;
 
 @Service
 public class SolicitacaoService {
+
     private final JdbcTemplate jdbcTemplate;
     private final ProtocolService protocolService;
+    private final NotificationService notificationService;
+    private final AuditEventService auditEventService;
 
-    public SolicitacaoService(JdbcTemplate jdbcTemplate, ProtocolService protocolService) {
+    public SolicitacaoService(JdbcTemplate jdbcTemplate,
+            ProtocolService protocolService,
+            NotificationService notificationService,
+            AuditEventService auditEventService) {
         this.jdbcTemplate = jdbcTemplate;
         this.protocolService = protocolService;
+        this.notificationService = notificationService;
+        this.auditEventService = auditEventService;
     }
 
     public List<Map<String, Object>> fila(String status, String tipo, String termo) {
@@ -141,7 +149,7 @@ public class SolicitacaoService {
                 longValue(form, "unidade_solicitante_id"),
                 nullableLong(form, "unidade_autorizadora_id"),
                 nullableLong(form, "profissional_solicitante_id"),
-                nullableLong(form, "procedimento_principal_id"),
+                procedimentoIdPorCodigoOuNull(form),
                 form.get("cid10_principal"),
                 form.get("cid10_secundario"),
                 form.get("descricao_diagnostico"),
@@ -175,6 +183,18 @@ public class SolicitacaoService {
                     form.get("estabelecimento_executante"), form.get("cnes_executante"));
         }
         historico(id, usuarioId, null, "ENVIADA", "CRIACAO", "Solicitacao enviada para regulacao");
+        auditEventService.registrar(
+                usuarioId,
+                "SOLICITACAO",
+                id,
+                "CRIACAO",
+                "Solicitação enviada para regulação"
+        );
+        notificationService.notificarReguladores(
+                "Nova solicitação aguardando regulação",
+                "Uma nova solicitação foi enviada para análise da regulação.",
+                "/regulacao/" + id
+        );
         return id;
     }
 
@@ -281,6 +301,48 @@ public class SolicitacaoService {
                     nullableLong(form, "profissional_autorizador_id"), usuarioId);
         }
         historico(id, usuarioId, anterior, novoStatus, "MUDANCA_STATUS", observacao);
+        auditEventService.registrar(
+                usuarioId,
+                "SOLICITACAO",
+                id,
+                "MUDANCA_STATUS",
+                "Status alterado de " + anterior + " para " + novoStatus
+        );
+        
+        Long usuarioCriacao = jdbcTemplate.queryForObject("""
+        select usuario_criacao
+        from regulacao_tfd.solicitacoes
+        where id = ?
+        """, Long.class, id);
+
+        String titulo = switch (novoStatus) {
+            case "AUTORIZADA" ->
+                "Solicitação aprovada";
+            case "INDEFERIDA" ->
+                "Solicitação reprovada";
+            case "DEVOLVIDA_CORRECAO" ->
+                "Solicitação devolvida para correção";
+            default ->
+                "Solicitação atualizada";
+        };
+
+        String mensagem = switch (novoStatus) {
+            case "AUTORIZADA" ->
+                "Sua solicitação foi aprovada pela regulação.";
+            case "INDEFERIDA" ->
+                "Sua solicitação foi reprovada pela regulação.";
+            case "DEVOLVIDA_CORRECAO" ->
+                "Sua solicitação foi devolvida para correção.";
+            default ->
+                "O status da sua solicitação foi atualizado para " + novoStatus + ".";
+        };
+
+        notificationService.notificarUsuario(
+                usuarioCriacao,
+                titulo,
+                mensagem,
+                "/solicitacoes/" + id
+        );
     }
 
     public void registrarImpressao(Long id, Long usuarioId, String tipo, boolean reimpressao, String caminho, String hash) {
@@ -338,5 +400,26 @@ public class SolicitacaoService {
 
     private String nvl(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private Long procedimentoIdPorCodigoOuNull(Map<String, String> form) {
+        Long id = nullableLong(form, "procedimento_principal_id");
+        if (id != null) {
+            return id;
+        }
+
+        String codigo = form.get("procedimento_codigo");
+        if (!StringUtils.hasText(codigo)) {
+            return null;
+        }
+
+        return jdbcTemplate.query("""
+            select id
+            from regulacao_tfd.procedimentos
+            where codigo = ?
+            limit 1
+            """,
+                rs -> rs.next() ? rs.getLong("id") : null,
+                codigo);
     }
 }

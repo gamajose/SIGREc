@@ -21,9 +21,9 @@
 
                     <div class="col-md-2">
                         <select class="form-control" name="origem">
-                            <option value="">Todas origens</option>
-                            <option value="SIGTAP">SIGTAP</option>
-                            <option value="manual">Manual</option>
+                            <option value="" th:selected="${origem == ''}">Todas origens</option>
+                            <option value="SIGTAP" th:selected="${origem == 'SIGTAP'}">SIGTAP</option>
+                            <option value="manual" th:selected="${origem == 'manual'}">Manual</option>
                         </select>
                     </div>
 
@@ -92,10 +92,10 @@
                             <td th:text="${i.origem}"></td>
                             <td th:text="${i.ativo ? 'Ativo' : 'Inativo'}"></td>
 
-                            <td>
+<!--                            <td>
                                 <form th:if="${i.id_local != null}"
                                       method="post"
-                                      th:action="@{/procedimentos/{id}/toggle(id=${i.id_local})}">
+                                      th:action="@{'/procedimentos/' + ${i.id_local} + '/toggle'}">
                                     <button class="btn btn-sm btn-outline-secondary">
                                         Alternar
                                     </button>
@@ -104,7 +104,7 @@
                                 <span th:if="${i.id_local == null}" class="text-muted">
                                     SIGTAP
                                 </span>
-                            </td>
+                            </td>-->
                         </tr>
                     </tbody>
                 </table>

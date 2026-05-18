@@ -19,6 +19,7 @@ import java.util.Map;
 @Controller
 @PreAuthorize("hasRole('ADMIN')")
 public class UsuarioController {
+
     private final JdbcTemplate jdbcTemplate;
     private final UserAccountService userAccountService;
     private final CurrentUserService currentUserService;
@@ -44,22 +45,25 @@ public class UsuarioController {
 
     @PostMapping("/usuarios")
     public String criar(@RequestParam Map<String, String> form, Authentication auth, RedirectAttributes ra) {
+        UserRole role = UserRole.valueOf(form.getOrDefault("role", "SOLICITANTE"));
+
         userAccountService.create(
                 form.get("username"),
                 form.get("email"),
                 form.get("senha"),
-                "on".equals(form.get("admin")) ? UserRole.ADMIN : UserRole.COLABORADOR,
+                role,
                 nullableLong(form.get("unidade_id")),
                 currentUserService.id(auth));
+
         ra.addFlashAttribute("ok", "Usuario criado.");
         return "redirect:/usuarios";
     }
 
     @PostMapping("/usuarios/{id}")
     public String editar(@PathVariable Long id,
-                         @RequestParam Map<String, String> form,
-                         Authentication auth,
-                         RedirectAttributes ra) {
+            @RequestParam Map<String, String> form,
+            Authentication auth,
+            RedirectAttributes ra) {
         userAccountService.update(
                 id,
                 form.get("email"),

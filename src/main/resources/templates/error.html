@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Erro')}"></head>
+
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
+
+<main class="page">
+    <div class="panel">
+        <h1 class="h3 text-danger">Ops, ocorreu um erro</h1>
+
+        <p class="text-secondary">
+            Não foi possível concluir a operação solicitada.
+        </p>
+
+        <div class="alert alert-warning">
+            <strong>Status:</strong>
+            <span th:text="${status}">500</span>
+            <br>
+            <strong>Mensagem:</strong>
+            <span th:text="${error}">Erro interno</span>
+        </div>
+
+        <a class="btn btn-outline-secondary" th:href="@{/}">
+            Voltar para o início
+        </a>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Map;
 
 @Controller
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','REGULADOR')")
 public class RegulacaoController {
     private final SolicitacaoService solicitacaoService;
     private final LookupService lookupService;
@@ -50,7 +50,7 @@ public class RegulacaoController {
         return "regulacao/analise";
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','REGULACAO','AUTORIZADOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','REGULADOR')")
     @PostMapping("/regulacao/{id}/status")
     public String status(@PathVariable Long id,
                          @RequestParam String novo_status,

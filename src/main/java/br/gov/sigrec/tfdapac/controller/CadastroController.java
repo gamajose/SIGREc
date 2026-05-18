@@ -81,14 +81,14 @@ public class CadastroController {
         return "profissionais/list";
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','REGULACAO')")
+    @PreAuthorize("hasAnyRole('ADMIN','REGULADOR','SOLICITANTE')")
     @PostMapping("/profissionais")
     public String salvarProfissional(@RequestParam Map<String, String> f, RedirectAttributes ra) {
         jdbcTemplate.update("""
-                insert into regulacao_tfd.profissionais
-                (nome, cpf_cns, conselho, registro_conselho, especialidade, unidade_id, solicitante, autorizador, ativo)
-                values (?, ?, ?, ?, ?, ?, ?, ?, true)
-                """, f.get("nome"), f.get("cpf_cns"), f.get("conselho"), f.get("registro_conselho"),
+            insert into regulacao_tfd.profissionais
+            (nome, cpf_cns, conselho, registro_conselho, especialidade, unidade_id, solicitante, autorizador, ativo)
+            values (?, ?, ?, ?, ?, ?, ?, ?, true)
+            """, f.get("nome"), f.get("cpf_cns"), f.get("conselho"), f.get("registro_conselho"),
                 f.get("especialidade"), nullableLong(f.get("unidade_id")), "on".equals(f.get("solicitante")),
                 "on".equals(f.get("autorizador")));
         ra.addFlashAttribute("ok", "Profissional cadastrado.");
@@ -96,13 +96,25 @@ public class CadastroController {
     }
 
     @GetMapping("/procedimentos")
-    public String procedimentos(@RequestParam(defaultValue = "") String q, Model model) {
+    public String procedimentos(@RequestParam(defaultValue = "") String q,
+            @RequestParam(defaultValue = "") String origem,
+            Model model) {
         model.addAttribute("q", q);
+        model.addAttribute("origem", origem);
+
+        String busca = like(q);
+
         model.addAttribute("itens", jdbcTemplate.queryForList("""
-                select * from regulacao_tfd.procedimentos
-                where ? = '' or codigo ilike ? or descricao ilike ?
-                order by descricao limit 100
-                """, q, like(q), like(q)));
+            select codigo, descricao, tipo, valor, ativo, origem
+            from regulacao_tfd.vw_procedimentos_unificados
+            where (? = '' or codigo ilike ? or descricao ilike ?)
+              and (? = '' or origem = ?)
+            order by descricao
+            limit 100
+            """,
+                q, busca, busca,
+                origem, origem));
+
         return "procedimentos/list";
     }
 
@@ -125,13 +137,52 @@ public class CadastroController {
         return "redirect:/procedimentos";
     }
 
-
     private String like(String q) {
         return "%" + q + "%";
     }
 
     private Date date(String value) {
-        return value == null || value.isBlank() ? null : Date.valueOf(LocalDate.parse(value));
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String v = value.trim();
+
+        try {
+            // Formato padrão do input type="date": 1992-06-25
+            if (v.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return Date.valueOf(LocalDate.parse(v));
+            }
+
+            // Remove qualquer coisa que não seja número.
+            // Aceita: 25061992, 25/06/1992, 25-06-1992, 250692, 25/06/92
+            String numeros = v.replaceAll("\\D", "");
+
+            if (numeros.length() == 8) {
+                int dia = Integer.parseInt(numeros.substring(0, 2));
+                int mes = Integer.parseInt(numeros.substring(2, 4));
+                int ano = Integer.parseInt(numeros.substring(4, 8));
+
+                return Date.valueOf(LocalDate.of(ano, mes, dia));
+            }
+
+            if (numeros.length() == 6) {
+                int dia = Integer.parseInt(numeros.substring(0, 2));
+                int mes = Integer.parseInt(numeros.substring(2, 4));
+                int anoCurto = Integer.parseInt(numeros.substring(4, 6));
+
+                // Regra:
+                // 00 a 29 = 2000 a 2029
+                // 30 a 99 = 1930 a 1999
+                int ano = anoCurto <= 29 ? 2000 + anoCurto : 1900 + anoCurto;
+
+                return Date.valueOf(LocalDate.of(ano, mes, dia));
+            }
+
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Long nullableLong(String value) {
