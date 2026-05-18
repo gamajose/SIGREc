@@ -1,0 +1,65 @@
+package br.gov.sigrec.tfdapac.controller;
+
+import br.gov.sigrec.tfdapac.service.CurrentUserService;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+
+@Controller
+public class NotificacaoController {
+
+    private final JdbcTemplate jdbcTemplate;
+    private final CurrentUserService currentUserService;
+
+    public NotificacaoController(JdbcTemplate jdbcTemplate, CurrentUserService currentUserService) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.currentUserService = currentUserService;
+    }
+
+    @GetMapping("/notificacoes")
+    public String listar(Authentication auth, Model model) {
+        Long usuarioId = currentUserService.id(auth);
+
+        model.addAttribute("notificacoes", jdbcTemplate.queryForList("""
+                select *
+                from regulacao_tfd.notificacoes
+                where usuario_id = ?
+                order by criado_em desc
+                limit 100
+                """, usuarioId));
+
+        return "notificacoes/list";
+    }
+
+    @PostMapping("/notificacoes/{id}/ler")
+    public String marcarComoLida(@PathVariable Long id, Authentication auth) {
+        Long usuarioId = currentUserService.id(auth);
+
+        jdbcTemplate.update("""
+                update regulacao_tfd.notificacoes
+                set lida = true
+                where id = ?
+                  and usuario_id = ?
+                """, id, usuarioId);
+
+        return "redirect:/notificacoes";
+    }
+
+    @PostMapping("/notificacoes/ler-todas")
+    public String marcarTodasComoLidas(Authentication auth) {
+        Long usuarioId = currentUserService.id(auth);
+
+        jdbcTemplate.update("""
+                update regulacao_tfd.notificacoes
+                set lida = true
+                where usuario_id = ?
+                  and lida = false
+                """, usuarioId);
+
+        return "redirect:/notificacoes";
+    }
+}
