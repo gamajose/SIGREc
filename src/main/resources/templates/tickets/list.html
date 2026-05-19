@@ -211,20 +211,27 @@
                 </td>
 
                 <td>
-                  <span
-                    class="badge bg-secondary"
-                    th:if="${t.total_anexos == 0}"
-                  >
-                    Sem anexos
-                  </span>
+                  <div th:if="${t.total_anexos == 0}">
+                    <span class="badge bg-secondary">Sem anexos</span>
+                  </div>
 
-                  <span class="badge bg-success" th:if="${t.total_anexos > 0}">
-                    <span th:text="${t.total_anexos}">0</span> anexo(s)
-                  </span>
-                </td>
+                  <div th:if="${t.total_anexos > 0}">
+                    <span class="badge bg-success mb-2 d-inline-block">
+                      <span th:text="${t.total_anexos}">0</span> anexo(s)
+                    </span>
 
-                <td>
-                  <span class="status-pill" th:text="${t.status}">ABERTO</span>
+                    <div class="d-flex flex-column gap-1">
+                      <a
+                        th:each="a : ${t.anexos}"
+                        th:href="@{/tickets/anexos/{id}(id=${a.id})}"
+                        th:text="${a.nome_original}"
+                        target="_blank"
+                        class="small text-decoration-none"
+                      >
+                        anexo.pdf
+                      </a>
+                    </div>
+                  </div>
                 </td>
 
                 <td>
