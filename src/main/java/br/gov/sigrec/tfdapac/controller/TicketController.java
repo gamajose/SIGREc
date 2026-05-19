@@ -98,6 +98,12 @@ public class TicketController {
                 where id = ?
                 """, id);
 
+        jdbcTemplate.update("""
+                insert into regulacao_tfd.ticket_interacoes
+                    (ticket_id, usuario_id, tipo, mensagem, mensagem_html)
+                values (?, ?, 'ABERTURA', ?, ?)
+                """, id, usuarioId, mensagem, descricaoHtml);
+
         salvarAnexos(id, anexos);
 
         ra.addFlashAttribute("ok", "Solicitação enviada para o suporte. Ticket: TCK-" + String.format("%06d", id));
@@ -219,6 +225,7 @@ public class TicketController {
 
         model.addAttribute("ticket", ticket);
         model.addAttribute("anexos", anexosDoTicket(id));
+        model.addAttribute("interacoes", interacoesDoTicket(id));
 
         return "tickets/detalhe";
     }
@@ -227,6 +234,7 @@ public class TicketController {
     @PostMapping("/tickets/{id}/status")
     public String alterarStatus(@PathVariable Long id,
             @RequestParam String status,
+            Authentication auth,
             RedirectAttributes ra) {
         List<String> permitidos = List.of("ABERTO", "EM_ANALISE", "RESPONDIDO", "RESOLVIDO", "FECHADO");
 
@@ -235,11 +243,19 @@ public class TicketController {
             return "redirect:/tickets/" + id;
         }
 
+        Long usuarioId = currentUserService.id(auth);
+
         jdbcTemplate.update("""
                 update regulacao_tfd.tickets_suporte
                 set status = ?, atualizado_em = current_timestamp
                 where id = ?
                 """, status, id);
+
+        jdbcTemplate.update("""
+                insert into regulacao_tfd.ticket_interacoes
+                    (ticket_id, usuario_id, tipo, mensagem)
+                values (?, ?, 'STATUS', ?)
+                """, id, usuarioId, "Status alterado para " + status);
 
         ra.addFlashAttribute("ok", "Status do ticket atualizado para " + status + ".");
         return "redirect:/tickets/" + id;
@@ -305,6 +321,12 @@ public class TicketController {
                 where id = ?
                 """, resposta, adminId, id);
 
+        jdbcTemplate.update("""
+                insert into regulacao_tfd.ticket_interacoes
+                    (ticket_id, usuario_id, tipo, mensagem)
+                values (?, ?, 'RESPOSTA', ?)
+                """, id, adminId, resposta);
+
         String numeroTicket = ticket.get("numero_ticket") == null
                 ? "TCK-" + String.format("%06d", id)
                 : ticket.get("numero_ticket").toString();
@@ -324,6 +346,16 @@ public class TicketController {
                 from regulacao_tfd.ticket_anexos
                 where ticket_id = ?
                 order by criado_em asc, id asc
+                """, ticketId);
+    }
+
+    private List<Map<String, Object>> interacoesDoTicket(Long ticketId) {
+        return jdbcTemplate.queryForList("""
+                select i.*, u.username, u.nome
+                from regulacao_tfd.ticket_interacoes i
+                left join regulacao_tfd.usuarios u on u.id = i.usuario_id
+                where i.ticket_id = ?
+                order by i.criado_em asc, i.id asc
                 """, ticketId);
     }
 
