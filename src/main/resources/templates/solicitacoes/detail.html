@@ -10,7 +10,7 @@
 
   <section class="page-hero mb-3">
     <div>
-      <span class="eyebrow">Solicitação TFD/APAC</span>
+      <span class="eyebrow">Acompanhamento da solicitação</span>
       <h1 class="page-title mb-1" th:text="${solicitacao.numero_solicitacao ?: solicitacao.numero_protocolo}">SOL-000001</h1>
       <p class="page-subtitle mb-0">
         <span th:text="${solicitacao.tipo_solicitacao}">TFD</span>
@@ -19,28 +19,61 @@
       </p>
     </div>
     <div class="page-actions d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-success" th:href="@{/regulacao/{id}(id=${solicitacao.id})}">Abrir regulação</a>
+      <a class="btn btn-outline-success" th:if="${adminLogado or reguladorLogado}" th:href="@{/regulacao/{id}(id=${solicitacao.id})}">Abrir regulação</a>
       <a class="btn btn-success" th:href="@{/impressao/{id}(id=${solicitacao.id})}" target="_blank">Imprimir PDF</a>
       <a class="btn btn-outline-secondary" th:href="@{/solicitacoes}">Voltar</a>
     </div>
   </section>
 
+  <section class="panel mb-3">
+    <div class="section-title-row">
+      <div>
+        <h2 class="section-title">Situação atual</h2>
+        <p class="section-subtitle">Resumo do andamento para acompanhamento pelo solicitante.</p>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="alert alert-light border h-100 mb-0">
+          <strong>Status</strong><br>
+          <span class="badge bg-secondary" th:if="${solicitacao.status == 'RASCUNHO'}">Rascunho</span>
+          <span class="badge bg-info text-dark" th:if="${solicitacao.status == 'ENVIADA'}">Enviada para regulação</span>
+          <span class="badge bg-warning text-dark" th:if="${solicitacao.status == 'EM_ANALISE'}">Em análise</span>
+          <span class="badge bg-danger" th:if="${solicitacao.status == 'PENDENTE_DOCUMENTACAO'}">Pendente de documentação</span>
+          <span class="badge bg-success" th:if="${solicitacao.status == 'APROVADA'}">Aprovada</span>
+          <span class="badge bg-dark" th:if="${solicitacao.status == 'NEGADA'}">Negada</span>
+          <span class="badge bg-primary" th:if="${solicitacao.status == 'FINALIZADA'}">Finalizada</span>
+          <span class="badge bg-light text-dark border" th:if="${solicitacao.status != 'RASCUNHO' and solicitacao.status != 'ENVIADA' and solicitacao.status != 'EM_ANALISE' and solicitacao.status != 'PENDENTE_DOCUMENTACAO' and solicitacao.status != 'APROVADA' and solicitacao.status != 'NEGADA' and solicitacao.status != 'FINALIZADA'}" th:text="${solicitacao.status}">Status</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="alert alert-light border h-100 mb-0">
+          <strong>Ação necessária</strong><br>
+          <span th:if="${solicitacao.status == 'PENDENTE_DOCUMENTACAO'}">Anexe ou corrija os documentos solicitados pela regulação.</span>
+          <span th:if="${solicitacao.status != 'PENDENTE_DOCUMENTACAO'}">Nenhuma ação pendente no momento.</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="alert alert-light border h-100 mb-0">
+          <strong>Orientação da regulação</strong><br>
+          <span th:text="${solicitacao.parecer_regulacao ?: 'Acompanhe o histórico para verificar novas movimentações.'}"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <div class="row g-3 mb-3">
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Status</span><div class="h5 mb-0" th:text="${solicitacao.status}">STATUS</div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div><span class="badge bg-danger" th:if="${solicitacao.prioridade == 'URGENTE'}">URGENTE</span><span class="badge bg-warning text-dark" th:if="${solicitacao.prioridade == 'ALTA'}">ALTA</span><span class="badge bg-primary" th:if="${solicitacao.prioridade == null or solicitacao.prioridade == 'NORMAL'}">NORMAL</span></div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Entrada</span><div class="h6 mb-0" th:text="${solicitacao.data_entrada ?: solicitacao.criado_em}">Data</div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Procedimento</span><div class="h6 mb-0" th:text="${solicitacao.procedimento_codigo ?: '-'}">Código</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Tipo</span><div class="h6 mb-0" th:text="${solicitacao.tipo_solicitacao}">TFD</div></div></div>
   </div>
 
   <div class="row g-3">
     <div class="col-lg-8">
       <section class="panel mb-3">
-        <div class="section-title-row">
-          <div>
-            <h2 class="section-title">Dados do paciente</h2>
-            <p class="section-subtitle">Informações do usuário vinculado à solicitação.</p>
-          </div>
-        </div>
+        <div class="section-title-row"><div><h2 class="section-title">Dados do paciente</h2><p class="section-subtitle">Informações do usuário vinculado à solicitação.</p></div></div>
         <dl class="row mb-0">
           <dt class="col-sm-3">Nome</dt><dd class="col-sm-9" th:text="${solicitacao.paciente_nome}"></dd>
           <dt class="col-sm-3">CNS/CPF</dt><dd class="col-sm-9" th:text="${(solicitacao.paciente_cns ?: '') + ' / ' + (solicitacao.paciente_cpf ?: '')}"></dd>
@@ -49,12 +82,7 @@
       </section>
 
       <section class="panel mb-3">
-        <div class="section-title-row">
-          <div>
-            <h2 class="section-title">Dados da solicitação</h2>
-            <p class="section-subtitle">Unidade, profissional, procedimento e informações clínicas.</p>
-          </div>
-        </div>
+        <div class="section-title-row"><div><h2 class="section-title">Dados da solicitação</h2><p class="section-subtitle">Unidade, profissional, procedimento e informações clínicas.</p></div></div>
         <dl class="row mb-0">
           <dt class="col-sm-3">Unidade</dt><dd class="col-sm-9" th:text="${solicitacao.unidade_nome}"></dd>
           <dt class="col-sm-3">Profissional</dt><dd class="col-sm-9" th:text="${solicitacao.profissional_solicitante_nome}"></dd>
@@ -67,12 +95,7 @@
       </section>
 
       <section class="panel">
-        <div class="section-title-row">
-          <div>
-            <h2 class="section-title" th:text="${'Complemento ' + solicitacao.tipo_solicitacao}">Complemento</h2>
-            <p class="section-subtitle">Dados específicos conforme o tipo da solicitação.</p>
-          </div>
-        </div>
+        <div class="section-title-row"><div><h2 class="section-title" th:text="${'Complemento ' + solicitacao.tipo_solicitacao}">Complemento</h2><p class="section-subtitle">Dados específicos conforme o tipo da solicitação.</p></div></div>
         <dl class="row mb-0" th:if="${solicitacao.tipo_solicitacao == 'TFD'}">
           <dt class="col-sm-3">Tratamentos prévios</dt><dd class="col-sm-9" th:text="${complemento.tratamentos_previos}"></dd>
           <dt class="col-sm-3">Exame indicado</dt><dd class="col-sm-9" th:text="${complemento.procedimento_exame_indicado}"></dd>
@@ -111,14 +134,7 @@
         <form method="post" enctype="multipart/form-data" th:action="@{/solicitacoes/{id}/anexos(id=${solicitacao.id})}" class="mb-3">
           <select class="form-select mb-2" name="tipo_documento" required>
             <option value="">Tipo do documento</option>
-            <option>Documento pessoal</option>
-            <option>Cartão SUS</option>
-            <option>Comprovante de residência</option>
-            <option>Laudo médico</option>
-            <option>Pedido médico</option>
-            <option>Exames</option>
-            <option>Autorização</option>
-            <option>Outros</option>
+            <option>Documento pessoal</option><option>Cartão SUS</option><option>Comprovante de residência</option><option>Laudo médico</option><option>Pedido médico</option><option>Exames</option><option>Autorização</option><option>Outros</option>
           </select>
           <input class="form-control mb-2" type="file" name="arquivo" required>
           <button class="btn btn-sm btn-success w-100">Anexar documento</button>
