@@ -25,8 +25,21 @@
           </button>
           <ul class="dropdown-menu">
             <li>
+              <button class="dropdown-item" onclick="window.print()">
+                Imprimir página atual
+              </button>
+            </li>
+            <li>
+              <button class="dropdown-item" onclick="window.open(window.location.href, '_blank')">
+                Abrir em nova aba
+              </button>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
               <form th:action="@{/logout}" method="post" class="m-0">
-                <button class="dropdown-item" type="submit">Sair</button>
+                <button class="dropdown-item text-danger" type="submit">
+                  Sair do sistema
+                </button>
               </form>
             </li>
           </ul>
@@ -42,18 +55,29 @@
             Ferramentas
           </button>
           <ul class="dropdown-menu">
-            <li th:if="${adminLogado}">
-              <a class="dropdown-item" th:href="@{/parametros/email}">E-mail</a>
+            <li>
+              <button class="dropdown-item" onclick="location.reload()">
+                Atualizar página atual
+              </button>
             </li>
             <li>
+              <a class="dropdown-item" th:href="@{/procedimentos}">
+                Consulta rápida SIGTAP
+              </a>
+            </li>
+            <li>
+              <button class="dropdown-item" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+                Ir para o topo
+              </button>
+            </li>
+            <li th:if="${adminLogado}">
               <a class="dropdown-item" th:href="@{/notificacoes}">
-                Notificações
-                <span
-                  th:if="${notificacoesNaoLidas > 0}"
-                  class="badge rounded-pill bg-danger ms-2"
-                  th:text="${notificacoesNaoLidas}"
-                >
-                </span>
+                Central de notificações
+              </a>
+            </li>
+            <li th:if="${adminLogado}">
+              <a class="dropdown-item" th:href="@{/tickets}">
+                Central de suporte
               </a>
             </li>
           </ul>
@@ -70,17 +94,34 @@
           </button>
           <ul class="dropdown-menu">
             <li>
-              <a class="dropdown-item" th:href="@{/usuarios}">Usuários</a>
+              <a class="dropdown-item" th:href="@{/usuarios}">
+                Usuários e permissões
+              </a>
             </li>
             <li>
-              <a class="dropdown-item" th:href="@{/parametros/email}"
-                >Parâmetros do sistema</a
-              >
+              <a class="dropdown-item" th:href="@{/unidades}">
+                Unidades de saúde
+              </a>
             </li>
             <li>
-              <a class="dropdown-item" th:href="@{/parametros/email}"
-                >Templates de mensagem</a
-              >
+              <a class="dropdown-item" th:href="@{/parametros/email}">
+                Parâmetros do sistema
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/parametros/email}">
+                Configuração de e-mail
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/parametros/email}">
+                Templates de mensagem
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/notificacoes}">
+                Auditoria e notificações
+              </a>
             </li>
           </ul>
         </div>
@@ -95,10 +136,37 @@
             Ajuda
           </button>
           <ul class="dropdown-menu">
-            <li th:if="${!adminLogado}">
-              <a class="dropdown-item" th:href="@{/suporte}">Suporte</a>
+            <li>
+              <a class="dropdown-item" th:href="@{/ajuda/manual}">
+                Manual rápido
+              </a>
             </li>
-            <li><span class="dropdown-item-text">SIGREc TFD/APAC</span></li>
+            <li>
+              <a class="dropdown-item" th:href="@{/ajuda/guia-preenchimento}">
+                Guia de preenchimento
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/procedimentos}">
+                Consulta SIGTAP
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/ajuda/faq}">
+                Perguntas frequentes
+              </a>
+            </li>
+            <li th:if="${!adminLogado}">
+              <a class="dropdown-item" th:href="@{/suporte}">
+                Suporte
+              </a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item" th:href="@{/ajuda/sobre}">
+                Sobre o SIGREc
+              </a>
+            </li>
           </ul>
         </div>
       </div>
@@ -122,42 +190,39 @@
           >
             <ul class="navbar-nav me-auto sigrec-nav-buttons">
               <li class="nav-item">
-                <a class="nav-link nav-button" th:href="@{/solicitacoes}"
-                  >Solicitações</a
-                >
+                <a class="nav-link nav-button" th:href="@{/solicitacoes}">
+                  Solicitações
+                </a>
               </li>
               <li class="nav-item" th:if="${adminLogado or reguladorLogado}">
-                <a class="nav-link nav-button" th:href="@{/regulacao/fila}"
-                  >Regulação</a
-                >
+                <a class="nav-link nav-button" th:href="@{/regulacao/fila}">
+                  Regulação
+                </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link nav-button" th:href="@{/pacientes}"
-                  >Pacientes</a
-                >
+                <a class="nav-link nav-button" th:href="@{/pacientes}">
+                  Pacientes
+                </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link nav-button" th:href="@{/unidades}"
-                  >Unidades</a
-                >
+                <a class="nav-link nav-button" th:href="@{/unidades}">
+                  Unidades
+                </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link nav-button" th:href="@{/profissionais}"
-                  >Profissionais</a
-                >
+                <a class="nav-link nav-button" th:href="@{/profissionais}">
+                  Profissionais
+                </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link nav-button" th:href="@{/procedimentos}"
-                  >Procedimentos</a
-                >
+                <a class="nav-link nav-button" th:href="@{/procedimentos}">
+                  Procedimentos
+                </a>
               </li>
               <li class="nav-item" th:if="${adminLogado}">
-                <a class="nav-link nav-button" th:href="@{/relatorios}"
-                  >Relatórios</a
-                >
-              </li>
-              <li class="nav-item" th:if="${adminLogado}">
-                <a class="nav-link nav-button" th:href="@{/tickets}">Tickets</a>
+                <a class="nav-link nav-button" th:href="@{/relatorios}">
+                  Relatórios
+                </a>
               </li>
             </ul>
 
@@ -166,8 +231,9 @@
                 th:if="${!adminLogado}"
                 class="btn btn-outline-success btn-sm"
                 th:href="@{/suporte}"
-                >Suporte</a
               >
+                Suporte
+              </a>
 
               <a
                 class="btn btn-outline-secondary btn-sm position-relative sigrec-icon-button"
@@ -193,17 +259,14 @@
                 <span
                   class="profile-avatar"
                   th:text="${#strings.substring(usuarioLogado,0,1).toUpperCase()}"
-                  >U</span
-                >
-                <span class="profile-name" th:text="${usuarioLogado}"
-                  >Usuário</span
-                >
+                >U</span>
+                <span class="profile-name" th:text="${usuarioLogado}">
+                  Usuário
+                </span>
               </button>
 
               <form th:action="@{/logout}" method="post" class="m-0">
-                <button
-                  class="btn btn-outline-danger btn-sm sigrec-logout-button"
-                >
+                <button class="btn btn-outline-danger btn-sm sigrec-logout-button">
                   Sair
                 </button>
               </form>
@@ -222,9 +285,7 @@
           if (ultimaNotificacao !== atual) {
             const audio = new Audio("/sounds/notificacao.mp3");
             audio.volume = 0.5;
-            audio.play().catch(function () {
-              // O navegador pode bloquear som automático.
-            });
+            audio.play().catch(function () {});
 
             localStorage.setItem("sigrec_notificacoes_nao_lidas", atual);
           }
@@ -284,9 +345,9 @@
                   th:readonly="${!adminLogado}"
                 />
 
-                <label class="form-label" th:if="${adminLogado}"
-                  >Nova senha</label
-                >
+                <label class="form-label" th:if="${adminLogado}">
+                  Nova senha
+                </label>
                 <input
                   class="form-control"
                   th:if="${adminLogado}"
@@ -301,8 +362,9 @@
                   class="btn btn-outline-success"
                   th:if="${!adminLogado}"
                   th:href="@{/suporte}"
-                  >Solicitar alteração</a
                 >
+                  Solicitar alteração
+                </a>
                 <button
                   type="button"
                   class="btn btn-outline-secondary"
