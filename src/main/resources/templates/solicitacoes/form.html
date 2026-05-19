@@ -126,8 +126,8 @@
                     <div class="col-md-12"><label class="form-label">Sinais e sintomas</label><textarea class="form-control review-field" name="sinais_sintomas" data-review="Sinais e sintomas"></textarea></div>
                     <div class="col-md-3 form-check mt-4"><input class="form-check-input review-field" name="necessita_acompanhante" type="checkbox" data-review="Necessita acompanhante"> <label class="form-check-label">Necessita acompanhante</label></div>
                     <div class="col-md-5"><label class="form-label">Nome do acompanhante</label><input class="form-control review-field" name="acompanhante_nome" data-review="Acompanhante"></div>
-                    <div class="col-md-2"><label class="form-label">Nascimento</label><input class="form-control review-field sigrec-date" type="date" name="acompanhante_data_nascimento" data-review="Nascimento acompanhante"></div>
-                    <div class="col-md-2"><label class="form-label">CPF</label><input class="form-control review-field" name="acompanhante_cpf" data-review="CPF acompanhante"></div>
+                    <div class="col-md-2"><label class="form-label">Nascimento</label><input class="form-control review-field sigrec-date-br" type="text" name="acompanhante_data_nascimento" data-review="Nascimento acompanhante" placeholder="__/__/____" maxlength="10" inputmode="numeric" autocomplete="off"></div>
+                    <div class="col-md-2"><label class="form-label">CPF</label><input class="form-control review-field sigrec-cpf" name="acompanhante_cpf" data-review="CPF acompanhante" placeholder="___.___.___-__" maxlength="14" inputmode="numeric" autocomplete="off"></div>
                     <div class="col-md-3"><label class="form-label">Telefone</label><input class="form-control review-field" name="acompanhante_telefone" data-review="Telefone acompanhante"></div>
                     <div class="col-md-4"><label class="form-label">Destino</label><input class="form-control review-field" name="destino" data-review="Destino"></div>
                     <div class="col-md-12"><label class="form-label">Justificativa médica</label><textarea class="form-control review-field" name="justificativa_medica" data-review="Justificativa médica"></textarea></div>
@@ -144,10 +144,10 @@
                     <div class="col-md-2"><label class="form-label">Quantidade</label><input class="form-control review-field" name="quantidade" type="number" min="1" value="1" data-review="Quantidade"></div>
                     <div class="col-md-12"><label class="form-label">Causas associadas</label><textarea class="form-control review-field" name="causas_associadas" data-review="Causas associadas"></textarea></div>
                     <div class="col-md-12"><label class="form-label">Observações</label><textarea class="form-control review-field" name="observacoes" data-review="Observações"></textarea></div>
-                    <div class="col-md-3"><label class="form-label">Data solicitação</label><input class="form-control review-field sigrec-date" type="date" name="data_solicitacao" data-review="Data solicitação"></div>
+                    <div class="col-md-3"><label class="form-label">Data solicitação</label><input class="form-control review-field sigrec-date-br" type="text" name="data_solicitacao" data-review="Data solicitação" placeholder="__/__/____" maxlength="10" inputmode="numeric" autocomplete="off"></div>
                     <div class="col-md-3"><label class="form-label">Número APAC</label><input class="form-control review-field" name="numero_apac" data-review="Número APAC"></div>
-                    <div class="col-md-3"><label class="form-label">Validade início</label><input class="form-control review-field sigrec-date" type="date" name="validade_inicio" data-review="Validade início"></div>
-                    <div class="col-md-3"><label class="form-label">Validade fim</label><input class="form-control review-field sigrec-date" type="date" name="validade_fim" data-review="Validade fim"></div>
+                    <div class="col-md-3"><label class="form-label">Validade início</label><input class="form-control review-field sigrec-date-br" type="text" name="validade_inicio" data-review="Validade início" placeholder="__/__/____" maxlength="10" inputmode="numeric" autocomplete="off"></div>
+                    <div class="col-md-3"><label class="form-label">Validade fim</label><input class="form-control review-field sigrec-date-br" type="text" name="validade_fim" data-review="Validade fim" placeholder="__/__/____" maxlength="10" inputmode="numeric" autocomplete="off"></div>
                     <div class="col-md-8"><label class="form-label">Estabelecimento executante</label><input class="form-control review-field" name="estabelecimento_executante" data-review="Executante"></div>
                     <div class="col-md-4"><label class="form-label">CNES executante</label><input class="form-control review-field" name="cnes_executante" data-review="CNES executante"></div>
                 </div>
@@ -182,7 +182,11 @@ const btnEnviar = document.getElementById("btnEnviar");
 const progress = document.getElementById("formProgress");
 
 function camposDaEtapa(etapa) {
-    return Array.from(document.querySelectorAll(`.form-step[data-step="${etapa}"] [required], .form-step[data-step="${etapa}"] .sigrec-date`));
+    return Array.from(document.querySelectorAll(`.form-step[data-step="${etapa}"] [required], .form-step[data-step="${etapa}"] .sigrec-date-br, .form-step[data-step="${etapa}"] .sigrec-cpf`));
+}
+
+function somenteNumeros(valor) {
+    return (valor || "").replace(/\D/g, "");
 }
 
 function mensagemInvalida(campo, texto) {
@@ -195,17 +199,42 @@ function mensagemInvalida(campo, texto) {
     feedback.textContent = texto;
 }
 
-function dataValida(campo) {
-    if (campo.type !== "date" || !campo.value) {
-        return true;
-    }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(campo.value)) {
-        mensagemInvalida(campo, "Data inválida. Use o seletor de data do campo.");
+function formatarDataBr(valor) {
+    const n = somenteNumeros(valor).slice(0, 8);
+    if (n.length <= 2) return n;
+    if (n.length <= 4) return n.slice(0, 2) + "/" + n.slice(2);
+    return n.slice(0, 2) + "/" + n.slice(2, 4) + "/" + n.slice(4);
+}
+
+function dataBrValida(campo) {
+    if (!campo.value) return true;
+    const m = campo.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!m) {
+        mensagemInvalida(campo, "Data inválida. Use o formato dd/mm/aaaa.");
         return false;
     }
-    const data = new Date(campo.value + "T00:00:00");
-    if (Number.isNaN(data.getTime())) {
-        mensagemInvalida(campo, "Data inválida. Verifique o valor informado.");
+    const dia = Number(m[1]);
+    const mes = Number(m[2]);
+    const ano = Number(m[3]);
+    const data = new Date(ano, mes - 1, dia);
+    const ok = data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia;
+    if (!ok) mensagemInvalida(campo, "Data inválida. Verifique o dia, mês e ano.");
+    return ok;
+}
+
+function formatarCpf(valor) {
+    const n = somenteNumeros(valor).slice(0, 11);
+    if (n.length <= 3) return n;
+    if (n.length <= 6) return n.slice(0, 3) + "." + n.slice(3);
+    if (n.length <= 9) return n.slice(0, 3) + "." + n.slice(3, 6) + "." + n.slice(6);
+    return n.slice(0, 3) + "." + n.slice(3, 6) + "." + n.slice(6, 9) + "-" + n.slice(9);
+}
+
+function cpfValido(campo) {
+    if (!campo.value) return true;
+    const n = somenteNumeros(campo.value);
+    if (n.length !== 11) {
+        mensagemInvalida(campo, "CPF inválido. Informe os 11 dígitos.");
         return false;
     }
     return true;
@@ -215,8 +244,10 @@ function validarEtapa(etapa) {
     let valido = true;
     camposDaEtapa(etapa).forEach(campo => {
         const obrigatorioVazio = campo.hasAttribute("required") && (!campo.value || campo.value.trim() === "");
-        const dataOk = dataValida(campo);
-        if (obrigatorioVazio || !dataOk) {
+        let campoOk = true;
+        if (campo.classList.contains("sigrec-date-br")) campoOk = dataBrValida(campo);
+        if (campo.classList.contains("sigrec-cpf")) campoOk = cpfValido(campo);
+        if (obrigatorioVazio || !campoOk) {
             campo.classList.add("is-invalid");
             if (obrigatorioVazio) mensagemInvalida(campo, "Campo obrigatório.");
             valido = false;
@@ -225,6 +256,13 @@ function validarEtapa(etapa) {
         }
     });
     return valido;
+}
+
+function converterDatasParaBackend() {
+    document.querySelectorAll(".sigrec-date-br").forEach(campo => {
+        const m = campo.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (m) campo.value = `${m[3]}-${m[2]}-${m[1]}`;
+    });
 }
 
 function atualizarResumo() {
@@ -256,6 +294,26 @@ function mostrarEtapa(etapa) {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+document.querySelectorAll(".sigrec-date-br").forEach(campo => {
+    campo.addEventListener("input", function () {
+        campo.value = formatarDataBr(campo.value);
+        campo.classList.remove("is-invalid");
+    });
+    campo.addEventListener("blur", function () {
+        if (!dataBrValida(campo)) campo.classList.add("is-invalid");
+    });
+});
+
+document.querySelectorAll(".sigrec-cpf").forEach(campo => {
+    campo.addEventListener("input", function () {
+        campo.value = formatarCpf(campo.value);
+        campo.classList.remove("is-invalid");
+    });
+    campo.addEventListener("blur", function () {
+        if (!cpfValido(campo)) campo.classList.add("is-invalid");
+    });
+});
+
 btnProximo.addEventListener("click", function () {
     if (!validarEtapa(etapaAtual)) return;
     etapaAtual++;
@@ -276,6 +334,7 @@ form.addEventListener("submit", function (event) {
             return;
         }
     }
+    converterDatasParaBackend();
 });
 </script>
 
