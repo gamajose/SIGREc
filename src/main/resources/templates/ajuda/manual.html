@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{layout/fragments :: head('Manual rápido')}"></head>
+
+  <body>
+    <nav th:replace="~{layout/fragments :: nav}"></nav>
+    <div th:replace="~{layout/fragments :: profileModal}"></div>
+
+    <main class="page">
+      <div th:replace="~{layout/fragments :: alerts}"></div>
+
+      <section class="page-hero mb-3">
+        <div>
+          <span class="eyebrow">Ajuda</span>
+          <h1 class="page-title mb-1">Manual rápido</h1>
+          <p class="page-subtitle mb-0">
+            Visão geral dos principais recursos do SIGREc para uso diário na regulação TFD/APAC.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel mb-3">
+        <h2 class="section-title">Fluxo principal</h2>
+        <p>
+          O SIGREc organiza o processo de solicitação, acompanhamento e análise de procedimentos TFD/APAC, centralizando pacientes, unidades, profissionais, procedimentos e documentos de apoio.
+        </p>
+        <div class="row g-3">
+          <div class="col-md-3"><div class="alert alert-light border h-100"><strong>1.</strong> Cadastre ou localize o paciente.</div></div>
+          <div class="col-md-3"><div class="alert alert-light border h-100"><strong>2.</strong> Abra a solicitação com procedimento e justificativa.</div></div>
+          <div class="col-md-3"><div class="alert alert-light border h-100"><strong>3.</strong> Encaminhe para análise da regulação.</div></div>
+          <div class="col-md-3"><div class="alert alert-light border h-100"><strong>4.</strong> Acompanhe status, histórico e relatórios.</div></div>
+        </div>
+      </section>
+
+      <section class="panel mb-3">
+        <h2 class="section-title">Áreas do sistema</h2>
+        <ul class="mb-0">
+          <li><strong>Solicitações:</strong> abertura, consulta e acompanhamento dos pedidos.</li>
+          <li><strong>Regulação:</strong> fila de análise e decisão técnica/administrativa.</li>
+          <li><strong>Pacientes:</strong> cadastro e consulta dos dados do usuário atendido.</li>
+          <li><strong>Procedimentos:</strong> consulta de procedimentos SIGTAP e códigos relacionados.</li>
+          <li><strong>Relatórios:</strong> visão gerencial para acompanhamento interno.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">Boas práticas</h2>
+        <p class="mb-0">
+          Preencha as informações de forma objetiva, revise os dados do paciente, confira o procedimento selecionado e utilize anexos quando houver documentos ou evidências necessárias para a análise.
+        </p>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
