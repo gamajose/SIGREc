@@ -202,6 +202,22 @@ public class TicketController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tickets/{id}")
+    public String detalhe(@PathVariable Long id, Model model) {
+        Map<String, Object> ticket = jdbcTemplate.queryForMap("""
+                select t.*, u.username, u.nome, u.email
+                from regulacao_tfd.tickets_suporte t
+                join regulacao_tfd.usuarios u on u.id = t.usuario_id
+                where t.id = ?
+                """, id);
+
+        model.addAttribute("ticket", ticket);
+        model.addAttribute("anexos", anexosDoTicket(id));
+
+        return "tickets/detalhe";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/tickets/anexos/{anexoId}")
     public ResponseEntity<Resource> baixarAnexo(@PathVariable Long anexoId) {
         Map<String, Object> anexo = jdbcTemplate.queryForMap("""
@@ -271,7 +287,7 @@ public class TicketController {
                 "Seu ticket foi resolvido.\n\nAssunto: " + ticket.get("assunto") + "\nResposta: " + resposta);
 
         ra.addFlashAttribute("ok", "Ticket " + numeroTicket + " respondido. E-mail colocado na fila de envio.");
-        return "redirect:/tickets";
+        return "redirect:/tickets/" + id;
     }
 
     private List<Map<String, Object>> anexosDoTicket(Long ticketId) {
