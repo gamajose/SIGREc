@@ -40,7 +40,7 @@ public class UserAccount {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private UserRole role = UserRole.COLABORADOR;
+    private UserRole role = UserRole.SOLICITANTE;
 
     @Column(name = "unidade_id")
     private Long unidadeId;

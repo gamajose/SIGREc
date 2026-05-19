@@ -56,4 +56,8 @@ public class NotificationService {
             notificarUsuario(usuarioId, titulo, mensagem, link);
         }
     }
+
+    public void queueEmail(String para, String assunto, String mensagem) {
+        emailService.enviar(para, assunto, mensagem);
+    }
 }

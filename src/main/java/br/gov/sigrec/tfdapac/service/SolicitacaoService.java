@@ -9,6 +9,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class SolicitacaoService {
@@ -285,6 +286,7 @@ public class SolicitacaoService {
     @Transactional
     public void mudarStatus(Long id, String novoStatus, String observacao, Long usuarioId, Map<String, String> form) {
         String anterior = jdbcTemplate.queryForObject("select status from regulacao_tfd.solicitacoes where id = ?", String.class, id);
+        validarTransicaoStatus(anterior, novoStatus);
         jdbcTemplate.update("""
                 update regulacao_tfd.solicitacoes
                 set status = ?,
@@ -449,5 +451,37 @@ public class SolicitacaoService {
             """,
                 rs -> rs.next() ? rs.getLong("id") : null,
                 codigo);
+    }
+
+    private void validarTransicaoStatus(String atual, String novo) {
+        if (!StringUtils.hasText(novo)) {
+            throw new IllegalArgumentException("Novo status não informado.");
+        }
+
+        if (atual == null || atual.isBlank()) {
+            return;
+        }
+
+        if (atual.equals(novo)) {
+            return;
+        }
+
+        Map<String, Set<String>> transicoesPermitidas = Map.of(
+                "ENVIADA", Set.of("EM_ANALISE", "DEVOLVIDA_CORRECAO", "AUTORIZADA", "INDEFERIDA"),
+                "EM_ANALISE", Set.of("AUTORIZADA", "INDEFERIDA", "DEVOLVIDA_CORRECAO", "AGUARDANDO_DOCUMENTOS"),
+                "AGUARDANDO_DOCUMENTOS", Set.of("EM_ANALISE", "DEVOLVIDA_CORRECAO", "AUTORIZADA", "INDEFERIDA"),
+                "DEVOLVIDA_CORRECAO", Set.of("ENVIADA", "EM_ANALISE"),
+                "AUTORIZADA", Set.of("IMPRESSA", "FINALIZADA"),
+                "IMPRESSA", Set.of("FINALIZADA"),
+                "INDEFERIDA", Set.of("FINALIZADA"),
+                "CANCELADA", Set.of(),
+                "FINALIZADA", Set.of()
+        );
+
+        Set<String> permitidos = transicoesPermitidas.getOrDefault(atual, Set.of());
+
+        if (!permitidos.contains(novo)) {
+            throw new IllegalStateException("Transição de status inválida: " + atual + " -> " + novo);
+        }
     }
 }

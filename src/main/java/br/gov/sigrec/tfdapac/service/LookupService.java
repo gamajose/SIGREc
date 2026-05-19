@@ -39,6 +39,24 @@ public class LookupService {
     public List<Map<String, Object>> profissionais() {
         return jdbcTemplate.queryForList("select * from regulacao_tfd.profissionais where ativo order by nome");
     }
+    public List<Map<String, Object>> profissionais(String termo) {
+    String q = like(termo);
+    return jdbcTemplate.queryForList("""
+            select *
+            from regulacao_tfd.profissionais
+            where ativo
+              and (
+                    ? = '%%'
+                    or nome ilike ?
+                    or cpf_cns ilike ?
+                    or conselho ilike ?
+                    or registro_conselho ilike ?
+                    or especialidade ilike ?
+              )
+            order by nome
+            limit 100
+            """, q, q, q, q, q, q);
+}
 
     public List<Map<String, Object>> autorizadores() {
         return jdbcTemplate.queryForList("select * from regulacao_tfd.profissionais where ativo and autorizador order by nome");
