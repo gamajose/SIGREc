@@ -45,14 +45,14 @@ public class NotificationService {
     }
 
     public void notificarReguladores(String titulo, String mensagem, String link) {
-        List<Long> reguladores = jdbcTemplate.queryForList("""
+        List<Long> usuarios = jdbcTemplate.queryForList("""
                 select id
                 from regulacao_tfd.usuarios
                 where ativo = true
-                  and role = 'REGULADOR'
+                  and role in ('ADMIN', 'REGULADOR')
                 """, Long.class);
 
-        for (Long usuarioId : reguladores) {
+        for (Long usuarioId : usuarios) {
             notificarUsuario(usuarioId, titulo, mensagem, link);
         }
     }
