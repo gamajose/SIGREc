@@ -168,6 +168,12 @@ public class TicketController {
 
         sql.append("""
                 order by
+                    case t.prioridade
+                        when 'URGENTE' then 1
+                        when 'ALTA' then 2
+                        when 'NORMAL' then 3
+                        else 9
+                    end,
                     case t.status
                         when 'ABERTO' then 1
                         when 'EM_ANALISE' then 2
@@ -215,6 +221,28 @@ public class TicketController {
         model.addAttribute("anexos", anexosDoTicket(id));
 
         return "tickets/detalhe";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/tickets/{id}/status")
+    public String alterarStatus(@PathVariable Long id,
+            @RequestParam String status,
+            RedirectAttributes ra) {
+        List<String> permitidos = List.of("ABERTO", "EM_ANALISE", "RESPONDIDO", "RESOLVIDO", "FECHADO");
+
+        if (!permitidos.contains(status)) {
+            ra.addFlashAttribute("erro", "Status informado é inválido.");
+            return "redirect:/tickets/" + id;
+        }
+
+        jdbcTemplate.update("""
+                update regulacao_tfd.tickets_suporte
+                set status = ?, atualizado_em = current_timestamp
+                where id = ?
+                """, status, id);
+
+        ra.addFlashAttribute("ok", "Status do ticket atualizado para " + status + ".");
+        return "redirect:/tickets/" + id;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
