@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{layout/fragments :: head('Guia de preenchimento')}"></head>
+  <body>
+    <nav th:replace="~{layout/fragments :: nav}"></nav>
+    <div th:replace="~{layout/fragments :: profileModal}"></div>
+
+    <main class="page">
+      <section class="page-hero mb-3">
+        <div>
+          <span class="eyebrow">Ajuda</span>
+          <h1 class="page-title mb-1">Guia de preenchimento</h1>
+          <p class="page-subtitle mb-0">
+            Orientações para preenchimento correto das solicitações TFD/APAC.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel mb-3">
+        <h2 class="section-title">Dados obrigatórios</h2>
+        <ul class="mb-0">
+          <li>Paciente devidamente identificado.</li>
+          <li>CPF, CNS e data de nascimento atualizados.</li>
+          <li>Procedimento SIGTAP corretamente selecionado.</li>
+          <li>Justificativa clínica preenchida.</li>
+          <li>Anexos enviados quando necessários.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">Recomendações</h2>
+        <p class="mb-0">
+          Revise os dados antes do envio, utilize informações objetivas e mantenha os documentos anexados legíveis para facilitar o processo de análise da regulação.
+        </p>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
