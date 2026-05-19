@@ -42,31 +42,32 @@
             <div class="section-title-row">
               <div>
                 <h2 class="section-title">Timeline do ticket</h2>
-                <p class="section-subtitle">Histórico visual da movimentação e respostas do chamado.</p>
+                <p class="section-subtitle">Histórico real da movimentação e respostas do chamado.</p>
               </div>
             </div>
 
-            <div class="border-start ps-3">
-              <div class="mb-4">
-                <div class="fw-semibold text-success">Ticket aberto</div>
-                <div class="small text-secondary mb-2" th:text="${ticket.criado_em}">data</div>
-                <div class="alert alert-light border mb-0">
-                  Solicitação criada pelo usuário.
-                </div>
-              </div>
+            <div class="text-muted" th:if="${#lists.isEmpty(interacoes)}">
+              Nenhuma interação registrada para este ticket.
+            </div>
 
-              <div class="mb-4" th:if="${ticket.resposta != null}">
-                <div class="fw-semibold text-primary">Resposta do suporte</div>
-                <div class="small text-secondary mb-2" th:text="${ticket.respondido_em ?: ticket.atualizado_em}">data</div>
-                <div class="alert alert-primary mb-0" th:text="${ticket.resposta}"></div>
-              </div>
-
-              <div>
-                <div class="fw-semibold text-dark">Status atual</div>
-                <div class="small text-secondary mb-2" th:text="${ticket.atualizado_em ?: ticket.criado_em}">data</div>
-                <div>
-                  <span class="status-pill" th:text="${ticket.status}">ABERTO</span>
+            <div class="border-start ps-3" th:if="${!#lists.isEmpty(interacoes)}">
+              <div class="mb-4" th:each="i : ${interacoes}">
+                <div class="d-flex justify-content-between gap-2 flex-wrap">
+                  <div>
+                    <span class="badge bg-success" th:if="${i.tipo == 'ABERTURA'}">Abertura</span>
+                    <span class="badge bg-primary" th:if="${i.tipo == 'RESPOSTA'}">Resposta</span>
+                    <span class="badge bg-secondary" th:if="${i.tipo == 'STATUS'}">Status</span>
+                    <span class="badge bg-dark" th:if="${i.tipo != 'ABERTURA' and i.tipo != 'RESPOSTA' and i.tipo != 'STATUS'}" th:text="${i.tipo}">Interação</span>
+                  </div>
+                  <div class="small text-secondary" th:text="${i.criado_em}">data</div>
                 </div>
+
+                <div class="small text-secondary mb-2">
+                  Por <span th:text="${i.nome ?: i.username ?: 'Sistema'}">Usuário</span>
+                </div>
+
+                <div class="alert alert-light border mb-0" th:if="${i.mensagem_html == null}" th:text="${i.mensagem}"></div>
+                <div class="alert alert-light border mb-0" th:if="${i.mensagem_html != null}" th:utext="${i.mensagem_html}"></div>
               </div>
             </div>
           </section>
