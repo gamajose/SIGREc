@@ -30,15 +30,17 @@ public class SolicitacaoService {
 
     public List<Map<String, Object>> fila(String status, String tipo, String termo) {
         return jdbcTemplate.queryForList("""
-                select s.*, p.nome paciente_nome, p.cns paciente_cns, u.nome unidade_nome, ua.nome unidade_autorizadora_nome, pr.codigo procedimento_codigo, pr.descricao procedimento_descricao
+                select s.*, p.nome paciente_nome, p.cns paciente_cns, u.nome unidade_nome, ua.nome unidade_autorizadora_nome, coalesce(pr.codigo, s.procedimento_codigo_externo) procedimento_codigo,
+                coalesce(pr.descricao, vpu.descricao) procedimento_descricao
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
                 left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
                 left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
+                left join regulacao_tfd.vw_procedimentos_unificados vpu on vpu.codigo = s.procedimento_codigo_externo
                 where (? = '' or s.status = ?)
                   and (? = '' or s.tipo_solicitacao = ?)
-                  and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ? or coalesce(pr.descricao,'') ilike ?)
+                  and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ? or coalesce(pr.descricao, vpu.descricao, '') ilike ?)
                 order by
                   case s.prioridade when 'URGENTE' then 1 when 'ALTA' then 2 when 'NORMAL' then 3 else 4 end,
                   s.data_entrada
@@ -50,15 +52,17 @@ public class SolicitacaoService {
             return fila(status, tipo, termo);
         }
         return jdbcTemplate.queryForList("""
-                select s.*, p.nome paciente_nome, p.cns paciente_cns, u.nome unidade_nome, ua.nome unidade_autorizadora_nome, pr.codigo procedimento_codigo, pr.descricao procedimento_descricao
+                select s.*, p.nome paciente_nome, p.cns paciente_cns, u.nome unidade_nome, ua.nome unidade_autorizadora_nome, coalesce(pr.codigo, s.procedimento_codigo_externo) procedimento_codigo,
+                coalesce(pr.descricao, vpu.descricao) procedimento_descricao
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
                 left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
                 left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
+                left join regulacao_tfd.vw_procedimentos_unificados vpu on vpu.codigo = s.procedimento_codigo_externo
                 where (? = '' or s.status = ?)
                   and (? = '' or s.tipo_solicitacao = ?)
-                  and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ? or coalesce(pr.descricao,'') ilike ?)
+                  and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ? or coalesce(pr.descricao, vpu.descricao, '') ilike ?)
                   and (s.usuario_criacao = ? or (? is not null and s.unidade_solicitante_id = ?))
                 order by
                   case s.prioridade when 'URGENTE' then 1 when 'ALTA' then 2 when 'NORMAL' then 3 else 4 end,
@@ -78,7 +82,8 @@ public class SolicitacaoService {
                        ps.nome profissional_solicitante_nome, ps.cpf_cns profissional_solicitante_doc,
                        ps.conselho profissional_solicitante_conselho, ps.registro_conselho profissional_solicitante_registro,
                        pa.nome profissional_autorizador_nome,
-                       pr.codigo procedimento_codigo, pr.descricao procedimento_descricao
+                       coalesce(pr.codigo, s.procedimento_codigo_externo) procedimento_codigo,
+                       coalesce(pr.descricao, vpu.descricao) procedimento_descricao
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
@@ -86,6 +91,7 @@ public class SolicitacaoService {
                 left join regulacao_tfd.profissionais ps on ps.id = s.profissional_solicitante_id
                 left join regulacao_tfd.profissionais pa on pa.id = s.profissional_autorizador_id
                 left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
+                left join regulacao_tfd.vw_procedimentos_unificados vpu on vpu.codigo = s.procedimento_codigo_externo
                 where s.id = ?
                 """, id);
     }
@@ -138,9 +144,9 @@ public class SolicitacaoService {
         Long id = jdbcTemplate.queryForObject("""
                 insert into regulacao_tfd.solicitacoes
                 (numero_protocolo, tipo_solicitacao, paciente_id, unidade_solicitante_id, unidade_autorizadora_id, profissional_solicitante_id,
-                 procedimento_principal_id, cid10_principal, cid10_secundario, descricao_diagnostico, justificativa,
+                 procedimento_principal_id, procedimento_codigo_externo, cid10_principal, cid10_secundario, descricao_diagnostico, justificativa,
                  prioridade, status, data_envio, usuario_criacao, usuario_ultima_alteracao)
-                values (?, ?, ?, ?, coalesce(?, (select id from regulacao_tfd.unidades_saude where tipo_unidade in ('AUTORIZADORA','AMBAS') order by id limit 1)), ?, ?, ?, ?, ?, ?, ?, 'ENVIADA', current_timestamp, ?, ?)
+                values (?, ?, ?, ?, coalesce(?, (select id from regulacao_tfd.unidades_saude where tipo_unidade in ('AUTORIZADORA','AMBAS') order by id limit 1)), ?, ?, ?, ?, ?, ?, ?, ?, 'ENVIADA', current_timestamp, ?, ?)
                 returning id
                 """, Long.class,
                 protocolo,
@@ -150,6 +156,7 @@ public class SolicitacaoService {
                 nullableLong(form, "unidade_autorizadora_id"),
                 nullableLong(form, "profissional_solicitante_id"),
                 procedimentoIdPorCodigoOuNull(form),
+                procedimentoCodigoOuNull(form),
                 form.get("cid10_principal"),
                 form.get("cid10_secundario"),
                 form.get("descricao_diagnostico"),
@@ -308,7 +315,7 @@ public class SolicitacaoService {
                 "MUDANCA_STATUS",
                 "Status alterado de " + anterior + " para " + novoStatus
         );
-        
+
         Long usuarioCriacao = jdbcTemplate.queryForObject("""
         select usuario_criacao
         from regulacao_tfd.solicitacoes
@@ -400,6 +407,27 @@ public class SolicitacaoService {
 
     private String nvl(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private String procedimentoCodigoOuNull(Map<String, String> form) {
+        String codigo = form.get("procedimento_codigo");
+        if (StringUtils.hasText(codigo)) {
+            return codigo.trim();
+        }
+
+        Long id = nullableLong(form, "procedimento_principal_id");
+        if (id == null) {
+            return null;
+        }
+
+        return jdbcTemplate.query("""
+            select codigo
+            from regulacao_tfd.procedimentos
+            where id = ?
+            limit 1
+            """,
+                rs -> rs.next() ? rs.getString("codigo") : null,
+                id);
     }
 
     private Long procedimentoIdPorCodigoOuNull(Map<String, String> form) {

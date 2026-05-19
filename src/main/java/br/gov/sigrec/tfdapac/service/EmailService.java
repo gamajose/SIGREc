@@ -62,7 +62,11 @@ public class EmailService {
         mail.setSubject(assunto);
         mail.setText(mensagem);
 
-        sender.send(mail);
+        try {
+            sender.send(mail);
+        } catch (Exception e) {
+            System.err.println("Falha ao enviar e-mail: " + e.getMessage());
+        }
     }
 
     private String texto(Object value) {
