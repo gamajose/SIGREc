@@ -1,32 +1,100 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/fragments :: head('Fila de regulacao')}"></head>
-<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<head th:replace="~{layout/fragments :: head('Fila de regulação')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
 <div th:replace="~{layout/fragments :: profileModal}"></div>
+
 <main class="page">
   <div th:replace="~{layout/fragments :: alerts}"></div>
-  <h1 class="h3">Fila de regulacao</h1>
-  <div class="panel mb-3">
-    <form class="row g-2" method="get">
-      <div class="col-md-2"><select class="form-select" name="tipo"><option value="">Tipo</option><option th:selected="${tipo=='TFD'}">TFD</option><option th:selected="${tipo=='APAC'}">APAC</option></select></div>
-      <div class="col-md-3"><select class="form-select" name="status"><option value="">Status</option><option th:each="s : ${statusSolicitacao}" th:value="${s}" th:text="${s}" th:selected="${status==s}"></option></select></div>
-      <div class="col-md-5"><input class="form-control" name="q" th:value="${q}" placeholder="Paciente, protocolo ou procedimento"></div>
-      <div class="col-md-2"><button class="btn btn-outline-success w-100">Filtrar</button></div>
-    </form>
-  </div>
-  <div class="panel">
-    <table class="table table-hover">
-      <thead><tr><th>Protocolo</th><th>Tipo</th><th>Paciente</th><th>Unidade</th><th>Procedimento</th><th>Prioridade</th><th>Status</th><th></th></tr></thead>
-      <tbody><tr th:each="s : ${itens}">
-        <td th:text="${s.numero_protocolo}"></td><td th:text="${s.tipo_solicitacao}"></td>
-        <td th:text="${s.paciente_nome}"></td><td th:text="${s.unidade_nome}"></td>
-        <td><span th:text="${s.procedimento_codigo}"></span><div class="small text-secondary" th:text="${s.procedimento_descricao}"></div></td>
-        <td><span class="badge" th:classappend="'priority-' + ${s.prioridade}" th:text="${s.prioridade}"></span></td>
-        <td th:text="${s.status}"></td>
-        <td><a class="btn btn-sm btn-success" th:href="@{/regulacao/{id}(id=${s.id})}">Analisar</a></td>
-      </tr></tbody>
-    </table>
-  </div>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>
 
+  <section class="page-hero mb-3">
+    <div>
+      <span class="eyebrow">Regulação</span>
+      <h1 class="page-title mb-1">Fila de regulação</h1>
+      <p class="page-subtitle mb-0">
+        Analise solicitações TFD/APAC, acompanhe prioridades e registre decisões regulatórias.
+      </p>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-3">
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Total listado</span><div class="h4 mb-0" th:text="${#lists.size(itens)}">0</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div class="h4 mb-0">TFD/APAC</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Análise</span><div class="h4 mb-0">Regulação</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Consulta</span><a class="btn btn-sm btn-outline-success" th:href="@{/procedimentos}">SIGTAP</a></div></div>
+  </section>
+
+  <section class="panel mb-3">
+    <form class="row g-2 align-items-end" method="get">
+      <div class="col-md-2">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" name="tipo">
+          <option value="">Todos</option>
+          <option value="TFD" th:selected="${tipo=='TFD'}">TFD</option>
+          <option value="APAC" th:selected="${tipo=='APAC'}">APAC</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Status</label>
+        <select class="form-select" name="status">
+          <option value="">Todos</option>
+          <option th:each="s : ${statusSolicitacao}" th:value="${s}" th:text="${s}" th:selected="${status==s}"></option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Busca</label>
+        <input class="form-control" name="q" th:value="${q}" placeholder="Paciente, protocolo, unidade ou procedimento">
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-outline-success w-100">Filtrar</button>
+        <a class="btn btn-outline-secondary" th:href="@{/regulacao/fila}">Limpar</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel table-panel">
+    <div class="section-title-row">
+      <div>
+        <h2 class="section-title">Solicitações para análise</h2>
+        <p class="section-subtitle">Priorize solicitações urgentes, pendentes e em análise.</p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr><th>Protocolo</th><th>Paciente</th><th>Unidade</th><th>Procedimento</th><th>Prioridade</th><th>Status</th><th>Ação</th></tr>
+        </thead>
+        <tbody>
+          <tr th:if="${#lists.isEmpty(itens)}"><td colspan="7" class="text-center text-muted py-4">Nenhuma solicitação encontrada na fila.</td></tr>
+          <tr th:each="s : ${itens}">
+            <td>
+              <div class="fw-semibold" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">SOL-000001</div>
+              <div class="small text-secondary" th:text="${s.tipo_solicitacao}">TFD</div>
+            </td>
+            <td th:text="${s.paciente_nome}"></td>
+            <td th:text="${s.unidade_nome}"></td>
+            <td><span th:text="${s.procedimento_codigo}"></span><div class="small text-secondary" th:text="${s.procedimento_descricao}"></div></td>
+            <td>
+              <span class="badge bg-danger" th:if="${s.prioridade == 'URGENTE'}">URGENTE</span>
+              <span class="badge bg-warning text-dark" th:if="${s.prioridade == 'ALTA'}">ALTA</span>
+              <span class="badge bg-primary" th:if="${s.prioridade == null or s.prioridade == 'NORMAL'}">NORMAL</span>
+            </td>
+            <td>
+              <span class="badge bg-info text-dark" th:if="${s.status == 'ENVIADA'}">Enviada</span>
+              <span class="badge bg-warning text-dark" th:if="${s.status == 'EM_ANALISE'}">Em análise</span>
+              <span class="badge bg-danger" th:if="${s.status == 'PENDENTE_DOCUMENTACAO'}">Pendente</span>
+              <span class="badge bg-success" th:if="${s.status == 'APROVADA'}">Aprovada</span>
+              <span class="badge bg-dark" th:if="${s.status == 'NEGADA'}">Negada</span>
+              <span class="badge bg-light text-dark border" th:if="${s.status != 'ENVIADA' and s.status != 'EM_ANALISE' and s.status != 'PENDENTE_DOCUMENTACAO' and s.status != 'APROVADA' and s.status != 'NEGADA'}" th:text="${s.status}">Status</span>
+            </td>
+            <td><a class="btn btn-sm btn-success" th:href="@{/regulacao/{id}(id=${s.id})}">Analisar</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body></html>
