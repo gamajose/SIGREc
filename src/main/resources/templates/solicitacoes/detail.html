@@ -1,73 +1,137 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/fragments :: head('Detalhe da solicitacao')}"></head>
-<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<head th:replace="~{layout/fragments :: head('Detalhe da solicitação')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
 <div th:replace="~{layout/fragments :: profileModal}"></div>
+
 <main class="page">
   <div th:replace="~{layout/fragments :: alerts}"></div>
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div><h1 class="h3 mb-1" th:text="${solicitacao.numero_protocolo}">Protocolo</h1><p class="text-secondary mb-0" th:text="${solicitacao.tipo_solicitacao + ' - ' + solicitacao.status}"></p></div>
-    <div class="btn-group"><a class="btn btn-outline-success" th:href="@{/regulacao/{id}(id=${solicitacao.id})}">Abrir regulacao</a><a class="btn btn-success" th:href="@{/impressao/{id}(id=${solicitacao.id})}" target="_blank">Imprimir PDF</a></div>
+
+  <section class="page-hero mb-3">
+    <div>
+      <span class="eyebrow">Solicitação TFD/APAC</span>
+      <h1 class="page-title mb-1" th:text="${solicitacao.numero_solicitacao ?: solicitacao.numero_protocolo}">SOL-000001</h1>
+      <p class="page-subtitle mb-0">
+        <span th:text="${solicitacao.tipo_solicitacao}">TFD</span>
+        <span> · </span>
+        <span th:text="${solicitacao.paciente_nome}">Paciente</span>
+      </p>
+    </div>
+    <div class="page-actions d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-success" th:href="@{/regulacao/{id}(id=${solicitacao.id})}">Abrir regulação</a>
+      <a class="btn btn-success" th:href="@{/impressao/{id}(id=${solicitacao.id})}" target="_blank">Imprimir PDF</a>
+      <a class="btn btn-outline-secondary" th:href="@{/solicitacoes}">Voltar</a>
+    </div>
+  </section>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Status</span><div class="h5 mb-0" th:text="${solicitacao.status}">STATUS</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div><span class="badge bg-danger" th:if="${solicitacao.prioridade == 'URGENTE'}">URGENTE</span><span class="badge bg-warning text-dark" th:if="${solicitacao.prioridade == 'ALTA'}">ALTA</span><span class="badge bg-primary" th:if="${solicitacao.prioridade == null or solicitacao.prioridade == 'NORMAL'}">NORMAL</span></div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Entrada</span><div class="h6 mb-0" th:text="${solicitacao.data_entrada ?: solicitacao.criado_em}">Data</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Procedimento</span><div class="h6 mb-0" th:text="${solicitacao.procedimento_codigo ?: '-'}">Código</div></div></div>
   </div>
+
   <div class="row g-3">
     <div class="col-lg-8">
-      <div class="panel">
-        <div class="section-title">Paciente</div>
-        <dl class="row">
+      <section class="panel mb-3">
+        <div class="section-title-row">
+          <div>
+            <h2 class="section-title">Dados do paciente</h2>
+            <p class="section-subtitle">Informações do usuário vinculado à solicitação.</p>
+          </div>
+        </div>
+        <dl class="row mb-0">
           <dt class="col-sm-3">Nome</dt><dd class="col-sm-9" th:text="${solicitacao.paciente_nome}"></dd>
           <dt class="col-sm-3">CNS/CPF</dt><dd class="col-sm-9" th:text="${(solicitacao.paciente_cns ?: '') + ' / ' + (solicitacao.paciente_cpf ?: '')}"></dd>
-          <dt class="col-sm-3">Endereco</dt><dd class="col-sm-9" th:text="${solicitacao.paciente_endereco}"></dd>
+          <dt class="col-sm-3">Endereço</dt><dd class="col-sm-9" th:text="${solicitacao.paciente_endereco}"></dd>
         </dl>
-        <div class="section-title">Solicitacao</div>
-        <dl class="row">
+      </section>
+
+      <section class="panel mb-3">
+        <div class="section-title-row">
+          <div>
+            <h2 class="section-title">Dados da solicitação</h2>
+            <p class="section-subtitle">Unidade, profissional, procedimento e informações clínicas.</p>
+          </div>
+        </div>
+        <dl class="row mb-0">
           <dt class="col-sm-3">Unidade</dt><dd class="col-sm-9" th:text="${solicitacao.unidade_nome}"></dd>
           <dt class="col-sm-3">Profissional</dt><dd class="col-sm-9" th:text="${solicitacao.profissional_solicitante_nome}"></dd>
           <dt class="col-sm-3">Procedimento</dt><dd class="col-sm-9" th:text="${(solicitacao.procedimento_codigo ?: '') + ' - ' + (solicitacao.procedimento_descricao ?: '')}"></dd>
           <dt class="col-sm-3">CID</dt><dd class="col-sm-9" th:text="${solicitacao.cid10_principal}"></dd>
-          <dt class="col-sm-3">Diagnostico</dt><dd class="col-sm-9" th:text="${solicitacao.descricao_diagnostico}"></dd>
-          <dt class="col-sm-3">Justificativa</dt><dd class="col-sm-9" th:text="${solicitacao.justificativa}"></dd>
+          <dt class="col-sm-3">Diagnóstico</dt><dd class="col-sm-9" th:text="${solicitacao.descricao_diagnostico}"></dd>
+          <dt class="col-sm-3">Justificativa</dt><dd class="col-sm-9" th:text="${solicitacao.justificativa ?: solicitacao.justificativa_clinica}"></dd>
+          <dt class="col-sm-3">Parecer</dt><dd class="col-sm-9" th:text="${solicitacao.parecer_regulacao ?: '-'}"></dd>
         </dl>
-        <div class="section-title" th:text="${solicitacao.tipo_solicitacao}">Complemento</div>
-        <dl class="row" th:if="${solicitacao.tipo_solicitacao == 'TFD'}">
-          <dt class="col-sm-3">Tratamentos previos</dt><dd class="col-sm-9" th:text="${complemento.tratamentos_previos}"></dd>
+      </section>
+
+      <section class="panel">
+        <div class="section-title-row">
+          <div>
+            <h2 class="section-title" th:text="${'Complemento ' + solicitacao.tipo_solicitacao}">Complemento</h2>
+            <p class="section-subtitle">Dados específicos conforme o tipo da solicitação.</p>
+          </div>
+        </div>
+        <dl class="row mb-0" th:if="${solicitacao.tipo_solicitacao == 'TFD'}">
+          <dt class="col-sm-3">Tratamentos prévios</dt><dd class="col-sm-9" th:text="${complemento.tratamentos_previos}"></dd>
           <dt class="col-sm-3">Exame indicado</dt><dd class="col-sm-9" th:text="${complemento.procedimento_exame_indicado}"></dd>
           <dt class="col-sm-3">Sinais/sintomas</dt><dd class="col-sm-9" th:text="${complemento.sinais_sintomas}"></dd>
-          <dt class="col-sm-3">Acompanhante</dt><dd class="col-sm-9" th:text="${complemento.acompanhante_nome}"></dd>
+          <dt class="col-sm-3">Acompanhante</dt><dd class="col-sm-9" th:text="${complemento.acompanhante_nome ?: 'Não informado'}"></dd>
           <dt class="col-sm-3">Destino</dt><dd class="col-sm-9" th:text="${complemento.destino}"></dd>
         </dl>
-        <dl class="row" th:if="${solicitacao.tipo_solicitacao == 'APAC'}">
-          <dt class="col-sm-3">Prontuario</dt><dd class="col-sm-9" th:text="${complemento.prontuario}"></dd>
+        <dl class="row mb-0" th:if="${solicitacao.tipo_solicitacao == 'APAC'}">
+          <dt class="col-sm-3">Prontuário</dt><dd class="col-sm-9" th:text="${complemento.prontuario}"></dd>
           <dt class="col-sm-3">Quantidade</dt><dd class="col-sm-9" th:text="${complemento.quantidade}"></dd>
-          <dt class="col-sm-3">Numero APAC</dt><dd class="col-sm-9" th:text="${complemento.numero_apac}"></dd>
+          <dt class="col-sm-3">Número APAC</dt><dd class="col-sm-9" th:text="${complemento.numero_apac}"></dd>
           <dt class="col-sm-3">Executante</dt><dd class="col-sm-9" th:text="${complemento.estabelecimento_executante}"></dd>
-          <dt class="col-sm-3">Observacoes</dt><dd class="col-sm-9" th:text="${complemento.observacoes}"></dd>
+          <dt class="col-sm-3">Observações</dt><dd class="col-sm-9" th:text="${complemento.observacoes}"></dd>
         </dl>
-      </div>
+      </section>
     </div>
+
     <div class="col-lg-4">
-      <div class="panel">
-        <h2 class="h5">Historico</h2>
-        <div class="border-start ps-3 mb-3" th:each="h:${historico}">
-          <strong th:text="${h.acao}"></strong>
-          <div class="small text-secondary" th:text="${h.criado_em + ' - ' + (h.usuario_nome ?: '')}"></div>
-          <div th:text="${(h.status_anterior ?: '') + ' -> ' + (h.status_novo ?: '')}"></div>
-          <div class="small" th:text="${h.observacao}"></div>
+      <section class="panel mb-3">
+        <h2 class="section-title">Histórico</h2>
+        <p class="section-subtitle">Movimentações registradas durante o fluxo da solicitação.</p>
+        <div th:if="${#lists.isEmpty(historico)}" class="text-muted">Nenhum histórico registrado.</div>
+        <div class="border-start ps-3" th:if="${!#lists.isEmpty(historico)}">
+          <div class="mb-3" th:each="h:${historico}">
+            <strong th:text="${h.acao ?: h.tipo ?: 'Movimentação'}"></strong>
+            <div class="small text-secondary" th:text="${h.criado_em + ' - ' + (h.usuario_nome ?: h.nome ?: '')}"></div>
+            <div th:if="${h.status_anterior != null or h.status_novo != null}" th:text="${(h.status_anterior ?: '-') + ' → ' + (h.status_novo ?: '-')}"></div>
+            <div class="small" th:text="${h.observacao}"></div>
+          </div>
         </div>
-      </div>
-      <div class="panel mt-3">
-        <h2 class="h5">Anexos</h2>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">Anexos</h2>
+        <p class="section-subtitle">Documentos vinculados à solicitação.</p>
         <form method="post" enctype="multipart/form-data" th:action="@{/solicitacoes/{id}/anexos(id=${solicitacao.id})}" class="mb-3">
-          <input class="form-control mb-2" name="tipo_documento" placeholder="Tipo do documento" required>
+          <select class="form-select mb-2" name="tipo_documento" required>
+            <option value="">Tipo do documento</option>
+            <option>Documento pessoal</option>
+            <option>Cartão SUS</option>
+            <option>Comprovante de residência</option>
+            <option>Laudo médico</option>
+            <option>Pedido médico</option>
+            <option>Exames</option>
+            <option>Autorização</option>
+            <option>Outros</option>
+          </select>
           <input class="form-control mb-2" type="file" name="arquivo" required>
-          <button class="btn btn-sm btn-success">Anexar</button>
+          <button class="btn btn-sm btn-success w-100">Anexar documento</button>
         </form>
+        <div th:if="${#lists.isEmpty(anexos)}" class="text-muted">Nenhum anexo cadastrado.</div>
         <div th:each="a:${anexos}" class="border-top py-2">
-          <a th:href="@{/anexos/{id}(id=${a.id})}" target="_blank" th:text="${a.nome_arquivo}"></a>
-          <div class="small text-secondary" th:text="${a.tipo_documento + ' - ' + a.criado_em}"></div>
+          <a th:href="@{/anexos/{id}(id=${a.id})}" target="_blank" th:text="${a.nome_arquivo ?: a.nome_original}"></a>
+          <div class="small text-secondary" th:text="${(a.tipo_documento ?: a.categoria ?: 'Documento') + ' - ' + a.criado_em}"></div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
