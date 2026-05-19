@@ -25,115 +25,42 @@
         </div>
       </section>
 
-      <script th:if="${ticketsAbertos > 0}">
-        window.addEventListener("load", function () {
-          try {
-            const ctx = new (
-              window.AudioContext || window.webkitAudioContext
-            )();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-
-            osc.frequency.value = 880;
-            gain.gain.value = 0.08;
-
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-
-            osc.start();
-
-            setTimeout(function () {
-              osc.stop();
-              ctx.close();
-            }, 450);
-          } catch (e) {
-            // Navegador/WebView pode bloquear áudio automático.
-          }
-        });
-      </script>
-
       <section class="panel mb-3">
-        <form
-          method="get"
-          th:action="@{/tickets}"
-          class="row g-3 align-items-end"
-        >
+        <form method="get" th:action="@{/tickets}" class="row g-3 align-items-end">
           <div class="col-md-2">
             <label class="form-label">Número</label>
-            <input
-              class="form-control"
-              name="numero"
-              th:value="${param.numero}"
-              placeholder="TCK-000001"
-            />
+            <input class="form-control" name="numero" th:value="${param.numero}" placeholder="TCK-000001" />
           </div>
 
           <div class="col-md-2">
             <label class="form-label">Status</label>
             <select class="form-select" name="status">
               <option value="">Todos</option>
-              <option
-                value="ABERTO"
-                th:selected="${param.status != null and param.status[0] == 'ABERTO'}"
-              >
-                Aberto
-              </option>
-              <option
-                value="EM_ANALISE"
-                th:selected="${param.status != null and param.status[0] == 'EM_ANALISE'}"
-              >
-                Em análise
-              </option>
-              <option
-                value="RESPONDIDO"
-                th:selected="${param.status != null and param.status[0] == 'RESPONDIDO'}"
-              >
-                Respondido
-              </option>
-              <option
-                value="FECHADO"
-                th:selected="${param.status != null and param.status[0] == 'FECHADO'}"
-              >
-                Fechado
-              </option>
+              <option value="ABERTO" th:selected="${param.status != null and param.status[0] == 'ABERTO'}">Aberto</option>
+              <option value="EM_ANALISE" th:selected="${param.status != null and param.status[0] == 'EM_ANALISE'}">Em análise</option>
+              <option value="RESPONDIDO" th:selected="${param.status != null and param.status[0] == 'RESPONDIDO'}">Respondido</option>
+              <option value="FECHADO" th:selected="${param.status != null and param.status[0] == 'FECHADO'}">Fechado</option>
             </select>
           </div>
 
           <div class="col-md-2">
             <label class="form-label">Usuário</label>
-            <input
-              class="form-control"
-              name="usuario"
-              th:value="${param.usuario}"
-              placeholder="Nome ou login"
-            />
+            <input class="form-control" name="usuario" th:value="${param.usuario}" placeholder="Nome ou login" />
           </div>
 
           <div class="col-md-2">
             <label class="form-label">Data inicial</label>
-            <input
-              class="form-control"
-              type="date"
-              name="dataInicio"
-              th:value="${param.dataInicio}"
-            />
+            <input class="form-control" type="date" name="dataInicio" th:value="${param.dataInicio}" />
           </div>
 
           <div class="col-md-2">
             <label class="form-label">Data final</label>
-            <input
-              class="form-control"
-              type="date"
-              name="dataFim"
-              th:value="${param.dataFim}"
-            />
+            <input class="form-control" type="date" name="dataFim" th:value="${param.dataFim}" />
           </div>
 
           <div class="col-md-2 d-flex gap-2">
             <button class="btn btn-success w-100" type="submit">Filtrar</button>
-            <a class="btn btn-outline-secondary" th:href="@{/tickets}"
-              >Limpar</a
-            >
+            <a class="btn btn-outline-secondary" th:href="@{/tickets}">Limpar</a>
           </div>
         </form>
       </section>
@@ -143,8 +70,7 @@
           <div>
             <h2 class="section-title">Lista de tickets</h2>
             <p class="section-subtitle">
-              Use os filtros para localizar tickets por número, status, usuário
-              ou período.
+              Use os filtros para localizar tickets por número, status, usuário ou período.
             </p>
           </div>
         </div>
@@ -154,113 +80,60 @@
             <thead>
               <tr>
                 <th>Número</th>
-                <th>Data</th>
                 <th>Usuário</th>
                 <th>Assunto</th>
-                <th>Mensagem</th>
+                <th>Prioridade</th>
                 <th>Anexos</th>
                 <th>Status</th>
-                <th>Responder</th>
+                <th>Ações</th>
               </tr>
             </thead>
 
             <tbody>
               <tr th:if="${#lists.isEmpty(tickets)}">
-                <td colspan="8" class="text-center text-muted py-4">
+                <td colspan="7" class="text-center text-muted py-4">
                   Nenhum ticket encontrado.
                 </td>
               </tr>
 
               <tr th:each="t : ${tickets}">
                 <td>
-                  <span
-                    class="ticket-number"
-                    th:text="${t.numero_ticket != null ? t.numero_ticket : 'TCK-' + #numbers.formatInteger(t.id, 6)}"
-                  >
-                    TCK-000001
-                  </span>
+                  <div class="fw-semibold" th:text="${t.numero_ticket != null ? t.numero_ticket : 'TCK-' + #numbers.formatInteger(t.id, 6)}">TCK-000001</div>
+                  <div class="small text-secondary" th:text="${t.criado_em}">--/--/----</div>
                 </td>
-
-                <td th:text="${t.criado_em}">--/--/----</td>
 
                 <td>
                   <span th:text="${t.username}">usuario</span>
-                  <div class="small text-secondary" th:text="${t.email}">
-                    email@exemplo.com
-                  </div>
-                </td>
-
-                <td th:text="${t.assunto}">Assunto</td>
-
-                <td>
-                  <div
-                    class="ticket-message-preview"
-                    th:if="${t.descricao_html != null}"
-                    th:utext="${t.descricao_html}"
-                  >
-                    Mensagem formatada
-                  </div>
-
-                  <div
-                    class="ticket-message-preview"
-                    th:if="${t.descricao_html == null}"
-                    th:text="${t.mensagem}"
-                  >
-                    Mensagem
-                  </div>
+                  <div class="small text-secondary" th:text="${t.email}">email@exemplo.com</div>
                 </td>
 
                 <td>
-                  <div th:if="${t.total_anexos == 0}">
-                    <span class="badge bg-secondary">Sem anexos</span>
-                  </div>
+                  <div class="fw-semibold" th:text="${t.assunto}">Assunto</div>
+                  <div class="small text-secondary" th:text="${t.categoria ?: 'Sem categoria'}">Sistema</div>
+                </td>
 
-                  <div th:if="${t.total_anexos > 0}">
-                    <span class="badge bg-success mb-2 d-inline-block">
-                      <span th:text="${t.total_anexos}">0</span> anexo(s)
-                    </span>
+                <td>
+                  <span class="badge bg-danger" th:if="${t.prioridade == 'URGENTE'}">URGENTE</span>
+                  <span class="badge bg-warning text-dark" th:if="${t.prioridade == 'ALTA'}">ALTA</span>
+                  <span class="badge bg-primary" th:if="${t.prioridade == null or t.prioridade == 'NORMAL'}">NORMAL</span>
+                </td>
 
-                    <div class="d-flex flex-column gap-1">
-                      <a
-                        th:each="a : ${t.anexos}"
-                        th:href="@{/tickets/anexos/{id}(id=${a.id})}"
-                        th:text="${a.nome_original}"
-                        target="_blank"
-                        class="small text-decoration-none"
-                      >
-                        anexo.pdf
-                      </a>
-                    </div>
-                  </div>
+                <td>
+                  <span class="badge bg-secondary" th:if="${t.total_anexos == 0}">Sem anexos</span>
+                  <span class="badge bg-success" th:if="${t.total_anexos > 0}">
+                    <span th:text="${t.total_anexos}">0</span> anexo(s)
+                  </span>
                 </td>
 
                 <td>
                   <span class="status-pill" th:text="${t.status}">ABERTO</span>
                 </td>
 
-                <td class="ticket-response-cell">
-                  <form
-                    th:if="${t.status == 'ABERTO'}"
-                    method="post"
-                    th:action="@{/tickets/{id}/responder(id=${t.id})}"
-                  >
-                    <textarea
-                      class="form-control form-control-sm mb-2"
-                      name="resposta"
-                      rows="3"
-                      placeholder="Digite a resposta ao usuário"
-                      required
-                    ></textarea>
-
-                    <button class="btn btn-sm btn-success">Resolver</button>
-                  </form>
-
-                  <div th:if="${t.status != 'ABERTO'}">
-                    <span class="small text-secondary d-block mb-1"
-                      >Resposta enviada:</span
-                    >
-                    <span th:text="${t.resposta}">Resposta</span>
-                  </div>
+                <td>
+                  <a class="btn btn-sm btn-outline-primary"
+                     th:href="@{/tickets/{id}(id=${t.id})}">
+                    Detalhes
+                  </a>
                 </td>
               </tr>
             </tbody>
