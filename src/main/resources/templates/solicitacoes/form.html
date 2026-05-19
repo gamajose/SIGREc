@@ -1,254 +1,354 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="~{layout/fragments :: head('Nova solicitacao')}"></head>
-    <body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<head th:replace="~{layout/fragments :: head('Nova solicitação')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
 <div th:replace="~{layout/fragments :: profileModal}"></div>
-        <main class="page">
-            <h1 class="h3" th:text="'Nova solicitacao ' + ${tipo}">Nova solicitacao</h1>
-            <form class="panel" method="post" th:action="@{/solicitacoes}">
-                <input type="hidden" name="tipo_solicitacao" th:value="${tipo}">
-                <div class="section-title">Dados principais</div>
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Paciente</label>
 
-                        <input type="hidden" name="paciente_id" id="paciente_id" required>
+<main class="page">
+    <div th:replace="~{layout/fragments :: alerts}"></div>
 
-                        <input class="form-control"
-                               type="text"
-                               id="paciente_busca"
-                               placeholder="Digite nome, CPF ou CNS do paciente"
-                               autocomplete="off">
+    <section class="page-hero mb-3">
+        <div>
+            <span class="eyebrow">Solicitações</span>
+            <h1 class="page-title mb-1" th:text="'Nova solicitação ' + ${tipo}">Nova solicitação</h1>
+            <p class="page-subtitle mb-0">
+                Preencha os dados em etapas, confira as informações e envie para análise da regulação.
+            </p>
+        </div>
+    </section>
 
-                        <div id="paciente_resultados"
-                             class="list-group mt-1"
-                             style="position: absolute; z-index: 1000; width: 48%; display: none;">
-                        </div>
-                    </div>
-                    <div class="col-md-6"><label class="form-label">Unidade solicitante</label><select class="form-select" name="unidade_solicitante_id" required><option value="">Selecione</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome + ' - CNES ' + (u.cnes ?: '')}"></option></select></div>
-                    <div class="col-md-6"><label class="form-label">Unidade autorizadora</label><select class="form-select" name="unidade_autorizadora_id"><option value="">Padrao do sistema</option><option th:each="u:${unidadesAutorizadoras}" th:value="${u.id}" th:text="${u.nome + ' - ' + u.tipo_unidade}"></option></select></div>
-                    <div class="col-md-6"><label class="form-label">Profissional solicitante</label><select class="form-select" name="profissional_solicitante_id"><option value="">Selecione</option><option th:each="p:${profissionais}" th:value="${p.id}" th:text="${p.nome}"></option></select></div>
-                    <div class="col-md-6" style="position: relative;">
-                        <label class="form-label">Procedimento principal</label>
+    <section class="panel mb-3">
+        <div class="progress" role="progressbar" aria-label="Progresso do formulário">
+            <div id="formProgress" class="progress-bar bg-success" style="width: 20%">Etapa 1 de 5</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3 small">
+            <span class="badge bg-success" data-step-label="1">1. Paciente</span>
+            <span class="badge bg-secondary" data-step-label="2">2. Unidade e profissional</span>
+            <span class="badge bg-secondary" data-step-label="3">3. Procedimento</span>
+            <span class="badge bg-secondary" data-step-label="4">4. Dados clínicos</span>
+            <span class="badge bg-secondary" data-step-label="5">5. Revisão</span>
+        </div>
+    </section>
 
-                        <input type="hidden" name="procedimento_codigo" id="procedimento_codigo">
+    <form class="panel" method="post" th:action="@{/solicitacoes}" id="solicitacaoForm">
+        <input type="hidden" name="tipo_solicitacao" th:value="${tipo}">
 
-                        <input class="form-control"
-                               type="text"
-                               id="procedimento_busca"
-                               placeholder="Digite código ou descrição do procedimento"
-                               autocomplete="off">
-
-                        <div id="procedimento_resultados"
-                             class="list-group mt-1"
-                             style="position: absolute; z-index: 1000; width: 100%; display: none;">
-                        </div>
-                    </div>
-                    <div class="col-md-2"><label class="form-label">CID principal</label><input class="form-control" name="cid10_principal"></div>
-                    <div class="col-md-2"><label class="form-label">CID secundario</label><input class="form-control" name="cid10_secundario"></div>
-                    <div class="col-md-3"><label class="form-label">Prioridade</label><select class="form-select" name="prioridade"><option>NORMAL</option><option>ALTA</option><option>URGENTE</option></select></div>
-                    <div class="col-md-12"><label class="form-label">Diagnostico</label><textarea class="form-control" name="descricao_diagnostico"></textarea></div>
-                    <div class="col-md-12"><label class="form-label">Justificativa</label><textarea class="form-control" name="justificativa"></textarea></div>
+        <section class="form-step" data-step="1">
+            <div class="section-title">1. Dados do paciente</div>
+            <div class="row g-3">
+                <div class="col-md-8 position-relative">
+                    <label class="form-label">Paciente <span class="text-danger">*</span></label>
+                    <input type="hidden" name="paciente_id" id="paciente_id" required>
+                    <input class="form-control review-field" type="text" id="paciente_busca" data-review="Paciente" placeholder="Digite nome, CPF ou CNS do paciente" autocomplete="off" required>
+                    <div id="paciente_resultados" class="list-group mt-1" style="position: absolute; z-index: 1000; width: 95%; display: none;"></div>
+                    <div class="form-text">Selecione um paciente da lista para vincular corretamente a solicitação.</div>
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label">Prioridade</label>
+                    <select class="form-select review-field" name="prioridade" data-review="Prioridade">
+                        <option>NORMAL</option>
+                        <option>ALTA</option>
+                        <option>URGENTE</option>
+                    </select>
+                </div>
+            </div>
+        </section>
 
-                <div th:if="${tipo == 'TFD'}">
-                    <div class="section-title">TFD</div>
-                    <div class="row g-2">
-                        <div class="col-md-12"><label class="form-label">Tratamentos previos</label><textarea class="form-control" name="tratamentos_previos"></textarea></div>
-                        <div class="col-md-12"><label class="form-label">Procedimento/exame indicado</label><textarea class="form-control" name="procedimento_exame_indicado"></textarea></div>
-                        <div class="col-md-12"><label class="form-label">Sinais e sintomas</label><textarea class="form-control" name="sinais_sintomas"></textarea></div>
-                        <div class="col-md-3 form-check mt-3"><input class="form-check-input" name="necessita_acompanhante" type="checkbox"> <label class="form-check-label">Necessita acompanhante</label></div>
-                        <div class="col-md-5"><input class="form-control" name="acompanhante_nome" placeholder="Nome do acompanhante"></div>
-                        <div class="col-md-2"><input class="form-control" type="date" name="acompanhante_data_nascimento"></div>
-                        <div class="col-md-2"><input class="form-control" name="acompanhante_cpf" placeholder="CPF"></div>
-                        <div class="col-md-3"><input class="form-control" name="acompanhante_telefone" placeholder="Telefone"></div>
-                        <div class="col-md-4"><input class="form-control" name="destino" placeholder="Destino"></div>
-                        <div class="col-md-12"><label class="form-label">Justificativa medica</label><textarea class="form-control" name="justificativa_medica"></textarea></div>
+        <section class="form-step d-none" data-step="2">
+            <div class="section-title">2. Unidade e profissional</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Unidade solicitante <span class="text-danger">*</span></label>
+                    <select class="form-select review-field" name="unidade_solicitante_id" data-review="Unidade solicitante" required>
+                        <option value="">Selecione</option>
+                        <option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome + ' - CNES ' + (u.cnes ?: '')}"></option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Unidade autorizadora</label>
+                    <select class="form-select review-field" name="unidade_autorizadora_id" data-review="Unidade autorizadora">
+                        <option value="">Padrão do sistema</option>
+                        <option th:each="u:${unidadesAutorizadoras}" th:value="${u.id}" th:text="${u.nome + ' - ' + u.tipo_unidade}"></option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Profissional solicitante</label>
+                    <select class="form-select review-field" name="profissional_solicitante_id" data-review="Profissional solicitante">
+                        <option value="">Selecione</option>
+                        <option th:each="p:${profissionais}" th:value="${p.id}" th:text="${p.nome}"></option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-step d-none" data-step="3">
+            <div class="section-title">3. Procedimento SIGTAP</div>
+            <div class="row g-3">
+                <div class="col-md-8 position-relative">
+                    <label class="form-label">Procedimento principal <span class="text-danger">*</span></label>
+                    <input type="hidden" name="procedimento_codigo" id="procedimento_codigo" required>
+                    <input class="form-control review-field" type="text" id="procedimento_busca" data-review="Procedimento" placeholder="Digite código ou descrição do procedimento" autocomplete="off" required>
+                    <div id="procedimento_resultados" class="list-group mt-1" style="position: absolute; z-index: 1000; width: 95%; display: none;"></div>
+                    <div id="procedimentoSelecionadoInfo" class="alert alert-success mt-2 d-none mb-0">
+                        Procedimento SIGTAP selecionado e vinculado à solicitação.
                     </div>
                 </div>
-
-                <div th:if="${tipo == 'APAC'}">
-                    <div class="section-title">APAC</div>
-                    <div class="row g-2">
-                        <div class="col-md-2"><input class="form-control" name="prontuario" placeholder="Prontuario"></div>
-                        <div class="col-md-2"><input class="form-control" name="raca_cor" placeholder="Raca/cor"></div>
-                        <div class="col-md-4"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
-                        <div class="col-md-2"><input class="form-control" name="ibge" placeholder="IBGE"></div>
-                        <div class="col-md-2"><input class="form-control" name="quantidade" type="number" min="1" value="1"></div>
-                        <div class="col-md-12"><textarea class="form-control" name="causas_associadas" placeholder="Causas associadas"></textarea></div>
-                        <div class="col-md-12"><textarea class="form-control" name="observacoes" placeholder="Observacoes"></textarea></div>
-                        <div class="col-md-3"><input class="form-control" type="date" name="data_solicitacao"></div>
-                        <div class="col-md-3"><input class="form-control" name="numero_apac" placeholder="Numero APAC"></div>
-                        <div class="col-md-3"><input class="form-control" type="date" name="validade_inicio"></div>
-                        <div class="col-md-3"><input class="form-control" type="date" name="validade_fim"></div>
-                        <div class="col-md-8"><input class="form-control" name="estabelecimento_executante" placeholder="Estabelecimento executante"></div>
-                        <div class="col-md-4"><input class="form-control" name="cnes_executante" placeholder="CNES executante"></div>
-                    </div>
+                <div class="col-md-2">
+                    <label class="form-label">CID principal</label>
+                    <input class="form-control review-field" name="cid10_principal" data-review="CID principal" placeholder="Ex: I10">
                 </div>
-                <div class="mt-4"><button class="btn btn-success">Enviar para regulacao</button></div>
-            </form>
-        </main>
-        <script>
-            const procedimentoBusca = document.getElementById("procedimento_busca");
-            const procedimentoCodigo = document.getElementById("procedimento_codigo");
-            const procedimentoResultados = document.getElementById("procedimento_resultados");
+                <div class="col-md-2">
+                    <label class="form-label">CID secundário</label>
+                    <input class="form-control review-field" name="cid10_secundario" data-review="CID secundário">
+                </div>
+            </div>
+        </section>
 
-            let procedimentoTimer = null;
+        <section class="form-step d-none" data-step="4">
+            <div class="section-title">4. Dados clínicos e específicos</div>
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label">Diagnóstico</label>
+                    <textarea class="form-control review-field" name="descricao_diagnostico" data-review="Diagnóstico" rows="3"></textarea>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Justificativa clínica</label>
+                    <textarea class="form-control review-field" name="justificativa" data-review="Justificativa clínica" rows="4"></textarea>
+                </div>
+            </div>
 
-            function limparProcedimentoSelecionado() {
-                procedimentoCodigo.value = "";
+            <div th:if="${tipo == 'TFD'}" class="mt-3">
+                <div class="section-title">Dados TFD</div>
+                <div class="row g-3">
+                    <div class="col-md-12"><label class="form-label">Tratamentos prévios</label><textarea class="form-control review-field" name="tratamentos_previos" data-review="Tratamentos prévios"></textarea></div>
+                    <div class="col-md-12"><label class="form-label">Procedimento/exame indicado</label><textarea class="form-control review-field" name="procedimento_exame_indicado" data-review="Procedimento/exame indicado"></textarea></div>
+                    <div class="col-md-12"><label class="form-label">Sinais e sintomas</label><textarea class="form-control review-field" name="sinais_sintomas" data-review="Sinais e sintomas"></textarea></div>
+                    <div class="col-md-3 form-check mt-4"><input class="form-check-input review-field" name="necessita_acompanhante" type="checkbox" data-review="Necessita acompanhante"> <label class="form-check-label">Necessita acompanhante</label></div>
+                    <div class="col-md-5"><label class="form-label">Nome do acompanhante</label><input class="form-control review-field" name="acompanhante_nome" data-review="Acompanhante"></div>
+                    <div class="col-md-2"><label class="form-label">Nascimento</label><input class="form-control review-field" type="date" name="acompanhante_data_nascimento" data-review="Nascimento acompanhante"></div>
+                    <div class="col-md-2"><label class="form-label">CPF</label><input class="form-control review-field" name="acompanhante_cpf" data-review="CPF acompanhante"></div>
+                    <div class="col-md-3"><label class="form-label">Telefone</label><input class="form-control review-field" name="acompanhante_telefone" data-review="Telefone acompanhante"></div>
+                    <div class="col-md-4"><label class="form-label">Destino</label><input class="form-control review-field" name="destino" data-review="Destino"></div>
+                    <div class="col-md-12"><label class="form-label">Justificativa médica</label><textarea class="form-control review-field" name="justificativa_medica" data-review="Justificativa médica"></textarea></div>
+                </div>
+            </div>
+
+            <div th:if="${tipo == 'APAC'}" class="mt-3">
+                <div class="section-title">Dados APAC</div>
+                <div class="row g-3">
+                    <div class="col-md-2"><label class="form-label">Prontuário</label><input class="form-control review-field" name="prontuario" data-review="Prontuário"></div>
+                    <div class="col-md-2"><label class="form-label">Raça/cor</label><input class="form-control review-field" name="raca_cor" data-review="Raça/cor"></div>
+                    <div class="col-md-4"><label class="form-label">Responsável</label><input class="form-control review-field" name="responsavel" data-review="Responsável"></div>
+                    <div class="col-md-2"><label class="form-label">IBGE</label><input class="form-control review-field" name="ibge" data-review="IBGE"></div>
+                    <div class="col-md-2"><label class="form-label">Quantidade</label><input class="form-control review-field" name="quantidade" type="number" min="1" value="1" data-review="Quantidade"></div>
+                    <div class="col-md-12"><label class="form-label">Causas associadas</label><textarea class="form-control review-field" name="causas_associadas" data-review="Causas associadas"></textarea></div>
+                    <div class="col-md-12"><label class="form-label">Observações</label><textarea class="form-control review-field" name="observacoes" data-review="Observações"></textarea></div>
+                    <div class="col-md-3"><label class="form-label">Data solicitação</label><input class="form-control review-field" type="date" name="data_solicitacao" data-review="Data solicitação"></div>
+                    <div class="col-md-3"><label class="form-label">Número APAC</label><input class="form-control review-field" name="numero_apac" data-review="Número APAC"></div>
+                    <div class="col-md-3"><label class="form-label">Validade início</label><input class="form-control review-field" type="date" name="validade_inicio" data-review="Validade início"></div>
+                    <div class="col-md-3"><label class="form-label">Validade fim</label><input class="form-control review-field" type="date" name="validade_fim" data-review="Validade fim"></div>
+                    <div class="col-md-8"><label class="form-label">Estabelecimento executante</label><input class="form-control review-field" name="estabelecimento_executante" data-review="Executante"></div>
+                    <div class="col-md-4"><label class="form-label">CNES executante</label><input class="form-control review-field" name="cnes_executante" data-review="CNES executante"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-step d-none" data-step="5">
+            <div class="section-title">5. Revisão antes do envio</div>
+            <div class="alert alert-info">
+                Confira os principais dados antes de enviar a solicitação para análise da regulação.
+            </div>
+            <div id="resumoSolicitacao" class="row g-2"></div>
+        </section>
+
+        <div class="d-flex justify-content-between gap-2 mt-4">
+            <button type="button" class="btn btn-outline-secondary" id="btnAnterior" disabled>Anterior</button>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success" id="btnProximo">Próximo</button>
+                <button class="btn btn-primary d-none" id="btnEnviar">Enviar para regulação</button>
+            </div>
+        </div>
+    </form>
+</main>
+
+<script>
+let etapaAtual = 1;
+const totalEtapas = 5;
+const form = document.getElementById("solicitacaoForm");
+const btnAnterior = document.getElementById("btnAnterior");
+const btnProximo = document.getElementById("btnProximo");
+const btnEnviar = document.getElementById("btnEnviar");
+const progress = document.getElementById("formProgress");
+
+function camposDaEtapa(etapa) {
+    return Array.from(document.querySelectorAll(`.form-step[data-step="${etapa}"] [required]`));
+}
+
+function validarEtapa(etapa) {
+    let valido = true;
+    camposDaEtapa(etapa).forEach(campo => {
+        if (!campo.value || campo.value.trim() === "") {
+            campo.classList.add("is-invalid");
+            valido = false;
+        } else {
+            campo.classList.remove("is-invalid");
+        }
+    });
+    return valido;
+}
+
+function atualizarResumo() {
+    const resumo = document.getElementById("resumoSolicitacao");
+    resumo.innerHTML = "";
+    document.querySelectorAll(".review-field").forEach(campo => {
+        let valor = campo.type === "checkbox" ? (campo.checked ? "Sim" : "Não") : campo.value;
+        if (!valor || valor.trim() === "") return;
+        const label = campo.dataset.review || campo.name;
+        const card = document.createElement("div");
+        card.className = "col-md-6";
+        card.innerHTML = `<div class="alert alert-light border h-100 mb-0"><strong>${label}</strong><br><span>${valor}</span></div>`;
+        resumo.appendChild(card);
+    });
+}
+
+function mostrarEtapa(etapa) {
+    document.querySelectorAll(".form-step").forEach(secao => secao.classList.add("d-none"));
+    document.querySelector(`.form-step[data-step="${etapa}"]`).classList.remove("d-none");
+    btnAnterior.disabled = etapa === 1;
+    btnProximo.classList.toggle("d-none", etapa === totalEtapas);
+    btnEnviar.classList.toggle("d-none", etapa !== totalEtapas);
+    progress.style.width = ((etapa / totalEtapas) * 100) + "%";
+    progress.textContent = `Etapa ${etapa} de ${totalEtapas}`;
+    document.querySelectorAll("[data-step-label]").forEach(label => {
+        label.className = "badge " + (Number(label.dataset.stepLabel) === etapa ? "bg-success" : "bg-secondary");
+    });
+    if (etapa === totalEtapas) atualizarResumo();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+btnProximo.addEventListener("click", function () {
+    if (!validarEtapa(etapaAtual)) return;
+    etapaAtual++;
+    mostrarEtapa(etapaAtual);
+});
+
+btnAnterior.addEventListener("click", function () {
+    etapaAtual--;
+    mostrarEtapa(etapaAtual);
+});
+
+form.addEventListener("submit", function (event) {
+    for (let i = 1; i < totalEtapas; i++) {
+        if (!validarEtapa(i)) {
+            event.preventDefault();
+            etapaAtual = i;
+            mostrarEtapa(etapaAtual);
+            return;
+        }
+    }
+});
+</script>
+
+<script>
+const procedimentoBusca = document.getElementById("procedimento_busca");
+const procedimentoCodigo = document.getElementById("procedimento_codigo");
+const procedimentoResultados = document.getElementById("procedimento_resultados");
+const procedimentoSelecionadoInfo = document.getElementById("procedimentoSelecionadoInfo");
+let procedimentoTimer = null;
+
+function limparProcedimentoSelecionado() { procedimentoCodigo.value = ""; procedimentoSelecionadoInfo.classList.add("d-none"); }
+function esconderResultadosProcedimento() { procedimentoResultados.style.display = "none"; procedimentoResultados.innerHTML = ""; }
+function buscarProcedimentos() {
+    const q = procedimentoBusca.value.trim();
+    limparProcedimentoSelecionado();
+    if (q.length < 2) { esconderResultadosProcedimento(); return; }
+    fetch("/api/procedimentos?q=" + encodeURIComponent(q))
+        .then(response => response.json())
+        .then(procedimentos => {
+            procedimentoResultados.innerHTML = "";
+            if (!procedimentos || procedimentos.length === 0) {
+                procedimentoResultados.innerHTML = '<div class="list-group-item text-muted">Nenhum procedimento encontrado</div>';
+                procedimentoResultados.style.display = "block";
+                return;
             }
-
-            function esconderResultadosProcedimento() {
-                procedimentoResultados.style.display = "none";
-                procedimentoResultados.innerHTML = "";
-            }
-
-            function buscarProcedimentos() {
-                const q = procedimentoBusca.value.trim();
-
-                limparProcedimentoSelecionado();
-
-                if (q.length < 2) {
+            procedimentos.forEach(p => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.className = "list-group-item list-group-item-action";
+                const codigo = p.codigo || "";
+                const descricao = p.descricao || "";
+                const valor = p.valor != null ? p.valor : "";
+                const origem = p.origem || "";
+                item.textContent = codigo + " - " + descricao + " | Valor: " + valor + " | " + origem;
+                item.addEventListener("click", function () {
+                    procedimentoCodigo.value = codigo;
+                    procedimentoBusca.value = codigo + " - " + descricao;
+                    procedimentoSelecionadoInfo.classList.remove("d-none");
                     esconderResultadosProcedimento();
-                    return;
-                }
-
-                fetch("/api/procedimentos?q=" + encodeURIComponent(q))
-                        .then(response => response.json())
-                        .then(procedimentos => {
-                            procedimentoResultados.innerHTML = "";
-
-                            if (!procedimentos || procedimentos.length === 0) {
-                                procedimentoResultados.innerHTML =
-                                        '<div class="list-group-item text-muted">Nenhum procedimento encontrado</div>';
-                                procedimentoResultados.style.display = "block";
-                                return;
-                            }
-
-                            procedimentos.forEach(p => {
-                                const item = document.createElement("button");
-                                item.type = "button";
-                                item.className = "list-group-item list-group-item-action";
-
-                                const codigo = p.codigo || "";
-                                const descricao = p.descricao || "";
-                                const valor = p.valor != null ? p.valor : "";
-                                const origem = p.origem || "";
-
-                                item.textContent = codigo + " - " + descricao + " | Valor: " + valor + " | " + origem;
-
-                                item.addEventListener("click", function () {
-                                    procedimentoCodigo.value = codigo;
-                                    procedimentoBusca.value = codigo + " - " + descricao;
-                                    esconderResultadosProcedimento();
-                                });
-
-                                procedimentoResultados.appendChild(item);
-                            });
-
-                            procedimentoResultados.style.display = "block";
-                        })
-                        .catch(() => {
-                            procedimentoResultados.innerHTML =
-                                    '<div class="list-group-item text-danger">Erro ao buscar procedimentos</div>';
-                            procedimentoResultados.style.display = "block";
-                        });
-            }
-
-            procedimentoBusca.addEventListener("input", function () {
-                clearTimeout(procedimentoTimer);
-                procedimentoTimer = setTimeout(buscarProcedimentos, 300);
+                });
+                procedimentoResultados.appendChild(item);
             });
+            procedimentoResultados.style.display = "block";
+        })
+        .catch(() => {
+            procedimentoResultados.innerHTML = '<div class="list-group-item text-danger">Erro ao buscar procedimentos</div>';
+            procedimentoResultados.style.display = "block";
+        });
+}
+procedimentoBusca.addEventListener("input", function () { clearTimeout(procedimentoTimer); procedimentoTimer = setTimeout(buscarProcedimentos, 300); });
+</script>
 
-            document.addEventListener("click", function (event) {
-                if (!procedimentoBusca.contains(event.target) && !procedimentoResultados.contains(event.target)) {
-                    esconderResultadosProcedimento();
-                }
-            });
-        </script>
-        
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        
-        <script>
-            const pacienteBusca = document.getElementById("paciente_busca");
-            const pacienteId = document.getElementById("paciente_id");
-            const pacienteResultados = document.getElementById("paciente_resultados");
-
-            let pacienteTimer = null;
-
-            function limparPacienteSelecionado() {
-                pacienteId.value = "";
+<script>
+const pacienteBusca = document.getElementById("paciente_busca");
+const pacienteId = document.getElementById("paciente_id");
+const pacienteResultados = document.getElementById("paciente_resultados");
+let pacienteTimer = null;
+function limparPacienteSelecionado() { pacienteId.value = ""; }
+function esconderResultadosPaciente() { pacienteResultados.style.display = "none"; pacienteResultados.innerHTML = ""; }
+function buscarPacientes() {
+    const q = pacienteBusca.value.trim();
+    limparPacienteSelecionado();
+    if (q.length < 2) { esconderResultadosPaciente(); return; }
+    fetch("/api/pacientes?q=" + encodeURIComponent(q))
+        .then(response => response.json())
+        .then(pacientes => {
+            pacienteResultados.innerHTML = "";
+            if (!pacientes || pacientes.length === 0) {
+                pacienteResultados.innerHTML = '<div class="list-group-item text-muted">Nenhum paciente encontrado</div>';
+                pacienteResultados.style.display = "block";
+                return;
             }
-
-            function esconderResultadosPaciente() {
-                pacienteResultados.style.display = "none";
-                pacienteResultados.innerHTML = "";
-            }
-
-            function buscarPacientes() {
-                const q = pacienteBusca.value.trim();
-
-                limparPacienteSelecionado();
-
-                if (q.length < 2) {
+            pacientes.forEach(p => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.className = "list-group-item list-group-item-action";
+                const nome = p.nome || "";
+                const cpf = p.cpf || "";
+                const cns = p.cns || "";
+                item.textContent = nome + " | CPF: " + cpf + " | CNS: " + cns;
+                item.addEventListener("click", function () {
+                    pacienteId.value = p.id;
+                    pacienteBusca.value = item.textContent;
                     esconderResultadosPaciente();
-                    return;
-                }
-
-                fetch("/api/pacientes?q=" + encodeURIComponent(q))
-                        .then(response => response.json())
-                        .then(pacientes => {
-                            pacienteResultados.innerHTML = "";
-
-                            if (!pacientes || pacientes.length === 0) {
-                                pacienteResultados.innerHTML =
-                                        '<div class="list-group-item text-muted">Nenhum paciente encontrado</div>';
-                                pacienteResultados.style.display = "block";
-                                return;
-                            }
-
-                            pacientes.forEach(p => {
-                                const item = document.createElement("button");
-                                item.type = "button";
-                                item.className = "list-group-item list-group-item-action";
-
-                                const nome = p.nome || "";
-                                const cpf = p.cpf || "";
-                                const cns = p.cns || "";
-
-                                item.textContent = nome + " | CPF: " + cpf + " | CNS: " + cns;
-
-                                item.addEventListener("click", function () {
-                                    pacienteId.value = p.id;
-                                    pacienteBusca.value = item.textContent;
-                                    esconderResultadosPaciente();
-                                });
-
-                                pacienteResultados.appendChild(item);
-                            });
-
-                            pacienteResultados.style.display = "block";
-                        })
-                        .catch(() => {
-                            pacienteResultados.innerHTML =
-                                    '<div class="list-group-item text-danger">Erro ao buscar pacientes</div>';
-                            pacienteResultados.style.display = "block";
-                        });
-            }
-
-            pacienteBusca.addEventListener("input", function () {
-                clearTimeout(pacienteTimer);
-                pacienteTimer = setTimeout(buscarPacientes, 300);
+                });
+                pacienteResultados.appendChild(item);
             });
+            pacienteResultados.style.display = "block";
+        })
+        .catch(() => {
+            pacienteResultados.innerHTML = '<div class="list-group-item text-danger">Erro ao buscar pacientes</div>';
+            pacienteResultados.style.display = "block";
+        });
+}
+pacienteBusca.addEventListener("input", function () { clearTimeout(pacienteTimer); pacienteTimer = setTimeout(buscarPacientes, 300); });
 
-            document.addEventListener("click", function (event) {
-                if (!pacienteBusca.contains(event.target) && !pacienteResultados.contains(event.target)) {
-                    esconderResultadosPaciente();
-                }
-            });
-        </script>
-    </body>
+document.addEventListener("click", function (event) {
+    if (!procedimentoBusca.contains(event.target) && !procedimentoResultados.contains(event.target)) esconderResultadosProcedimento();
+    if (!pacienteBusca.contains(event.target) && !pacienteResultados.contains(event.target)) esconderResultadosPaciente();
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
-
-
