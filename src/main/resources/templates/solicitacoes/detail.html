@@ -50,7 +50,7 @@
       <div class="col-md-4">
         <div class="alert alert-light border h-100 mb-0">
           <strong>Ação necessária</strong><br>
-          <span th:if="${solicitacao.status == 'PENDENTE_DOCUMENTACAO'}">Anexe ou corrija os documentos solicitados pela regulação.</span>
+          <span th:if="${solicitacao.status == 'PENDENTE_DOCUMENTACAO'}">Verifique a orientação da regulação e envie a documentação solicitada conforme fluxo indicado.</span>
           <span th:if="${solicitacao.status != 'PENDENTE_DOCUMENTACAO'}">Nenhuma ação pendente no momento.</span>
         </div>
       </div>
@@ -65,7 +65,7 @@
 
   <div class="row g-3 mb-3">
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div><span class="badge bg-danger" th:if="${solicitacao.prioridade == 'URGENTE'}">URGENTE</span><span class="badge bg-warning text-dark" th:if="${solicitacao.prioridade == 'ALTA'}">ALTA</span><span class="badge bg-primary" th:if="${solicitacao.prioridade == null or solicitacao.prioridade == 'NORMAL'}">NORMAL</span></div></div></div>
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Entrada</span><div class="h6 mb-0" th:text="${solicitacao.data_entrada ?: solicitacao.criado_em}">Data</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Entrada</span><div class="h6 mb-0" th:text="${#temporals.format(solicitacao.data_entrada ?: solicitacao.criado_em, 'dd/MM/yyyy HH:mm:ss')}">Data</div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Procedimento</span><div class="h6 mb-0" th:text="${solicitacao.procedimento_codigo ?: '-'}">Código</div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Tipo</span><div class="h6 mb-0" th:text="${solicitacao.tipo_solicitacao}">TFD</div></div></div>
   </div>
@@ -121,7 +121,7 @@
         <div class="border-start ps-3" th:if="${!#lists.isEmpty(historico)}">
           <div class="mb-3" th:each="h:${historico}">
             <strong th:text="${h.acao ?: h.tipo ?: 'Movimentação'}"></strong>
-            <div class="small text-secondary" th:text="${h.criado_em + ' - ' + (h.usuario_nome ?: h.nome ?: '')}"></div>
+            <div class="small text-secondary" th:text="${#temporals.format(h.criado_em, 'dd/MM/yyyy HH:mm:ss') + ' - ' + (h.usuario_nome ?: h.nome ?: '')}"></div>
             <div th:if="${h.status_anterior != null or h.status_novo != null}" th:text="${(h.status_anterior ?: '-') + ' → ' + (h.status_novo ?: '-')}"></div>
             <div class="small" th:text="${h.observacao}"></div>
           </div>
@@ -129,20 +129,12 @@
       </section>
 
       <section class="panel">
-        <h2 class="section-title">Anexos</h2>
-        <p class="section-subtitle">Documentos vinculados à solicitação.</p>
-        <form method="post" enctype="multipart/form-data" th:action="@{/solicitacoes/{id}/anexos(id=${solicitacao.id})}" class="mb-3">
-          <select class="form-select mb-2" name="tipo_documento" required>
-            <option value="">Tipo do documento</option>
-            <option>Documento pessoal</option><option>Cartão SUS</option><option>Comprovante de residência</option><option>Laudo médico</option><option>Pedido médico</option><option>Exames</option><option>Autorização</option><option>Outros</option>
-          </select>
-          <input class="form-control mb-2" type="file" name="arquivo" required>
-          <button class="btn btn-sm btn-success w-100">Anexar documento</button>
-        </form>
+        <h2 class="section-title">Documentos enviados</h2>
+        <p class="section-subtitle">Documentos vinculados durante o envio ou tratativa da solicitação.</p>
         <div th:if="${#lists.isEmpty(anexos)}" class="text-muted">Nenhum anexo cadastrado.</div>
         <div th:each="a:${anexos}" class="border-top py-2">
           <a th:href="@{/anexos/{id}(id=${a.id})}" target="_blank" th:text="${a.nome_arquivo ?: a.nome_original}"></a>
-          <div class="small text-secondary" th:text="${(a.tipo_documento ?: a.categoria ?: 'Documento') + ' - ' + a.criado_em}"></div>
+          <div class="small text-secondary" th:text="${(a.tipo_documento ?: a.categoria ?: 'Documento') + ' - ' + #temporals.format(a.criado_em, 'dd/MM/yyyy HH:mm:ss')}"></div>
         </div>
       </section>
     </div>
