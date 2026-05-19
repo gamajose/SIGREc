@@ -5,5 +5,5 @@ ALTER TABLE solicitacao_historico
     ADD COLUMN IF NOT EXISTS acao VARCHAR(40);
 
 UPDATE solicitacao_historico
-SET acao = tipo
+SET acao = 'MOVIMENTACAO'
 WHERE acao IS NULL;
