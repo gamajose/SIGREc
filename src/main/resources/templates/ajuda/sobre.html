@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{layout/fragments :: head('Sobre o SIGREc')}"></head>
+  <body>
+    <nav th:replace="~{layout/fragments :: nav}"></nav>
+    <div th:replace="~{layout/fragments :: profileModal}"></div>
+
+    <main class="page">
+      <section class="page-hero mb-3">
+        <div>
+          <span class="eyebrow">Sistema institucional</span>
+          <h1 class="page-title mb-1">Sobre o SIGREc</h1>
+          <p class="page-subtitle mb-0">
+            Sistema Integrado de Gestão da Regulação para processos TFD/APAC.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel mb-3">
+        <h2 class="section-title">Objetivo do sistema</h2>
+        <p>
+          O SIGREc foi desenvolvido para auxiliar no gerenciamento de solicitações, regulação, acompanhamento e controle administrativo de processos relacionados ao Tratamento Fora do Domicílio (TFD) e APAC.
+        </p>
+      </section>
+
+      <section class="panel mb-3">
+        <h2 class="section-title">Principais recursos</h2>
+        <ul class="mb-0">
+          <li>Gestão de solicitações e regulação.</li>
+          <li>Consulta de procedimentos SIGTAP.</li>
+          <li>Controle de pacientes, profissionais e unidades.</li>
+          <li>Histórico operacional e notificações.</li>
+          <li>Central de suporte interno.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">Versão do sistema</h2>
+        <p class="mb-0">
+          SIGREc TFD/APAC — versão em desenvolvimento contínuo.
+        </p>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
