@@ -1,6 +1,7 @@
 package br.gov.sigrec.tfdapac.controller;
 
 import br.gov.sigrec.tfdapac.service.CurrentUserService;
+import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -8,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class NotificacaoController {
@@ -33,6 +35,20 @@ public class NotificacaoController {
                 """, usuarioId));
 
         return "notificacoes/list";
+    }
+
+    @GetMapping("/api/notificacoes/contador")
+    @ResponseBody
+    public Map<String, Object> contador(Authentication auth) {
+        Long usuarioId = currentUserService.id(auth);
+        Integer total = jdbcTemplate.queryForObject("""
+                select count(*)
+                from regulacao_tfd.notificacoes
+                where usuario_id = ?
+                  and lida = false
+                """, Integer.class, usuarioId);
+
+        return Map.of("naoLidas", total == null ? 0 : total);
     }
 
     @PostMapping("/notificacoes/{id}/ler")
