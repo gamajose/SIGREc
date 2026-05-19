@@ -126,7 +126,7 @@
                     <div class="col-md-12"><label class="form-label">Sinais e sintomas</label><textarea class="form-control review-field" name="sinais_sintomas" data-review="Sinais e sintomas"></textarea></div>
                     <div class="col-md-3 form-check mt-4"><input class="form-check-input review-field" name="necessita_acompanhante" type="checkbox" data-review="Necessita acompanhante"> <label class="form-check-label">Necessita acompanhante</label></div>
                     <div class="col-md-5"><label class="form-label">Nome do acompanhante</label><input class="form-control review-field" name="acompanhante_nome" data-review="Acompanhante"></div>
-                    <div class="col-md-2"><label class="form-label">Nascimento</label><input class="form-control review-field" type="date" name="acompanhante_data_nascimento" data-review="Nascimento acompanhante"></div>
+                    <div class="col-md-2"><label class="form-label">Nascimento</label><input class="form-control review-field sigrec-date" type="date" name="acompanhante_data_nascimento" data-review="Nascimento acompanhante"></div>
                     <div class="col-md-2"><label class="form-label">CPF</label><input class="form-control review-field" name="acompanhante_cpf" data-review="CPF acompanhante"></div>
                     <div class="col-md-3"><label class="form-label">Telefone</label><input class="form-control review-field" name="acompanhante_telefone" data-review="Telefone acompanhante"></div>
                     <div class="col-md-4"><label class="form-label">Destino</label><input class="form-control review-field" name="destino" data-review="Destino"></div>
@@ -144,10 +144,10 @@
                     <div class="col-md-2"><label class="form-label">Quantidade</label><input class="form-control review-field" name="quantidade" type="number" min="1" value="1" data-review="Quantidade"></div>
                     <div class="col-md-12"><label class="form-label">Causas associadas</label><textarea class="form-control review-field" name="causas_associadas" data-review="Causas associadas"></textarea></div>
                     <div class="col-md-12"><label class="form-label">Observações</label><textarea class="form-control review-field" name="observacoes" data-review="Observações"></textarea></div>
-                    <div class="col-md-3"><label class="form-label">Data solicitação</label><input class="form-control review-field" type="date" name="data_solicitacao" data-review="Data solicitação"></div>
+                    <div class="col-md-3"><label class="form-label">Data solicitação</label><input class="form-control review-field sigrec-date" type="date" name="data_solicitacao" data-review="Data solicitação"></div>
                     <div class="col-md-3"><label class="form-label">Número APAC</label><input class="form-control review-field" name="numero_apac" data-review="Número APAC"></div>
-                    <div class="col-md-3"><label class="form-label">Validade início</label><input class="form-control review-field" type="date" name="validade_inicio" data-review="Validade início"></div>
-                    <div class="col-md-3"><label class="form-label">Validade fim</label><input class="form-control review-field" type="date" name="validade_fim" data-review="Validade fim"></div>
+                    <div class="col-md-3"><label class="form-label">Validade início</label><input class="form-control review-field sigrec-date" type="date" name="validade_inicio" data-review="Validade início"></div>
+                    <div class="col-md-3"><label class="form-label">Validade fim</label><input class="form-control review-field sigrec-date" type="date" name="validade_fim" data-review="Validade fim"></div>
                     <div class="col-md-8"><label class="form-label">Estabelecimento executante</label><input class="form-control review-field" name="estabelecimento_executante" data-review="Executante"></div>
                     <div class="col-md-4"><label class="form-label">CNES executante</label><input class="form-control review-field" name="cnes_executante" data-review="CNES executante"></div>
                 </div>
@@ -182,14 +182,43 @@ const btnEnviar = document.getElementById("btnEnviar");
 const progress = document.getElementById("formProgress");
 
 function camposDaEtapa(etapa) {
-    return Array.from(document.querySelectorAll(`.form-step[data-step="${etapa}"] [required]`));
+    return Array.from(document.querySelectorAll(`.form-step[data-step="${etapa}"] [required], .form-step[data-step="${etapa}"] .sigrec-date`));
+}
+
+function mensagemInvalida(campo, texto) {
+    let feedback = campo.parentElement.querySelector(".invalid-feedback");
+    if (!feedback) {
+        feedback = document.createElement("div");
+        feedback.className = "invalid-feedback";
+        campo.parentElement.appendChild(feedback);
+    }
+    feedback.textContent = texto;
+}
+
+function dataValida(campo) {
+    if (campo.type !== "date" || !campo.value) {
+        return true;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(campo.value)) {
+        mensagemInvalida(campo, "Data inválida. Use o seletor de data do campo.");
+        return false;
+    }
+    const data = new Date(campo.value + "T00:00:00");
+    if (Number.isNaN(data.getTime())) {
+        mensagemInvalida(campo, "Data inválida. Verifique o valor informado.");
+        return false;
+    }
+    return true;
 }
 
 function validarEtapa(etapa) {
     let valido = true;
     camposDaEtapa(etapa).forEach(campo => {
-        if (!campo.value || campo.value.trim() === "") {
+        const obrigatorioVazio = campo.hasAttribute("required") && (!campo.value || campo.value.trim() === "");
+        const dataOk = dataValida(campo);
+        if (obrigatorioVazio || !dataOk) {
             campo.classList.add("is-invalid");
+            if (obrigatorioVazio) mensagemInvalida(campo, "Campo obrigatório.");
             valido = false;
         } else {
             campo.classList.remove("is-invalid");
