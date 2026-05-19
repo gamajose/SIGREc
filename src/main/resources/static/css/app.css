@@ -84,7 +84,6 @@ textarea {
 .col-md-3 {
 
 }
-
 .sigrec-shell {
   display: block;
   background: #ffffff;
@@ -129,11 +128,19 @@ textarea {
   padding-bottom: 10px;
 }
 
+.sigrec-nav-collapse {
+  gap: 12px;
+}
+
 .sigrec-nav-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.sigrec-nav-buttons .nav-item {
+  margin: 0;
 }
 
 .sigrec-nav-buttons .nav-button {
@@ -169,9 +176,196 @@ textarea {
   min-width: 36px;
 }
 
+.profile-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 3px 10px 3px 4px;
+  min-height: 34px;
+}
+
+.profile-summary:hover,
+.profile-summary:focus {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.profile-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.profile-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
 .sigrec-logout-button {
   min-height: 34px;
   padding-left: 12px;
   padding-right: 12px;
   font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .desktop-menubar {
+    overflow-x: auto;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .sigrec-nav-buttons {
+    align-items: stretch;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .sigrec-nav-buttons .nav-button {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .sigrec-user-actions {
+    justify-content: flex-start;
+    margin-left: 0;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+}
+
+.support-page {
+  padding-top: 26px;
+  padding-bottom: 36px;
+}
+
+.support-form-panel {
+  padding: 20px;
+}
+
+.support-upload {
+  padding: 14px;
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.ticket-editor {
+  background: #ffffff;
+}
+
+.ticket-editor .ql-container,
+.ql-container {
+  min-height: 220px;
+  font-size: 0.95rem;
+  border-radius: 0 0 12px 12px;
+}
+
+.ql-toolbar.ql-snow {
+  border-radius: 12px 12px 0 0;
+  background: #f8fafc;
+}
+
+.ticket-number {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.tickets-page {
+  padding-top: 26px;
+  padding-bottom: 36px;
+}
+
+.ticket-number {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ticket-message-preview {
+  max-width: 360px;
+  max-height: 120px;
+  overflow: auto;
+  color: #334155;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.ticket-message-preview p {
+  margin-bottom: 0.35rem;
+}
+
+.ticket-message-preview img {
+  max-width: 180px;
+  max-height: 120px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.ticket-response-cell {
+  min-width: 240px;
+}
+
+.table-panel {
+  padding: 18px;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: 1.12rem;
+  font-weight: 800;
+  margin: 0;
+  color: #0f172a;
+}
+
+.section-subtitle {
+  margin: 3px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.78rem;
+  font-weight: 700;
 }

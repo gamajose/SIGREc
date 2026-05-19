@@ -2,6 +2,7 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
     <head th:replace="~{layout/fragments :: head('Nova solicitacao')}"></head>
     <body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<div th:replace="~{layout/fragments :: profileModal}"></div>
         <main class="page">
             <h1 class="h3" th:text="'Nova solicitacao ' + ${tipo}">Nova solicitacao</h1>
             <form class="panel" method="post" th:action="@{/solicitacoes}">
@@ -249,4 +250,5 @@
         </script>
     </body>
 </html>
+
 

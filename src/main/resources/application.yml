@@ -21,6 +21,8 @@ spring:
           auth: true
           starttls:
             enable: true
+  uploads:
+    tickets-dir: uploads/tickets
 server:
   servlet:
     session:
