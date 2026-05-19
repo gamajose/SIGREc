@@ -128,7 +128,7 @@
                     <div class="col-md-5"><label class="form-label">Nome do acompanhante</label><input class="form-control review-field" name="acompanhante_nome" data-review="Acompanhante"></div>
                     <div class="col-md-2"><label class="form-label">Nascimento</label><input class="form-control review-field sigrec-date-br" type="text" name="acompanhante_data_nascimento" data-review="Nascimento acompanhante" placeholder="__/__/____" maxlength="10" inputmode="numeric" autocomplete="off"></div>
                     <div class="col-md-2"><label class="form-label">CPF</label><input class="form-control review-field sigrec-cpf" name="acompanhante_cpf" data-review="CPF acompanhante" placeholder="___.___.___-__" maxlength="14" inputmode="numeric" autocomplete="off"></div>
-                    <div class="col-md-3"><label class="form-label">Telefone</label><input class="form-control review-field" name="acompanhante_telefone" data-review="Telefone acompanhante"></div>
+                    <div class="col-md-3"><label class="form-label">Telefone</label><input class="form-control review-field sigrec-phone" name="acompanhante_telefone" data-review="Telefone acompanhante" placeholder="(__) _ ____-____" maxlength="16" inputmode="numeric" autocomplete="off"></div>
                     <div class="col-md-4"><label class="form-label">Destino</label><input class="form-control review-field" name="destino" data-review="Destino"></div>
                     <div class="col-md-12"><label class="form-label">Justificativa médica</label><textarea class="form-control review-field" name="justificativa_medica" data-review="Justificativa médica"></textarea></div>
                 </div>
@@ -182,12 +182,10 @@ const btnEnviar = document.getElementById("btnEnviar");
 const progress = document.getElementById("formProgress");
 
 function camposDaEtapa(etapa) {
-    return Array.from(document.querySelectorAll(`.form-step[data-step="${etapa}"] [required], .form-step[data-step="${etapa}"] .sigrec-date-br, .form-step[data-step="${etapa}"] .sigrec-cpf`));
+    return Array.from(document.querySelectorAll(`.form-step[data-step="${etapa}"] [required], .form-step[data-step="${etapa}"] .sigrec-date-br, .form-step[data-step="${etapa}"] .sigrec-cpf, .form-step[data-step="${etapa}"] .sigrec-phone`));
 }
 
-function somenteNumeros(valor) {
-    return (valor || "").replace(/\D/g, "");
-}
+function somenteNumeros(valor) { return (valor || "").replace(/\D/g, ""); }
 
 function mensagemInvalida(campo, texto) {
     let feedback = campo.parentElement.querySelector(".invalid-feedback");
@@ -209,13 +207,8 @@ function formatarDataBr(valor) {
 function dataBrValida(campo) {
     if (!campo.value) return true;
     const m = campo.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (!m) {
-        mensagemInvalida(campo, "Data inválida. Use o formato dd/mm/aaaa.");
-        return false;
-    }
-    const dia = Number(m[1]);
-    const mes = Number(m[2]);
-    const ano = Number(m[3]);
+    if (!m) { mensagemInvalida(campo, "Data inválida. Use o formato dd/mm/aaaa."); return false; }
+    const dia = Number(m[1]); const mes = Number(m[2]); const ano = Number(m[3]);
     const data = new Date(ano, mes - 1, dia);
     const ok = data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia;
     if (!ok) mensagemInvalida(campo, "Data inválida. Verifique o dia, mês e ano.");
@@ -233,10 +226,22 @@ function formatarCpf(valor) {
 function cpfValido(campo) {
     if (!campo.value) return true;
     const n = somenteNumeros(campo.value);
-    if (n.length !== 11) {
-        mensagemInvalida(campo, "CPF inválido. Informe os 11 dígitos.");
-        return false;
-    }
+    if (n.length !== 11) { mensagemInvalida(campo, "CPF inválido. Informe os 11 dígitos."); return false; }
+    return true;
+}
+
+function formatarTelefone(valor) {
+    const n = somenteNumeros(valor).slice(0, 11);
+    if (n.length <= 2) return n ? "(" + n : "";
+    if (n.length <= 3) return "(" + n.slice(0, 2) + ") " + n.slice(2);
+    if (n.length <= 7) return "(" + n.slice(0, 2) + ") " + n.slice(2, 3) + " " + n.slice(3);
+    return "(" + n.slice(0, 2) + ") " + n.slice(2, 3) + " " + n.slice(3, 7) + "-" + n.slice(7);
+}
+
+function telefoneValido(campo) {
+    if (!campo.value) return true;
+    const n = somenteNumeros(campo.value);
+    if (n.length !== 11) { mensagemInvalida(campo, "Telefone inválido. Informe DDD + 9 dígitos."); return false; }
     return true;
 }
 
@@ -247,6 +252,7 @@ function validarEtapa(etapa) {
         let campoOk = true;
         if (campo.classList.contains("sigrec-date-br")) campoOk = dataBrValida(campo);
         if (campo.classList.contains("sigrec-cpf")) campoOk = cpfValido(campo);
+        if (campo.classList.contains("sigrec-phone")) campoOk = telefoneValido(campo);
         if (obrigatorioVazio || !campoOk) {
             campo.classList.add("is-invalid");
             if (obrigatorioVazio) mensagemInvalida(campo, "Campo obrigatório.");
@@ -295,44 +301,25 @@ function mostrarEtapa(etapa) {
 }
 
 document.querySelectorAll(".sigrec-date-br").forEach(campo => {
-    campo.addEventListener("input", function () {
-        campo.value = formatarDataBr(campo.value);
-        campo.classList.remove("is-invalid");
-    });
-    campo.addEventListener("blur", function () {
-        if (!dataBrValida(campo)) campo.classList.add("is-invalid");
-    });
+    campo.addEventListener("input", function () { campo.value = formatarDataBr(campo.value); campo.classList.remove("is-invalid"); });
+    campo.addEventListener("blur", function () { if (!dataBrValida(campo)) campo.classList.add("is-invalid"); });
 });
 
 document.querySelectorAll(".sigrec-cpf").forEach(campo => {
-    campo.addEventListener("input", function () {
-        campo.value = formatarCpf(campo.value);
-        campo.classList.remove("is-invalid");
-    });
-    campo.addEventListener("blur", function () {
-        if (!cpfValido(campo)) campo.classList.add("is-invalid");
-    });
+    campo.addEventListener("input", function () { campo.value = formatarCpf(campo.value); campo.classList.remove("is-invalid"); });
+    campo.addEventListener("blur", function () { if (!cpfValido(campo)) campo.classList.add("is-invalid"); });
 });
 
-btnProximo.addEventListener("click", function () {
-    if (!validarEtapa(etapaAtual)) return;
-    etapaAtual++;
-    mostrarEtapa(etapaAtual);
+document.querySelectorAll(".sigrec-phone").forEach(campo => {
+    campo.addEventListener("input", function () { campo.value = formatarTelefone(campo.value); campo.classList.remove("is-invalid"); });
+    campo.addEventListener("blur", function () { if (!telefoneValido(campo)) campo.classList.add("is-invalid"); });
 });
 
-btnAnterior.addEventListener("click", function () {
-    etapaAtual--;
-    mostrarEtapa(etapaAtual);
-});
-
+btnProximo.addEventListener("click", function () { if (!validarEtapa(etapaAtual)) return; etapaAtual++; mostrarEtapa(etapaAtual); });
+btnAnterior.addEventListener("click", function () { etapaAtual--; mostrarEtapa(etapaAtual); });
 form.addEventListener("submit", function (event) {
     for (let i = 1; i < totalEtapas; i++) {
-        if (!validarEtapa(i)) {
-            event.preventDefault();
-            etapaAtual = i;
-            mostrarEtapa(etapaAtual);
-            return;
-        }
+        if (!validarEtapa(i)) { event.preventDefault(); etapaAtual = i; mostrarEtapa(etapaAtual); return; }
     }
     converterDatasParaBackend();
 });
@@ -344,7 +331,6 @@ const procedimentoCodigo = document.getElementById("procedimento_codigo");
 const procedimentoResultados = document.getElementById("procedimento_resultados");
 const procedimentoSelecionadoInfo = document.getElementById("procedimentoSelecionadoInfo");
 let procedimentoTimer = null;
-
 function limparProcedimentoSelecionado() { procedimentoCodigo.value = ""; procedimentoSelecionadoInfo.classList.add("d-none"); }
 function esconderResultadosProcedimento() { procedimentoResultados.style.display = "none"; procedimentoResultados.innerHTML = ""; }
 function buscarProcedimentos() {
@@ -355,34 +341,17 @@ function buscarProcedimentos() {
         .then(response => response.json())
         .then(procedimentos => {
             procedimentoResultados.innerHTML = "";
-            if (!procedimentos || procedimentos.length === 0) {
-                procedimentoResultados.innerHTML = '<div class="list-group-item text-muted">Nenhum procedimento encontrado</div>';
-                procedimentoResultados.style.display = "block";
-                return;
-            }
+            if (!procedimentos || procedimentos.length === 0) { procedimentoResultados.innerHTML = '<div class="list-group-item text-muted">Nenhum procedimento encontrado</div>'; procedimentoResultados.style.display = "block"; return; }
             procedimentos.forEach(p => {
-                const item = document.createElement("button");
-                item.type = "button";
-                item.className = "list-group-item list-group-item-action";
-                const codigo = p.codigo || "";
-                const descricao = p.descricao || "";
-                const valor = p.valor != null ? p.valor : "";
-                const origem = p.origem || "";
+                const item = document.createElement("button"); item.type = "button"; item.className = "list-group-item list-group-item-action";
+                const codigo = p.codigo || ""; const descricao = p.descricao || ""; const valor = p.valor != null ? p.valor : ""; const origem = p.origem || "";
                 item.textContent = codigo + " - " + descricao + " | Valor: " + valor + " | " + origem;
-                item.addEventListener("click", function () {
-                    procedimentoCodigo.value = codigo;
-                    procedimentoBusca.value = codigo + " - " + descricao;
-                    procedimentoSelecionadoInfo.classList.remove("d-none");
-                    esconderResultadosProcedimento();
-                });
+                item.addEventListener("click", function () { procedimentoCodigo.value = codigo; procedimentoBusca.value = codigo + " - " + descricao; procedimentoSelecionadoInfo.classList.remove("d-none"); esconderResultadosProcedimento(); });
                 procedimentoResultados.appendChild(item);
             });
             procedimentoResultados.style.display = "block";
         })
-        .catch(() => {
-            procedimentoResultados.innerHTML = '<div class="list-group-item text-danger">Erro ao buscar procedimentos</div>';
-            procedimentoResultados.style.display = "block";
-        });
+        .catch(() => { procedimentoResultados.innerHTML = '<div class="list-group-item text-danger">Erro ao buscar procedimentos</div>'; procedimentoResultados.style.display = "block"; });
 }
 procedimentoBusca.addEventListener("input", function () { clearTimeout(procedimentoTimer); procedimentoTimer = setTimeout(buscarProcedimentos, 300); });
 </script>
@@ -402,35 +371,19 @@ function buscarPacientes() {
         .then(response => response.json())
         .then(pacientes => {
             pacienteResultados.innerHTML = "";
-            if (!pacientes || pacientes.length === 0) {
-                pacienteResultados.innerHTML = '<div class="list-group-item text-muted">Nenhum paciente encontrado</div>';
-                pacienteResultados.style.display = "block";
-                return;
-            }
+            if (!pacientes || pacientes.length === 0) { pacienteResultados.innerHTML = '<div class="list-group-item text-muted">Nenhum paciente encontrado</div>'; pacienteResultados.style.display = "block"; return; }
             pacientes.forEach(p => {
-                const item = document.createElement("button");
-                item.type = "button";
-                item.className = "list-group-item list-group-item-action";
-                const nome = p.nome || "";
-                const cpf = p.cpf || "";
-                const cns = p.cns || "";
+                const item = document.createElement("button"); item.type = "button"; item.className = "list-group-item list-group-item-action";
+                const nome = p.nome || ""; const cpf = p.cpf || ""; const cns = p.cns || "";
                 item.textContent = nome + " | CPF: " + cpf + " | CNS: " + cns;
-                item.addEventListener("click", function () {
-                    pacienteId.value = p.id;
-                    pacienteBusca.value = item.textContent;
-                    esconderResultadosPaciente();
-                });
+                item.addEventListener("click", function () { pacienteId.value = p.id; pacienteBusca.value = item.textContent; esconderResultadosPaciente(); });
                 pacienteResultados.appendChild(item);
             });
             pacienteResultados.style.display = "block";
         })
-        .catch(() => {
-            pacienteResultados.innerHTML = '<div class="list-group-item text-danger">Erro ao buscar pacientes</div>';
-            pacienteResultados.style.display = "block";
-        });
+        .catch(() => { pacienteResultados.innerHTML = '<div class="list-group-item text-danger">Erro ao buscar pacientes</div>'; pacienteResultados.style.display = "block"; });
 }
 pacienteBusca.addEventListener("input", function () { clearTimeout(pacienteTimer); pacienteTimer = setTimeout(buscarPacientes, 300); });
-
 document.addEventListener("click", function (event) {
     if (!procedimentoBusca.contains(event.target) && !procedimentoResultados.contains(event.target)) esconderResultadosProcedimento();
     if (!pacienteBusca.contains(event.target) && !pacienteResultados.contains(event.target)) esconderResultadosPaciente();
