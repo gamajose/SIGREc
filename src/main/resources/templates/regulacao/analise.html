@@ -57,7 +57,7 @@
                         <tbody>
                             <tr th:if="${#lists.isEmpty(historico)}"><td colspan="5" class="text-center text-muted py-4">Nenhum histórico registrado.</td></tr>
                             <tr th:each="h:${historico}">
-                                <td th:text="${h.criado_em}"></td>
+                                <td th:text="${#temporals.format(h.criado_em, 'dd/MM/yyyy HH:mm:ss')}"></td>
                                 <td th:text="${h.usuario_nome ?: h.nome}"></td>
                                 <td th:text="${h.acao ?: h.tipo}"></td>
                                 <td th:text="${(h.status_anterior ?: '-') + ' → ' + (h.status_novo ?: '-')}"></td>
@@ -86,10 +86,22 @@
                         <option th:each="p:${autorizadores}" th:value="${p.id}" th:text="${p.nome}"></option>
                     </select>
                     <div class="row g-2">
-                        <div class="col-md-6"><input class="form-control" name="numero_autorizacao" placeholder="Número autorização"></div>
-                        <div class="col-md-6"><input class="form-control" name="numero_apac" placeholder="Número APAC"></div>
-                        <div class="col-md-6"><input class="form-control" type="date" name="validade_inicio"></div>
-                        <div class="col-md-6"><input class="form-control" type="date" name="validade_fim"></div>
+                        <div class="col-md-6">
+                            <label class="form-label">Número autorização</label>
+                            <input class="form-control" name="numero_autorizacao" placeholder="Número autorização">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Número APAC</label>
+                            <input class="form-control" name="numero_apac" placeholder="Número APAC">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Validade início</label>
+                            <input class="form-control" type="date" name="validade_inicio">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Validade fim</label>
+                            <input class="form-control" type="date" name="validade_fim">
+                        </div>
                     </div>
                     <label class="form-label mt-2">Parecer da aprovação</label>
                     <textarea class="form-control mb-3" name="observacao" placeholder="Informe o parecer da aprovação"></textarea>
