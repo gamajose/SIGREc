@@ -63,7 +63,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/requisicoes/**"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/token").permitAll()
-                        .requestMatchers("/css/**", "/login").permitAll()
+                        .requestMatchers("/css/**", "/sounds/**", "/login").permitAll()
                         .requestMatchers("/requisicoes/**").hasAnyRole("ADMIN", "SOLICITANTE")
                         .requestMatchers("/usuarios/**", "/parametros/**").hasRole("ADMIN")
                         .requestMatchers("/regulacao/**").hasAnyRole("ADMIN", "REGULADOR")
