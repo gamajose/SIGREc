@@ -2,8 +2,22 @@ package br.gov.sigrec.tfdapac.controller;
 
 import br.gov.sigrec.tfdapac.service.CurrentUserService;
 import br.gov.sigrec.tfdapac.service.NotificationService;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -13,14 +27,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class TicketController {
@@ -171,7 +179,16 @@ public class TicketController {
                     t.criado_em desc
                 """);
 
-        model.addAttribute("tickets", jdbcTemplate.queryForList(sql.toString(), params.toArray()));
+        List<Map<String, Object>> tickets = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+
+        for (Map<String, Object> ticket : tickets) {
+            Object ticketId = ticket.get("id");
+            if (ticketId != null) {
+                ticket.put("anexos", anexosDoTicket(((Number) ticketId).longValue()));
+            }
+        }
+
+        model.addAttribute("tickets", tickets);
 
         Integer ticketsAbertos = jdbcTemplate.queryForObject("""
                 select count(*)
@@ -182,6 +199,41 @@ public class TicketController {
         model.addAttribute("ticketsAbertos", ticketsAbertos == null ? 0 : ticketsAbertos);
 
         return "tickets/list";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tickets/anexos/{anexoId}")
+    public ResponseEntity<Resource> baixarAnexo(@PathVariable Long anexoId) {
+        Map<String, Object> anexo = jdbcTemplate.queryForMap("""
+                select a.*
+                from regulacao_tfd.ticket_anexos a
+                join regulacao_tfd.tickets_suporte t on t.id = a.ticket_id
+                where a.id = ?
+                """, anexoId);
+
+        try {
+            Path arquivo = Paths.get(anexo.get("caminho_arquivo").toString()).toAbsolutePath().normalize();
+            Resource resource = new UrlResource(arquivo.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String nomeOriginal = anexo.get("nome_original") == null
+                    ? "anexo"
+                    : anexo.get("nome_original").toString();
+            String contentType = anexo.get("content_type") == null
+                    ? MediaType.APPLICATION_OCTET_STREAM_VALUE
+                    : anexo.get("content_type").toString();
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            ContentDisposition.inline().filename(nomeOriginal).build().toString())
+                    .body(resource);
+        } catch (MalformedURLException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -220,6 +272,15 @@ public class TicketController {
 
         ra.addFlashAttribute("ok", "Ticket " + numeroTicket + " respondido. E-mail colocado na fila de envio.");
         return "redirect:/tickets";
+    }
+
+    private List<Map<String, Object>> anexosDoTicket(Long ticketId) {
+        return jdbcTemplate.queryForList("""
+                select id, nome_original, content_type, tamanho_bytes, criado_em
+                from regulacao_tfd.ticket_anexos
+                where ticket_id = ?
+                order by criado_em asc, id asc
+                """, ticketId);
     }
 
     private void salvarAnexos(Long ticketId, MultipartFile[] anexos) {
