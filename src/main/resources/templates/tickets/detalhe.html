@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{layout/fragments :: head('Detalhes do ticket')}"></head>
+
+  <body>
+    <nav th:replace="~{layout/fragments :: nav}"></nav>
+    <div th:replace="~{layout/fragments :: profileModal}"></div>
+
+    <main class="page tickets-page">
+      <div th:replace="~{layout/fragments :: alerts}"></div>
+
+      <section class="page-hero mb-3">
+        <div>
+          <span class="eyebrow">Central administrativa</span>
+          <h1 class="page-title mb-1">
+            Ticket
+            <span th:text="${ticket.numero_ticket != null ? ticket.numero_ticket : 'TCK-' + #numbers.formatInteger(ticket.id, 6)}">TCK-000001</span>
+          </h1>
+          <p class="page-subtitle mb-0" th:text="${ticket.assunto}">Assunto do ticket</p>
+        </div>
+
+        <div class="page-actions d-flex gap-2">
+          <a class="btn btn-outline-secondary" th:href="@{/tickets}">Voltar</a>
+        </div>
+      </section>
+
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <section class="panel mb-3">
+            <div class="section-title-row">
+              <div>
+                <h2 class="section-title">Descrição da solicitação</h2>
+                <p class="section-subtitle">Conteúdo enviado pelo usuário no momento da abertura.</p>
+              </div>
+            </div>
+
+            <div class="ticket-message-preview" th:if="${ticket.descricao_html != null}" th:utext="${ticket.descricao_html}">
+              Descrição formatada
+            </div>
+            <div class="ticket-message-preview" th:if="${ticket.descricao_html == null}" th:text="${ticket.mensagem}">
+              Descrição simples
+            </div>
+          </section>
+
+          <section class="panel mb-3">
+            <div class="section-title-row">
+              <div>
+                <h2 class="section-title">Anexos</h2>
+                <p class="section-subtitle">Arquivos enviados pelo usuário para análise do suporte.</p>
+              </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(anexos)}" class="text-muted">Nenhum anexo enviado neste ticket.</div>
+
+            <div class="list-group" th:if="${!#lists.isEmpty(anexos)}">
+              <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                 th:each="a : ${anexos}"
+                 th:href="@{/tickets/anexos/{id}(id=${a.id})}"
+                 target="_blank">
+                <span>
+                  <span class="me-2">📎</span>
+                  <span th:text="${a.nome_original}">arquivo.pdf</span>
+                </span>
+                <span class="badge bg-secondary" th:text="${a.content_type ?: 'arquivo'}">arquivo</span>
+              </a>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-title-row">
+              <div>
+                <h2 class="section-title">Resposta ao usuário</h2>
+                <p class="section-subtitle">Registre o retorno final ou orientação para o solicitante.</p>
+              </div>
+            </div>
+
+            <form method="post" th:action="@{/tickets/{id}/responder(id=${ticket.id})}">
+              <textarea class="form-control mb-2" name="resposta" rows="5" placeholder="Digite a resposta ao usuário" required></textarea>
+              <button class="btn btn-success">Responder e resolver</button>
+            </form>
+
+            <div class="mt-3" th:if="${ticket.resposta != null}">
+              <span class="small text-secondary d-block mb-1">Última resposta registrada:</span>
+              <div class="alert alert-light border" th:text="${ticket.resposta}">Resposta</div>
+            </div>
+          </section>
+        </div>
+
+        <div class="col-lg-4">
+          <section class="panel mb-3">
+            <h2 class="section-title">Informações</h2>
+
+            <dl class="mb-0">
+              <dt>Solicitante</dt>
+              <dd>
+                <span th:text="${ticket.nome ?: ticket.username}">Usuário</span>
+                <div class="small text-secondary" th:text="${ticket.email}">email@exemplo.com</div>
+              </dd>
+
+              <dt>Status</dt>
+              <dd><span class="status-pill" th:text="${ticket.status}">ABERTO</span></dd>
+
+              <dt>Prioridade</dt>
+              <dd><span class="badge bg-warning text-dark" th:text="${ticket.prioridade ?: 'NORMAL'}">NORMAL</span></dd>
+
+              <dt>Categoria</dt>
+              <dd th:text="${ticket.categoria ?: 'Não informada'}">Sistema</dd>
+
+              <dt>Criado em</dt>
+              <dd th:text="${ticket.criado_em}">--/--/----</dd>
+
+              <dt>Atualizado em</dt>
+              <dd th:text="${ticket.atualizado_em ?: '-'}">-</dd>
+            </dl>
+          </section>
+
+          <section class="panel">
+            <h2 class="section-title">Alterar status</h2>
+            <form method="post" th:action="@{/tickets/{id}/status(id=${ticket.id})}">
+              <select class="form-select mb-2" name="status">
+                <option value="ABERTO" th:selected="${ticket.status == 'ABERTO'}">Aberto</option>
+                <option value="EM_ANALISE" th:selected="${ticket.status == 'EM_ANALISE'}">Em análise</option>
+                <option value="RESPONDIDO" th:selected="${ticket.status == 'RESPONDIDO'}">Respondido</option>
+                <option value="RESOLVIDO" th:selected="${ticket.status == 'RESOLVIDO'}">Resolvido</option>
+                <option value="FECHADO" th:selected="${ticket.status == 'FECHADO'}">Fechado</option>
+              </select>
+              <button class="btn btn-outline-success w-100">Atualizar status</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
