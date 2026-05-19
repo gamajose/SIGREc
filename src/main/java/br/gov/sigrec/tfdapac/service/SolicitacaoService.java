@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -174,7 +175,7 @@ public class SolicitacaoService {
                     values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, id, form.get("tratamentos_previos"), form.get("procedimento_exame_indicado"),
                     form.get("sinais_sintomas"), "on".equals(form.get("necessita_acompanhante")),
-                    form.get("acompanhante_nome"), date(form.get("acompanhante_data_nascimento")),
+                    form.get("acompanhante_nome"), date(form.get("acompanhante_data_nascimento"), "Data de nascimento do acompanhante"),
                     form.get("acompanhante_cpf"), form.get("acompanhante_telefone"),
                     form.get("destino"), form.get("justificativa_medica"));
         } else {
@@ -186,8 +187,8 @@ public class SolicitacaoService {
                     values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, id, form.get("prontuario"), form.get("raca_cor"), form.get("responsavel"),
                     form.get("ibge"), intValue(form, "quantidade", 1), form.get("causas_associadas"),
-                    form.get("observacoes"), date(form.get("data_solicitacao")),
-                    form.get("numero_apac"), date(form.get("validade_inicio")), date(form.get("validade_fim")),
+                    form.get("observacoes"), date(form.get("data_solicitacao"), "Data da solicitação"),
+                    form.get("numero_apac"), date(form.get("validade_inicio"), "Validade inicial"), date(form.get("validade_fim"), "Validade final"),
                     form.get("estabelecimento_executante"), form.get("cnes_executante"));
         }
         historico(id, usuarioId, null, "ENVIADA", "CRIACAO", "Solicitacao enviada para regulacao");
@@ -254,7 +255,7 @@ public class SolicitacaoService {
                     where solicitacao_id = ?
                     """, form.get("tratamentos_previos"), form.get("procedimento_exame_indicado"),
                     form.get("sinais_sintomas"), booleanValue(form, "necessita_acompanhante"),
-                    form.get("acompanhante_nome"), date(form.get("acompanhante_data_nascimento")),
+                    form.get("acompanhante_nome"), date(form.get("acompanhante_data_nascimento"), "Data de nascimento do acompanhante"),
                     form.get("acompanhante_cpf"), form.get("acompanhante_telefone"),
                     form.get("destino"), form.get("justificativa_medica"), id);
         } else {
@@ -276,8 +277,8 @@ public class SolicitacaoService {
                     where solicitacao_id = ?
                     """, form.get("prontuario"), form.get("raca_cor"), form.get("responsavel"),
                     form.get("ibge"), intValue(form, "quantidade", 1), form.get("causas_associadas"),
-                    form.get("observacoes"), date(form.get("data_solicitacao")),
-                    form.get("numero_apac"), date(form.get("validade_inicio")), date(form.get("validade_fim")),
+                    form.get("observacoes"), date(form.get("data_solicitacao"), "Data da solicitação"),
+                    form.get("numero_apac"), date(form.get("validade_inicio"), "Validade inicial"), date(form.get("validade_fim"), "Validade final"),
                     form.get("estabelecimento_executante"), form.get("cnes_executante"), id);
         }
         historico(id, usuarioId, status, status, "EDICAO", form.getOrDefault("observacao", "Requisicao atualizada"));
@@ -306,7 +307,7 @@ public class SolicitacaoService {
                      profissional_autorizador_id, usuario_autorizador_id)
                     values (?, ?, ?, ?, ?, ?, ?)
                     """, id, form.getOrDefault("numero_autorizacao", "AUT-" + id), form.get("numero_apac"),
-                    date(form.get("validade_inicio")), date(form.get("validade_fim")),
+                    date(form.get("validade_inicio"), "Validade inicial"), date(form.get("validade_fim"), "Validade final"),
                     nullableLong(form, "profissional_autorizador_id"), usuarioId);
         }
         historico(id, usuarioId, anterior, novoStatus, "MUDANCA_STATUS", observacao);
@@ -325,33 +326,20 @@ public class SolicitacaoService {
         """, Long.class, id);
 
         String titulo = switch (novoStatus) {
-            case "AUTORIZADA" ->
-                "Solicitação aprovada";
-            case "INDEFERIDA" ->
-                "Solicitação reprovada";
-            case "DEVOLVIDA_CORRECAO" ->
-                "Solicitação devolvida para correção";
-            default ->
-                "Solicitação atualizada";
+            case "AUTORIZADA" -> "Solicitação aprovada";
+            case "INDEFERIDA" -> "Solicitação reprovada";
+            case "DEVOLVIDA_CORRECAO" -> "Solicitação devolvida para correção";
+            default -> "Solicitação atualizada";
         };
 
         String mensagem = switch (novoStatus) {
-            case "AUTORIZADA" ->
-                "Sua solicitação foi aprovada pela regulação.";
-            case "INDEFERIDA" ->
-                "Sua solicitação foi reprovada pela regulação.";
-            case "DEVOLVIDA_CORRECAO" ->
-                "Sua solicitação foi devolvida para correção.";
-            default ->
-                "O status da sua solicitação foi atualizado para " + novoStatus + ".";
+            case "AUTORIZADA" -> "Sua solicitação foi aprovada pela regulação.";
+            case "INDEFERIDA" -> "Sua solicitação foi reprovada pela regulação.";
+            case "DEVOLVIDA_CORRECAO" -> "Sua solicitação foi devolvida para correção.";
+            default -> "O status da sua solicitação foi atualizado para " + novoStatus + ".";
         };
 
-        notificationService.notificarUsuario(
-                usuarioCriacao,
-                titulo,
-                mensagem,
-                "/solicitacoes/" + id
-        );
+        notificationService.notificarUsuario(usuarioCriacao, titulo, mensagem, "/solicitacoes/" + id);
     }
 
     public void registrarImpressao(Long id, Long usuarioId, String tipo, boolean reimpressao, String caminho, String hash) {
@@ -399,8 +387,15 @@ public class SolicitacaoService {
         return "true".equalsIgnoreCase(value) || "on".equalsIgnoreCase(value) || "sim".equalsIgnoreCase(value);
     }
 
-    private Date date(String value) {
-        return StringUtils.hasText(value) ? Date.valueOf(LocalDate.parse(value)) : null;
+    private Date date(String value, String label) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return Date.valueOf(LocalDate.parse(value));
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(label + " inválida. Use o seletor de data do formulário.");
+        }
     }
 
     private String like(String value) {
@@ -427,9 +422,7 @@ public class SolicitacaoService {
             from regulacao_tfd.procedimentos
             where id = ?
             limit 1
-            """,
-                rs -> rs.next() ? rs.getString("codigo") : null,
-                id);
+            """, rs -> rs.next() ? rs.getString("codigo") : null, id);
     }
 
     private Long procedimentoIdPorCodigoOuNull(Map<String, String> form) {
@@ -448,24 +441,16 @@ public class SolicitacaoService {
             from regulacao_tfd.procedimentos
             where codigo = ?
             limit 1
-            """,
-                rs -> rs.next() ? rs.getLong("id") : null,
-                codigo);
+            """, rs -> rs.next() ? rs.getLong("id") : null, codigo);
     }
 
     private void validarTransicaoStatus(String atual, String novo) {
         if (!StringUtils.hasText(novo)) {
             throw new IllegalArgumentException("Novo status não informado.");
         }
-
-        if (atual == null || atual.isBlank()) {
+        if (atual == null || atual.isBlank() || atual.equals(novo)) {
             return;
         }
-
-        if (atual.equals(novo)) {
-            return;
-        }
-
         Map<String, Set<String>> transicoesPermitidas = Map.of(
                 "ENVIADA", Set.of("EM_ANALISE", "DEVOLVIDA_CORRECAO", "AUTORIZADA", "INDEFERIDA"),
                 "EM_ANALISE", Set.of("AUTORIZADA", "INDEFERIDA", "DEVOLVIDA_CORRECAO", "AGUARDANDO_DOCUMENTOS"),
@@ -477,9 +462,7 @@ public class SolicitacaoService {
                 "CANCELADA", Set.of(),
                 "FINALIZADA", Set.of()
         );
-
         Set<String> permitidos = transicoesPermitidas.getOrDefault(atual, Set.of());
-
         if (!permitidos.contains(novo)) {
             throw new IllegalStateException("Transição de status inválida: " + atual + " -> " + novo);
         }
