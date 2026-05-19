@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{layout/fragments :: head('Perguntas frequentes')}"></head>
+  <body>
+    <nav th:replace="~{layout/fragments :: nav}"></nav>
+    <div th:replace="~{layout/fragments :: profileModal}"></div>
+
+    <main class="page">
+      <section class="page-hero mb-3">
+        <div>
+          <span class="eyebrow">Ajuda</span>
+          <h1 class="page-title mb-1">Perguntas frequentes</h1>
+          <p class="page-subtitle mb-0">
+            Respostas rápidas para dúvidas comuns sobre o SIGREc.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel mb-3">
+        <h2 class="section-title">Como abrir uma solicitação?</h2>
+        <p>
+          Acesse o menu Solicitações, selecione “Nova solicitação”, preencha os dados necessários e envie para análise.
+        </p>
+      </section>
+
+      <section class="panel mb-3">
+        <h2 class="section-title">Como consultar procedimentos SIGTAP?</h2>
+        <p>
+          Utilize o menu Procedimentos ou a opção “Consulta rápida SIGTAP” disponível em Ferramentas.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">Como solicitar suporte?</h2>
+        <p class="mb-0">
+          Utilize a Central de Suporte disponível no sistema para registrar dúvidas, erros ou solicitações internas.
+        </p>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
