@@ -24,8 +24,8 @@ public class NotificationService {
 
         jdbcTemplate.update("""
                 insert into regulacao_tfd.notificacoes
-                (usuario_id, titulo, mensagem, link)
-                values (?, ?, ?, ?)
+                (usuario_id, titulo, mensagem, link, lida)
+                values (?, ?, ?, ?, false)
                 """, usuarioId, titulo, mensagem, link);
 
         Map<String, Object> usuario = jdbcTemplate.queryForMap("""
@@ -55,6 +55,36 @@ public class NotificationService {
         for (Long usuarioId : usuarios) {
             notificarUsuario(usuarioId, titulo, mensagem, link);
         }
+    }
+
+    public List<Map<String, Object>> listarDoUsuario(Long usuarioId) {
+        return jdbcTemplate.queryForList("""
+                select *
+                from regulacao_tfd.notificacoes
+                where usuario_id = ?
+                order by criado_em desc
+                """, usuarioId);
+    }
+
+    public void marcarTodasComoLidas(Long usuarioId) {
+        jdbcTemplate.update("""
+                update regulacao_tfd.notificacoes
+                set lida = true,
+                    lida_em = current_timestamp
+                where usuario_id = ?
+                  and lida = false
+                """, usuarioId);
+    }
+
+    public long contarNaoLidas(Long usuarioId) {
+        Long total = jdbcTemplate.queryForObject("""
+                select count(*)
+                from regulacao_tfd.notificacoes
+                where usuario_id = ?
+                  and lida = false
+                """, Long.class, usuarioId);
+
+        return total == null ? 0L : total;
     }
 
     public void queueEmail(String para, String assunto, String mensagem) {
