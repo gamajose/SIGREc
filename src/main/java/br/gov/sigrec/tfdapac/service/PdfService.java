@@ -31,19 +31,19 @@ public class PdfService {
 
     public GeneratedPdf gerar(Map<String, Object> solicitacao, Map<String, Object> complemento) {
         try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            Document doc = new Document(PageSize.A4, 28, 28, 28, 28);
-            PdfWriter.getInstance(doc, out);
-            doc.open();
-            String tipo = text(solicitacao, "tipo_solicitacao");
-            if ("APAC".equals(tipo)) {
-                apac(doc, solicitacao, complemento);
-            } else {
-                tfd(doc, solicitacao, complemento);
-            }
-            doc.close();
-            byte[] bytes = out.toByteArray();
+            byte[] bytes = gerarBytes(solicitacao, complemento);
             String hash = sha256(bytes);
+            return new GeneratedPdf(bytes, null, hash);
+        } catch (Exception e) {
+            throw new IllegalStateException("Falha ao gerar PDF", e);
+        }
+    }
+
+    public GeneratedPdf gerarESalvar(Map<String, Object> solicitacao, Map<String, Object> complemento) {
+        try {
+            byte[] bytes = gerarBytes(solicitacao, complemento);
+            String hash = sha256(bytes);
+            String tipo = text(solicitacao, "tipo_solicitacao");
             Path dir = storagePath.resolve("impressoes").resolve(text(solicitacao, "numero_protocolo"));
             Files.createDirectories(dir);
             Path file = dir.resolve(tipo + "-" + System.currentTimeMillis() + ".pdf");
@@ -52,6 +52,21 @@ public class PdfService {
         } catch (Exception e) {
             throw new IllegalStateException("Falha ao gerar PDF", e);
         }
+    }
+
+    private byte[] gerarBytes(Map<String, Object> solicitacao, Map<String, Object> complemento) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Document doc = new Document(PageSize.A4, 28, 28, 28, 28);
+        PdfWriter.getInstance(doc, out);
+        doc.open();
+        String tipo = text(solicitacao, "tipo_solicitacao");
+        if ("APAC".equals(tipo)) {
+            apac(doc, solicitacao, complemento);
+        } else {
+            tfd(doc, solicitacao, complemento);
+        }
+        doc.close();
+        return out.toByteArray();
     }
 
     private void tfd(Document doc, Map<String, Object> s, Map<String, Object> tfd) throws Exception {
