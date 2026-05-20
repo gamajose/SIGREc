@@ -572,7 +572,7 @@ public class SolicitacaoService {
 
     private void historico(Long solicitacaoId, Long usuarioId, String anterior, String novo, String acao, String observacao) {
         jdbcTemplate.update("""
-                insert into regulacao_tfd.solicitacao_historico h
+                insert into regulacao_tfd.solicitacao_historico
                 (solicitacao_id, usuario_id, setor, status_anterior, status_novo, acao, observacao)
                 values (?, ?, 'Regulacao TFD/APAC', ?, ?, ?, ?)
                 """,
