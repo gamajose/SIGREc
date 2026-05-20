@@ -17,9 +17,8 @@
         <div class="page-actions d-flex gap-2">
             <a class="btn btn-outline-secondary" th:href="@{/solicitacoes/{id}(id=${solicitacao['id']})}">Ver detalhe</a>
             <a class="btn btn-success"
-               target="_blank"
                th:if="${solicitacao['status'] == 'AUTORIZADA' or solicitacao['status'] == 'IMPRESSA'}"
-               th:href="@{/impressao/{id}(id=${solicitacao['id']})}">Gerar PDF</a>
+               th:href="@{/impressao/{id}/visualizar(id=${solicitacao['id']})}">Imprimir / Salvar PDF</a>
         </div>
     </section>
 
