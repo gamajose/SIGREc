@@ -28,17 +28,13 @@ public class ImpressaoController {
     }
 
     @GetMapping("/impressao/{id}/visualizar")
-    public String visualizar(@PathVariable Long id, Authentication authentication, Model model) {
+    public String visualizar(@PathVariable Long id, Model model) {
         var solicitacao = solicitacaoService.detalhe(id);
         var complemento = "TFD".equals(solicitacao.get("tipo_solicitacao")) ? solicitacaoService.tfd(id) : solicitacaoService.apac(id);
-        boolean reimpressao = "IMPRESSA".equals(solicitacao.get("status"));
-        PdfService.GeneratedPdf pdf = pdfService.gerar(solicitacao, complemento);
-        solicitacaoService.registrarImpressao(id, currentUserService.id(authentication), solicitacao.get("tipo_solicitacao").toString(), reimpressao, pdf.path(), pdf.hash());
 
         model.addAttribute("solicitacao", solicitacao);
         model.addAttribute("complemento", complemento);
         model.addAttribute("titulo", "Impressão da solicitação");
-        model.addAttribute("pdfPath", pdf.path());
 
         return "impressao/visualizar";
     }
