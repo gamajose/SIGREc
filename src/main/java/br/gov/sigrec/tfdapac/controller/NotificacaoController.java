@@ -34,6 +34,14 @@ public class NotificacaoController {
                 limit 100
                 """, usuarioId));
 
+        jdbcTemplate.update("""
+                update regulacao_tfd.notificacoes
+                set lida = true,
+                    lida_em = current_timestamp
+                where usuario_id = ?
+                  and lida = false
+                """, usuarioId);
+
         return "notificacoes/list";
     }
 
@@ -57,7 +65,8 @@ public class NotificacaoController {
 
         jdbcTemplate.update("""
                 update regulacao_tfd.notificacoes
-                set lida = true
+                set lida = true,
+                    lida_em = current_timestamp
                 where id = ?
                   and usuario_id = ?
                 """, id, usuarioId);
@@ -71,7 +80,8 @@ public class NotificacaoController {
 
         jdbcTemplate.update("""
                 update regulacao_tfd.notificacoes
-                set lida = true
+                set lida = true,
+                    lida_em = current_timestamp
                 where usuario_id = ?
                   and lida = false
                 """, usuarioId);
