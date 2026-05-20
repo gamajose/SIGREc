@@ -41,7 +41,14 @@ public class HomeController {
                 """, userId, unidadeId, unidadeId));
 
         List<Map<String, Object>> recentes = admin ? jdbcTemplate.queryForList("""
-                select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.prioridade, s.status, s.data_entrada, p.nome paciente_nome
+                select s.id,
+                       s.numero_protocolo,
+                       s.numero_solicitacao,
+                       s.tipo_solicitacao,
+                       s.prioridade,
+                       s.status,
+                       coalesce(to_char(s.data_entrada, 'DD/MM/YYYY HH24:MI:SS'), '-') as entrada_formatada,
+                       p.nome paciente_nome
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 where s.numero_protocolo is not null
@@ -49,7 +56,14 @@ public class HomeController {
                 order by s.data_entrada desc
                 limit 10
                 """) : jdbcTemplate.queryForList("""
-                select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.prioridade, s.status, s.data_entrada, p.nome paciente_nome
+                select s.id,
+                       s.numero_protocolo,
+                       s.numero_solicitacao,
+                       s.tipo_solicitacao,
+                       s.prioridade,
+                       s.status,
+                       coalesce(to_char(s.data_entrada, 'DD/MM/YYYY HH24:MI:SS'), '-') as entrada_formatada,
+                       p.nome paciente_nome
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 where (s.usuario_criacao = ? or (? is not null and s.unidade_solicitante_id = ?))
