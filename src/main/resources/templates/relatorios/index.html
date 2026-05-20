@@ -58,7 +58,7 @@
             <td>
               <a class="btn btn-sm btn-outline-danger"
                  th:if="${s['status'] == 'AUTORIZADA' or s['status'] == 'IMPRESSA'}"
-                 th:href="@{/impressao/{id}/visualizar(id=${s['id']})}">PDF</a>
+                 th:href="@{/impressao/{id}(id=${s['id']})}">PDF</a>
 
               <a class="btn btn-sm btn-outline-primary"
                  th:unless="${s['status'] == 'AUTORIZADA' or s['status'] == 'IMPRESSA'}"
