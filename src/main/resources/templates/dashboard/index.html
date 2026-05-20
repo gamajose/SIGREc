@@ -28,6 +28,38 @@
       </div>
     </div>
   </section>
+
+  <section class="panel">
+    <h2 class="h5 mb-1">Movimentações recentes</h2>
+    <p class="text-secondary small mb-3">Últimas solicitações registradas no fluxo TFD/APAC.</p>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Protocolo</th>
+            <th>Paciente</th>
+            <th>Tipo</th>
+            <th>Prioridade</th>
+            <th>Status</th>
+            <th>Entrada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${#lists.isEmpty(recentes)}">
+            <td colspan="6" class="text-center text-muted py-4">Nenhuma movimentação recente encontrada.</td>
+          </tr>
+          <tr th:each="s : ${recentes}">
+            <td><a th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">Protocolo</a></td>
+            <td th:text="${s.paciente_nome}">Paciente</td>
+            <td th:text="${s.tipo_solicitacao}">Tipo</td>
+            <td th:text="${s.prioridade ?: 'NORMAL'}">NORMAL</td>
+            <td th:text="${s.status}">Status</td>
+            <td th:text="${s.data_entrada}">Entrada</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
