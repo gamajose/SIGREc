@@ -15,6 +15,11 @@ import java.util.Set;
 @Service
 public class SolicitacaoService {
 
+    private static final Set<String> STATUS_PENDENTES_ANALISE = Set.of(
+            "ENVIADA",
+            "EM_ANALISE"
+    );
+
     private final JdbcTemplate jdbcTemplate;
     private final ProtocolService protocolService;
     private final NotificationService notificationService;
@@ -31,6 +36,7 @@ public class SolicitacaoService {
     }
 
     public List<Map<String, Object>> fila(String status, String tipo, String termo) {
+        String statusFiltro = nvl(status);
         return jdbcTemplate.queryForList("""
                 select s.*,
                        p.nome paciente_nome,
@@ -45,7 +51,7 @@ public class SolicitacaoService {
                 left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
                 left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
                 left join regulacao_tfd.vw_procedimentos_unificados vpu on vpu.codigo = s.procedimento_codigo_externo
-                where (? = '' or s.status = ?)
+                where ((? = '' and s.status in ('ENVIADA','EM_ANALISE')) or (? <> '' and s.status = ?))
                   and (? = '' or s.tipo_solicitacao = ?)
                   and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ? or coalesce(pr.descricao, vpu.descricao, '') ilike ?)
                 order by
@@ -57,7 +63,7 @@ public class SolicitacaoService {
                   end,
                   s.data_entrada
                 """,
-                nvl(status), nvl(status),
+                statusFiltro, statusFiltro, statusFiltro,
                 nvl(tipo), nvl(tipo),
                 nvl(termo), like(termo), like(termo), like(termo));
     }
@@ -464,7 +470,7 @@ public class SolicitacaoService {
                     motivo_indeferimento = case when ? = 'INDEFERIDA' then ? else motivo_indeferimento end,
                     profissional_autorizador_id = coalesce(?, profissional_autorizador_id),
                     data_analise = case
-                        when ? in ('EM_ANALISE','DEVOLVIDA_CORRECAO','AGUARDANDO_DOCUMENTOS') then current_timestamp
+                        when ? in ('EM_ANALISE','DEVOLVIDA_CORRECAO','AGUARDANDO_DOCUMENTOS','AUTORIZADA','INDEFERIDA') then current_timestamp
                         else data_analise
                     end,
                     data_autorizacao = case
@@ -498,6 +504,13 @@ public class SolicitacaoService {
                         usuario_autorizador_id
                     )
                     values (?, ?, ?, ?, ?, ?, ?)
+                    on conflict (solicitacao_id) do update set
+                        numero_autorizacao = excluded.numero_autorizacao,
+                        numero_apac = excluded.numero_apac,
+                        validade_inicio = excluded.validade_inicio,
+                        validade_fim = excluded.validade_fim,
+                        profissional_autorizador_id = excluded.profissional_autorizador_id,
+                        usuario_autorizador_id = excluded.usuario_autorizador_id
                     """,
                     id,
                     form.getOrDefault("numero_autorizacao", "AUT-" + id),
@@ -549,7 +562,7 @@ public class SolicitacaoService {
 
         jdbcTemplate.update("""
                 update regulacao_tfd.solicitacoes
-                set status = 'IMPRESSA',
+                set status = case when status = 'AUTORIZADA' then status else 'IMPRESSA' end,
                     data_impressao = current_timestamp
                 where id = ?
                 """, id);
@@ -559,7 +572,7 @@ public class SolicitacaoService {
 
     private void historico(Long solicitacaoId, Long usuarioId, String anterior, String novo, String acao, String observacao) {
         jdbcTemplate.update("""
-                insert into regulacao_tfd.solicitacao_historico
+                insert into regulacao_tfd.solicitacao_historico h
                 (solicitacao_id, usuario_id, setor, status_anterior, status_novo, acao, observacao)
                 values (?, ?, 'Regulacao TFD/APAC', ?, ?, ?, ?)
                 """,
@@ -694,24 +707,13 @@ public class SolicitacaoService {
             return;
         }
 
-        if ("IMPRESSA".equals(atual)
-                && Set.of(
-                "AUTORIZADA",
-                "INDEFERIDA",
-                "DEVOLVIDA_CORRECAO",
-                "AGUARDANDO_DOCUMENTOS",
-                "FINALIZADA"
-        ).contains(novo)) {
-            return;
-        }
-
         Map<String, Set<String>> transicoesPermitidas = Map.of(
                 "ENVIADA", Set.of("EM_ANALISE", "DEVOLVIDA_CORRECAO", "AUTORIZADA", "INDEFERIDA", "AGUARDANDO_DOCUMENTOS"),
                 "EM_ANALISE", Set.of("AUTORIZADA", "INDEFERIDA", "DEVOLVIDA_CORRECAO", "AGUARDANDO_DOCUMENTOS"),
-                "AGUARDANDO_DOCUMENTOS", Set.of("EM_ANALISE", "DEVOLVIDA_CORRECAO", "AUTORIZADA", "INDEFERIDA"),
+                "AGUARDANDO_DOCUMENTOS", Set.of("ENVIADA", "EM_ANALISE", "DEVOLVIDA_CORRECAO", "AUTORIZADA", "INDEFERIDA"),
                 "DEVOLVIDA_CORRECAO", Set.of("ENVIADA", "EM_ANALISE", "AUTORIZADA", "INDEFERIDA", "AGUARDANDO_DOCUMENTOS"),
                 "AUTORIZADA", Set.of("IMPRESSA", "FINALIZADA"),
-                "IMPRESSA", Set.of("FINALIZADA"),
+                "IMPRESSA", Set.of("AUTORIZADA", "FINALIZADA"),
                 "INDEFERIDA", Set.of("FINALIZADA"),
                 "CANCELADA", Set.of(),
                 "FINALIZADA", Set.of()
