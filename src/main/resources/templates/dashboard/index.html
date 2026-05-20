@@ -29,9 +29,14 @@
     </div>
   </section>
 
-  <section class="panel">
-    <h2 class="h5 mb-1">Movimentações recentes</h2>
-    <p class="text-secondary small mb-3">Últimas solicitações registradas no fluxo TFD/APAC.</p>
+  <section class="panel table-panel">
+    <div class="section-title-row">
+      <div>
+        <h2 class="section-title">Movimentações recentes</h2>
+        <p class="section-subtitle">Últimas solicitações registradas no fluxo TFD/APAC.</p>
+      </div>
+    </div>
+
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead>
@@ -49,12 +54,25 @@
             <td colspan="6" class="text-center text-muted py-4">Nenhuma movimentação recente encontrada.</td>
           </tr>
           <tr th:each="s : ${recentes}">
-            <td><a th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">Protocolo</a></td>
+            <td>
+              <a class="fw-semibold text-decoration-none" th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">Protocolo</a>
+            </td>
             <td th:text="${s.paciente_nome}">Paciente</td>
-            <td th:text="${s.tipo_solicitacao}">Tipo</td>
-            <td th:text="${s.prioridade ?: 'NORMAL'}">NORMAL</td>
-            <td th:text="${s.status}">Status</td>
-            <td th:text="${s.data_entrada}">Entrada</td>
+            <td><span class="badge bg-light text-dark border" th:text="${s.tipo_solicitacao}">Tipo</span></td>
+            <td>
+              <span class="badge bg-danger" th:if="${s.prioridade == 'URGENTE'}">URGENTE</span>
+              <span class="badge bg-warning text-dark" th:if="${s.prioridade == 'ALTA'}">ALTA</span>
+              <span class="badge bg-primary" th:if="${s.prioridade == null or s.prioridade == 'NORMAL'}">NORMAL</span>
+            </td>
+            <td>
+              <span class="badge bg-info text-dark" th:if="${s.status == 'ENVIADA'}">Enviada</span>
+              <span class="badge bg-warning text-dark" th:if="${s.status == 'EM_ANALISE'}">Em análise</span>
+              <span class="badge bg-danger" th:if="${s.status == 'PENDENTE_DOCUMENTACAO' or s.status == 'AGUARDANDO_DOCUMENTOS'}">Pendente</span>
+              <span class="badge bg-success" th:if="${s.status == 'APROVADA' or s.status == 'AUTORIZADA'}">Aprovada</span>
+              <span class="badge bg-dark" th:if="${s.status == 'NEGADA' or s.status == 'INDEFERIDA'}">Negada</span>
+              <span class="badge bg-secondary" th:if="${s.status != 'ENVIADA' and s.status != 'EM_ANALISE' and s.status != 'PENDENTE_DOCUMENTACAO' and s.status != 'AGUARDANDO_DOCUMENTOS' and s.status != 'APROVADA' and s.status != 'AUTORIZADA' and s.status != 'NEGADA' and s.status != 'INDEFERIDA'}" th:text="${s.status}">Status</span>
+            </td>
+            <td th:text="${s.data_entrada != null ? #temporals.format(s.data_entrada, 'dd/MM/yyyy HH:mm:ss') : '-'}">Entrada</td>
           </tr>
         </tbody>
       </table>
