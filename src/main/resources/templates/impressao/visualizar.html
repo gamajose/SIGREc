@@ -9,18 +9,13 @@
     <div>
       <span class="eyebrow">Impressão</span>
       <h1 class="page-title mb-1">Impressão da solicitação</h1>
-      <p class="page-subtitle mb-0">O PDF foi gerado automaticamente e salvo no armazenamento local do sistema.</p>
+      <p class="page-subtitle mb-0">Clique em baixar PDF para realizar o download do documento.</p>
     </div>
     <div class="page-actions btn-group">
       <a class="btn btn-success" th:href="@{/impressao/{id}(id=${solicitacao['id']})}">Baixar PDF</a>
       <a class="btn btn-outline-secondary" th:href="@{/solicitacoes/{id}(id=${solicitacao['id']})}">Voltar</a>
     </div>
   </section>
-
-  <div class="alert alert-info no-print" th:if="${pdfPath != null}">
-    <strong>PDF salvo em:</strong>
-    <div th:text="${pdfPath}"></div>
-  </div>
 
   <section class="panel">
     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -42,16 +37,6 @@
       <div class="col-md-3"><strong>Status:</strong><br><span th:text="${solicitacao['status']}">AUTORIZADA</span></div>
       <div class="col-md-3"><strong>Prioridade:</strong><br><span th:text="${solicitacao['prioridade']}">NORMAL</span></div>
       <div class="col-md-3"><strong>Entrada:</strong><br><span th:text="${#strings.substring((solicitacao['data_entrada'] != null ? solicitacao['data_entrada'] : solicitacao['criado_em']).toString(), 0, 19)}">Data</span></div>
-    </div>
-
-    <h3 class="h5">Paciente</h3>
-    <div class="row g-3 mb-3">
-      <div class="col-md-6"><strong>Nome:</strong><br><span th:text="${solicitacao['paciente_nome']}">Paciente</span></div>
-      <div class="col-md-3"><strong>CNS:</strong><br><span th:text="${solicitacao['paciente_cns']}">CNS</span></div>
-      <div class="col-md-3"><strong>CPF:</strong><br><span th:text="${solicitacao['paciente_cpf']}">CPF</span></div>
-      <div class="col-md-3"><strong>Nascimento:</strong><br><span th:text="${solicitacao['paciente_nascimento']}">Nascimento</span></div>
-      <div class="col-md-3"><strong>Sexo:</strong><br><span th:text="${solicitacao['paciente_sexo']}">Sexo</span></div>
-      <div class="col-md-6"><strong>Mãe:</strong><br><span th:text="${solicitacao['paciente_mae']}">Mãe</span></div>
     </div>
   </section>
 </main>
