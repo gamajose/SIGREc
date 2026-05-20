@@ -49,6 +49,7 @@ public class NotificacaoController {
     @ResponseBody
     public Map<String, Object> contador(Authentication auth) {
         Long usuarioId = currentUserService.id(auth);
+
         Integer total = jdbcTemplate.queryForObject("""
                 select count(*)
                 from regulacao_tfd.notificacoes
