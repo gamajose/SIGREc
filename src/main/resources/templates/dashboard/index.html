@@ -54,27 +54,18 @@
             <td colspan="6" class="text-center text-muted py-4">Nenhuma movimentação recente encontrada.</td>
           </tr>
           <tr th:each="s : ${recentes}">
-            <td><a class="fw-semibold text-decoration-none" th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">Protocolo</a></td>
-            <td th:text="${s.paciente_nome}">Paciente</td>
-            <td><span class="badge bg-light text-dark border" th:text="${s.tipo_solicitacao}">Tipo</span></td>
-            <td><span class="badge bg-primary" th:text="${s.prioridade ?: 'NORMAL'}">NORMAL</span></td>
-            <td><span class="badge bg-info text-dark" th:text="${s.status}">Status</span></td>
-            <td th:text="${s.data_entrada != null ? #temporals.format(s.data_entrada, 'dd/MM/yyyy HH:mm:ss') : '-'}">Entrada</td>
+            <td><a class="fw-semibold text-decoration-none" th:href="@{/solicitacoes/{id}(id=${s['id']})}" th:text="${s['numero_solicitacao'] ?: s['numero_protocolo'] ?: '-'}">Protocolo</a></td>
+            <td th:text="${s['paciente_nome'] ?: '-'}">Paciente</td>
+            <td><span class="badge bg-light text-dark border" th:text="${s['tipo_solicitacao'] ?: '-'}">Tipo</span></td>
+            <td><span class="badge bg-primary" th:text="${s['prioridade'] ?: 'NORMAL'}">NORMAL</span></td>
+            <td><span class="badge bg-info text-dark" th:text="${s['status'] ?: '-'}">Status</span></td>
+            <td th:text="${s['entrada_formatada'] ?: '-'}">Entrada</td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
 </main>
-
-<style>
-  .table-panel .panel:not(.table-panel),
-  .table-panel .alert-warning,
-  .table-panel .btn-outline-secondary,
-  .table-panel h1.text-danger {
-    display: none !important;
-  }
-</style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
