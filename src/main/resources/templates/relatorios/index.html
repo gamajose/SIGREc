@@ -36,30 +36,30 @@
           </tr>
 
           <tr th:each="s : ${historicoSolicitacoes}">
-            <td th:text="${s.numero_solicitacao ?: s.numero_protocolo}">SOL-000001</td>
-            <td th:text="${s.paciente_nome ?: s.paciente}">Paciente</td>
-            <td th:text="${s.tipo_solicitacao ?: s.tipo}">TFD</td>
-            <td th:text="${s.prioridade}">NORMAL</td>
+            <td th:text="${s['numero_solicitacao'] != null ? s['numero_solicitacao'] : s['numero_protocolo']}">SOL-000001</td>
+            <td th:text="${s['paciente_nome'] != null ? s['paciente_nome'] : s['paciente']}">Paciente</td>
+            <td th:text="${s['tipo_solicitacao'] != null ? s['tipo_solicitacao'] : s['tipo']}">TFD</td>
+            <td th:text="${s['data_entrada'] != null ? s['data_entrada'] : s['criado_em']}">Data</td>
             <td>
-              <span class="badge bg-success" th:if="${s.status == 'AUTORIZADA'}">Autorizada</span>
-              <span class="badge bg-primary" th:if="${s.status == 'IMPRESSA'}">Impressa</span>
-              <span class="badge bg-dark" th:if="${s.status == 'INDEFERIDA'}">Indeferida</span>
-              <span class="badge bg-warning text-dark" th:if="${s.status == 'DEVOLVIDA_CORRECAO'}">Devolvida</span>
-              <span class="badge bg-danger" th:if="${s.status == 'AGUARDANDO_DOCUMENTOS'}">Aguardando documentos</span>
+              <span class="badge bg-success" th:if="${s['status'] == 'AUTORIZADA'}">Autorizada</span>
+              <span class="badge bg-primary" th:if="${s['status'] == 'IMPRESSA'}">Impressa</span>
+              <span class="badge bg-dark" th:if="${s['status'] == 'INDEFERIDA'}">Indeferida</span>
+              <span class="badge bg-warning text-dark" th:if="${s['status'] == 'DEVOLVIDA_CORRECAO'}">Devolvida</span>
+              <span class="badge bg-danger" th:if="${s['status'] == 'AGUARDANDO_DOCUMENTOS'}">Aguardando documentos</span>
               <span class="badge bg-light text-dark border"
                     th:if="${s.status != 'AUTORIZADA' and s.status != 'IMPRESSA' and s.status != 'INDEFERIDA' and s.status != 'DEVOLVIDA_CORRECAO' and s.status != 'AGUARDANDO_DOCUMENTOS'}"
-                    th:text="${s.status}">Status</span>
+                    th:text="${s['status']}">Status</span>
             </td>
             <td th:text="${s.data_entrada ?: s.criado_em}">Data</td>
             <td>
               <a class="btn btn-sm btn-outline-danger"
                  target="_blank"
                  th:if="${s.status == 'AUTORIZADA' or s.status == 'IMPRESSA'}"
-                 th:href="@{/impressao/{id}(id=${s.id})}">PDF</a>
+                 th:href="@{/impressao/{id}(id=${s['id']})}">PDF</a>
 
               <a class="btn btn-sm btn-outline-primary"
                  th:unless="${s.status == 'AUTORIZADA' or s.status == 'IMPRESSA'}"
-                 th:href="@{/solicitacoes/{id}(id=${s.id})}">Ver</a>
+                 th:href="@{/solicitacoes/{id}(id=${s['id']})}">Ver</a>
             </td>
           </tr>
         </tbody>
