@@ -28,49 +28,6 @@
       </div>
     </div>
   </section>
-
-  <section class="panel table-panel">
-    <div class="section-title-row">
-      <div>
-        <h2 class="section-title">Movimentações recentes</h2>
-        <p class="section-subtitle">Últimas solicitações registradas no fluxo TFD/APAC.</p>
-      </div>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Protocolo</th>
-            <th>Paciente</th>
-            <th>Tipo</th>
-            <th>Prioridade</th>
-            <th>Status</th>
-            <th>Entrada</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:if="${#lists.isEmpty(recentes)}">
-            <td colspan="6" class="text-center text-muted py-4">Nenhuma movimentação recente encontrada.</td>
-          </tr>
-          <tr th:each="s : ${recentes}">
-            <td>
-              <a th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">Protocolo</a>
-            </td>
-            <td th:text="${s.paciente_nome}">Paciente</td>
-            <td th:text="${s.tipo_solicitacao}">Tipo</td>
-            <td>
-              <span class="badge bg-danger" th:if="${s.prioridade == 'URGENTE'}">URGENTE</span>
-              <span class="badge bg-warning text-dark" th:if="${s.prioridade == 'ALTA'}">ALTA</span>
-              <span class="badge bg-primary" th:if="${s.prioridade == null or s.prioridade == 'NORMAL'}">NORMAL</span>
-            </td>
-            <td th:text="${s.status}">Status</td>
-            <td th:text="${#temporals.format(s.data_entrada, 'dd/MM/yyyy HH:mm:ss')}">Entrada</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
