@@ -13,15 +13,15 @@
       <span class="eyebrow">Regulação</span>
       <h1 class="page-title mb-1">Fila de regulação</h1>
       <p class="page-subtitle mb-0">
-        Analise solicitações TFD/APAC, acompanhe prioridades e registre decisões regulatórias.
+        Analise somente solicitações pendentes de decisão regulatória. Solicitações finalizadas devem permanecer no histórico/relatórios.
       </p>
     </div>
   </section>
 
   <section class="row g-3 mb-3">
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Total listado</span><div class="h4 mb-0" th:text="${#lists.size(itens)}">0</div></div></div>
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div class="h4 mb-0">TFD/APAC</div></div></div>
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Análise</span><div class="h4 mb-0">Regulação</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Fila ativa</span><div class="h4 mb-0">ENVIADA/EM ANÁLISE</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Decisão</span><div class="h4 mb-0">Regulação</div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Consulta</span><a class="btn btn-sm btn-outline-success" th:href="@{/procedimentos}">SIGTAP</a></div></div>
   </section>
 
@@ -38,7 +38,7 @@
       <div class="col-md-3">
         <label class="form-label">Status</label>
         <select class="form-select" name="status">
-          <option value="">Todos</option>
+          <option value="">Pendentes de análise</option>
           <option th:each="s : ${statusSolicitacao}" th:value="${s}" th:text="${s}" th:selected="${status==s}"></option>
         </select>
       </div>
@@ -57,7 +57,7 @@
     <div class="section-title-row">
       <div>
         <h2 class="section-title">Solicitações para análise</h2>
-        <p class="section-subtitle">Priorize solicitações urgentes, pendentes e em análise.</p>
+        <p class="section-subtitle">Por padrão, esta fila exibe apenas solicitações enviadas ou em análise.</p>
       </div>
     </div>
 
@@ -84,12 +84,18 @@
             <td>
               <span class="badge bg-info text-dark" th:if="${s.status == 'ENVIADA'}">Enviada</span>
               <span class="badge bg-warning text-dark" th:if="${s.status == 'EM_ANALISE'}">Em análise</span>
-              <span class="badge bg-danger" th:if="${s.status == 'PENDENTE_DOCUMENTACAO'}">Pendente</span>
-              <span class="badge bg-success" th:if="${s.status == 'APROVADA'}">Aprovada</span>
-              <span class="badge bg-dark" th:if="${s.status == 'NEGADA'}">Negada</span>
-              <span class="badge bg-light text-dark border" th:if="${s.status != 'ENVIADA' and s.status != 'EM_ANALISE' and s.status != 'PENDENTE_DOCUMENTACAO' and s.status != 'APROVADA' and s.status != 'NEGADA'}" th:text="${s.status}">Status</span>
+              <span class="badge bg-warning text-dark" th:if="${s.status == 'AGUARDANDO_DOCUMENTOS'}">Aguardando documentos</span>
+              <span class="badge bg-secondary" th:if="${s.status == 'DEVOLVIDA_CORRECAO'}">Devolvida para correção</span>
+              <span class="badge bg-success" th:if="${s.status == 'AUTORIZADA'}">✓ Autorizada</span>
+              <span class="badge bg-dark" th:if="${s.status == 'INDEFERIDA'}">Indeferida</span>
+              <span class="badge bg-primary" th:if="${s.status == 'IMPRESSA'}">Impressa</span>
+              <span class="badge bg-light text-dark border" th:if="${s.status != 'ENVIADA' and s.status != 'EM_ANALISE' and s.status != 'AGUARDANDO_DOCUMENTOS' and s.status != 'DEVOLVIDA_CORRECAO' and s.status != 'AUTORIZADA' and s.status != 'INDEFERIDA' and s.status != 'IMPRESSA'}" th:text="${s.status}">Status</span>
             </td>
-            <td><a class="btn btn-sm btn-success" th:href="@{/regulacao/{id}(id=${s.id})}">Analisar</a></td>
+            <td>
+              <a class="btn btn-sm btn-success" th:if="${s.status == 'ENVIADA' or s.status == 'EM_ANALISE'}" th:href="@{/regulacao/{id}(id=${s.id})}">Analisar</a>
+              <a class="btn btn-sm btn-outline-secondary" th:if="${s.status != 'ENVIADA' and s.status != 'EM_ANALISE'}" th:href="@{/regulacao/{id}(id=${s.id})}">Visualizar</a>
+              <a class="btn btn-sm btn-outline-success ms-1" target="_blank" th:if="${s.status == 'AUTORIZADA' or s.status == 'IMPRESSA'}" th:href="@{/impressao/{id}(id=${s.id})}">Imprimir</a>
+            </td>
           </tr>
         </tbody>
       </table>
