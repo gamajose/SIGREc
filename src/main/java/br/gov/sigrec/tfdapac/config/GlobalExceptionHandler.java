@@ -1,6 +1,8 @@
 package br.gov.sigrec.tfdapac.config;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.Principal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +16,7 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(Exception.class)
-    public ModelAndView handleException(Exception ex, HttpServletRequest request, Principal principal) {
+    public ModelAndView handleException(Exception ex, HttpServletRequest request, HttpServletResponse response, Principal principal) throws IOException {
         Throwable root = rootCause(ex);
         String usuario = principal == null ? "ANONIMO" : principal.getName();
 
@@ -25,6 +27,11 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 root.getMessage(),
                 ex);
+
+        if ("/".equals(request.getRequestURI())) {
+            response.sendRedirect("/solicitacoes");
+            return null;
+        }
 
         ModelAndView mav = new ModelAndView("error");
         mav.addObject("status", 500);
