@@ -15,7 +15,9 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.awt.Desktop;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -74,9 +76,29 @@ public class SigrecDesktopApplication extends Application {
                         webView.setVisible(true);
                     }
                 });
+                webView.getEngine().locationProperty().addListener((obs, oldUrl, newUrl) -> {
+                    if (newUrl != null && newUrl.matches("http://localhost:" + port + "/impressao/\\d+.*")) {
+                        abrirNoNavegadorExterno(newUrl);
+                        if (oldUrl != null && !oldUrl.equals(newUrl)) {
+                            webView.getEngine().load(oldUrl);
+                        } else {
+                            webView.getEngine().load("http://localhost:" + port);
+                        }
+                    }
+                });
                 webView.getEngine().load("http://localhost:" + port);
             });
         }, 0, 700, TimeUnit.MILLISECONDS);
+    }
+
+    private void abrirNoNavegadorExterno(String url) {
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(new URI(url));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean serverReady() {
