@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -24,6 +25,18 @@ public class ImpressaoController {
         this.solicitacaoService = solicitacaoService;
         this.pdfService = pdfService;
         this.currentUserService = currentUserService;
+    }
+
+    @GetMapping("/impressao/{id}/visualizar")
+    public String visualizar(@PathVariable Long id, Model model) {
+        var solicitacao = solicitacaoService.detalhe(id);
+        var complemento = "TFD".equals(solicitacao.get("tipo_solicitacao")) ? solicitacaoService.tfd(id) : solicitacaoService.apac(id);
+
+        model.addAttribute("solicitacao", solicitacao);
+        model.addAttribute("complemento", complemento);
+        model.addAttribute("titulo", "Impressão da solicitação");
+
+        return "impressao/visualizar";
     }
 
     @GetMapping("/impressao/{id}")
