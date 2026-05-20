@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'REGULADOR', 'SOLICITANTE')")
 public class ImpressaoController {
     private final SolicitacaoService solicitacaoService;
     private final PdfService pdfService;
@@ -33,10 +33,15 @@ public class ImpressaoController {
         boolean reimpressao = "IMPRESSA".equals(solicitacao.get("status"));
         PdfService.GeneratedPdf pdf = pdfService.gerar(solicitacao, complemento);
         solicitacaoService.registrarImpressao(id, currentUserService.id(authentication), solicitacao.get("tipo_solicitacao").toString(), reimpressao, pdf.path(), pdf.hash());
+
+        Object numero = solicitacao.get("numero_solicitacao") != null
+                ? solicitacao.get("numero_solicitacao")
+                : solicitacao.get("numero_protocolo");
+
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline()
-                        .filename(solicitacao.get("numero_protocolo") + ".pdf").build().toString())
+                        .filename(numero + ".pdf").build().toString())
                 .body(pdf.bytes());
     }
 }
