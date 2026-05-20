@@ -547,6 +547,8 @@ public class SolicitacaoService {
     }
 
     public void registrarImpressao(Long id, Long usuarioId, String tipo, boolean reimpressao, String caminho, String hash) {
+        String caminhoStorage = StringUtils.hasText(caminho) ? caminho : "VISUALIZACAO_INLINE";
+
         jdbcTemplate.update("""
                 insert into regulacao_tfd.impressoes
                 (solicitacao_id, usuario_id, tipo_formulario, reimpressao, caminho_storage, hash_arquivo)
@@ -556,7 +558,7 @@ public class SolicitacaoService {
                 usuarioId,
                 tipo,
                 reimpressao,
-                caminho,
+                caminhoStorage,
                 hash
         );
 
@@ -567,7 +569,7 @@ public class SolicitacaoService {
                 where id = ?
                 """, id);
 
-        historico(id, usuarioId, null, "IMPRESSA", reimpressao ? "REIMPRESSAO" : "IMPRESSAO", caminho);
+        historico(id, usuarioId, null, "IMPRESSA", reimpressao ? "REIMPRESSAO" : "IMPRESSAO", caminhoStorage);
     }
 
     private void historico(Long solicitacaoId, Long usuarioId, String anterior, String novo, String acao, String observacao) {
