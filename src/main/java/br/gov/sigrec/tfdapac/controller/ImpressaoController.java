@@ -40,7 +40,7 @@ public class ImpressaoController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
                         .filename(numero + ".pdf").build().toString())
                 .body(pdf.bytes());
     }
