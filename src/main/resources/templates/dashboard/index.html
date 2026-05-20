@@ -38,7 +38,7 @@
     </div>
 
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
+      <table class="table table-hover align-middle mb-0">
         <thead>
           <tr>
             <th>Protocolo</th>
@@ -78,18 +78,6 @@
   </section>
 </main>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const painel = document.querySelector('.table-panel');
-    if (!painel) return;
-    Array.from(painel.querySelectorAll('section, div, article')).forEach(function (el) {
-      const texto = (el.textContent || '').toLowerCase();
-      if (texto.indexOf('ops, ocorreu um erro') >= 0 || texto.indexOf('não foi possível concluir') >= 0 || texto.indexOf('voltar para o início') >= 0) {
-        el.remove();
-      }
-    });
-  });
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
