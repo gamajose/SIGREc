@@ -23,8 +23,8 @@ public class NotificationService {
         }
 
         jdbcTemplate.update("""
-                insert into regulacao_tfd.notificacoes
-                (usuario_id, titulo, mensagem, link, lida)
+                insert into regulacao_tfd.notificacoes_sistema
+                (usuario_id, titulo, mensagem, url, lida)
                 values (?, ?, ?, ?, false)
                 """, usuarioId, titulo, mensagem, link);
 
@@ -60,7 +60,7 @@ public class NotificationService {
     public List<Map<String, Object>> listarDoUsuario(Long usuarioId) {
         return jdbcTemplate.queryForList("""
                 select *
-                from regulacao_tfd.notificacoes
+                from regulacao_tfd.notificacoes_sistema
                 where usuario_id = ?
                 order by criado_em desc
                 """, usuarioId);
@@ -68,7 +68,7 @@ public class NotificationService {
 
     public void marcarTodasComoLidas(Long usuarioId) {
         jdbcTemplate.update("""
-                update regulacao_tfd.notificacoes
+                update regulacao_tfd.notificacoes_sistema
                 set lida = true,
                     lida_em = current_timestamp
                 where usuario_id = ?
@@ -79,7 +79,7 @@ public class NotificationService {
     public long contarNaoLidas(Long usuarioId) {
         Long total = jdbcTemplate.queryForObject("""
                 select count(*)
-                from regulacao_tfd.notificacoes
+                from regulacao_tfd.notificacoes_sistema
                 where usuario_id = ?
                   and lida = false
                 """, Long.class, usuarioId);
