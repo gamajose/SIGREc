@@ -1,27 +1,73 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/fragments :: head('Relatorios')}"></head>
-<body><nav th:replace="~{layout/fragments :: nav}"></nav>
+<head th:replace="~{layout/fragments :: head('Histórico')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
 <div th:replace="~{layout/fragments :: profileModal}"></div>
+
 <main class="page">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3">Relatorios</h1>
-    <div class="btn-group">
-      <a class="btn btn-outline-success" th:href="@{/relatorios/fila.csv}">Exportar CSV</a>
-      <a class="btn btn-success" target="_blank" th:href="@{/relatorios/fila.pdf}">Salvar/imprimir PDF</a>
+    <div>
+      <span class="eyebrow">Histórico</span>
+      <h1 class="h3 mb-1">Histórico de solicitações</h1>
+      <p class="text-muted mb-0">Consulte solicitações reguladas de todas as áreas e reimprima documentos autorizados.</p>
     </div>
   </div>
-  <div class="row g-3">
-    <div class="col-md-4"><div class="panel"><h2 class="h5">Fila por status</h2><table class="table"><tr th:each="r:${porStatus}"><td th:text="${r.status}"></td><td th:text="${r.total}"></td></tr></table></div></div>
-    <div class="col-md-4"><div class="panel"><h2 class="h5">Fila por unidade</h2><table class="table"><tr th:each="r:${porUnidade}"><td th:text="${r.unidade}"></td><td th:text="${r.total}"></td></tr></table></div></div>
-    <div class="col-md-4"><div class="panel"><h2 class="h5">Tempo medio ate autorizacao</h2><table class="table"><tr th:each="r:${tempoMedio}"><td th:text="${r.tipo_solicitacao}"></td><td th:text="${r.horas + ' h'}"></td></tr></table></div></div>
-  </div>
+
   <div class="panel mt-3">
-    <h2 class="h5">Reimpressoes recentes</h2>
-    <table class="table"><thead><tr><th>Protocolo</th><th>Paciente</th><th>Formulario</th><th>Usuario</th><th>Data</th></tr></thead>
-      <tbody><tr th:each="r:${reimpressoes}"><td th:text="${r.numero_protocolo}"></td><td th:text="${r.paciente}"></td><td th:text="${r.tipo_formulario}"></td><td th:text="${r.usuario}"></td><td th:text="${r.criado_em}"></td></tr></tbody>
-    </table>
+    <h2 class="h5">Histórico de solicitações</h2>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Protocolo</th>
+            <th>Paciente</th>
+            <th>Tipo</th>
+            <th>Prioridade</th>
+            <th>Estado</th>
+            <th>Entrada</th>
+            <th>Imprimir</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${#lists.isEmpty(historicoSolicitacoes)}">
+            <td colspan="7" class="text-center text-muted py-4">Nenhuma solicitação encontrada no histórico.</td>
+          </tr>
+
+          <tr th:each="s : ${historicoSolicitacoes}">
+            <td th:text="${s.numero_solicitacao ?: s.numero_protocolo}">SOL-000001</td>
+            <td th:text="${s.paciente_nome ?: s.paciente}">Paciente</td>
+            <td th:text="${s.tipo_solicitacao ?: s.tipo}">TFD</td>
+            <td th:text="${s.prioridade}">NORMAL</td>
+            <td>
+              <span class="badge bg-success" th:if="${s.status == 'AUTORIZADA'}">Autorizada</span>
+              <span class="badge bg-primary" th:if="${s.status == 'IMPRESSA'}">Impressa</span>
+              <span class="badge bg-dark" th:if="${s.status == 'INDEFERIDA'}">Indeferida</span>
+              <span class="badge bg-warning text-dark" th:if="${s.status == 'DEVOLVIDA_CORRECAO'}">Devolvida</span>
+              <span class="badge bg-danger" th:if="${s.status == 'AGUARDANDO_DOCUMENTOS'}">Aguardando documentos</span>
+              <span class="badge bg-light text-dark border"
+                    th:if="${s.status != 'AUTORIZADA' and s.status != 'IMPRESSA' and s.status != 'INDEFERIDA' and s.status != 'DEVOLVIDA_CORRECAO' and s.status != 'AGUARDANDO_DOCUMENTOS'}"
+                    th:text="${s.status}">Status</span>
+            </td>
+            <td th:text="${s.data_entrada ?: s.criado_em}">Data</td>
+            <td>
+              <a class="btn btn-sm btn-outline-danger"
+                 target="_blank"
+                 th:if="${s.status == 'AUTORIZADA' or s.status == 'IMPRESSA'}"
+                 th:href="@{/impressao/{id}(id=${s.id})}">PDF</a>
+
+              <a class="btn btn-sm btn-outline-primary"
+                 th:unless="${s.status == 'AUTORIZADA' or s.status == 'IMPRESSA'}"
+                 th:href="@{/solicitacoes/{id}(id=${s.id})}">Ver</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

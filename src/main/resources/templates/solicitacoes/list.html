@@ -1,119 +1,261 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/fragments :: head(${titulo})}"></head>
-<body>
-<nav th:replace="~{layout/fragments :: nav}"></nav>
-<div th:replace="~{layout/fragments :: profileModal}"></div>
+  <head th:replace="~{layout/fragments :: head(${titulo})}"></head>
+  <body>
+    <nav th:replace="~{layout/fragments :: nav}"></nav>
+    <div th:replace="~{layout/fragments :: profileModal}"></div>
 
-<main class="page">
-  <div th:replace="~{layout/fragments :: alerts}"></div>
+    <main class="page">
+      <div th:replace="~{layout/fragments :: alerts}"></div>
 
-  <section class="page-hero mb-3">
-    <div>
-      <span class="eyebrow">Acompanhamento</span>
-      <h1 class="page-title mb-1" th:text="${titulo}">Minhas solicitações</h1>
-      <p class="page-subtitle mb-0">
-        Consulte o andamento das solicitações TFD/APAC, acompanhe o status e acesse os detalhes do processo.
-      </p>
-    </div>
-    <div class="page-actions btn-group">
-      <a class="btn btn-success" th:href="@{/solicitacoes/nova/TFD}">Nova TFD</a>
-      <a class="btn btn-outline-success" th:href="@{/solicitacoes/nova/APAC}">Nova APAC</a>
-    </div>
-  </section>
+      <section class="page-hero mb-3">
+        <div>
+          <span class="eyebrow">Acompanhamento</span>
+          <h1 class="page-title mb-1" th:text="${titulo}">
+            Minhas solicitações
+          </h1>
+          <p class="page-subtitle mb-0">
+            Consulte o andamento das solicitações TFD/APAC, acompanhe o status e
+            acesse os detalhes do processo.
+          </p>
+        </div>
+        <div class="page-actions btn-group">
+          <a class="btn btn-success" th:href="@{/solicitacoes/nova/TFD}"
+            >Nova TFD</a
+          >
+          <a
+            class="btn btn-outline-success"
+            th:href="@{/solicitacoes/nova/APAC}"
+            >Nova APAC</a
+          >
+        </div>
+      </section>
 
-  <section class="row g-3 mb-3">
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Total listado</span><div class="h4 mb-0" th:text="${#lists.size(itens)}">0</div></div></div>
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Em acompanhamento</span><div class="h4 mb-0">TFD/APAC</div></div></div>
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Consulta</span><div class="h4 mb-0">SIGTAP</div></div></div>
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Ação</span><div><a class="btn btn-sm btn-outline-success" th:href="@{/procedimentos}">Consultar procedimento</a></div></div></div>
-  </section>
+      <section class="row g-3 mb-3">
+        <div class="col-md-3">
+          <div class="panel h-100">
+            <span class="eyebrow">Total listado</span>
+            <div class="h4 mb-0" th:text="${#lists.size(itens)}">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel h-100">
+            <span class="eyebrow">Em acompanhamento</span>
+            <div class="h4 mb-0">TFD/APAC</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel h-100">
+            <span class="eyebrow">Consulta</span>
+            <div class="h4 mb-0">SIGTAP</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel h-100">
+            <span class="eyebrow">Ação</span>
+            <div>
+              <a
+                class="btn btn-sm btn-outline-success"
+                th:href="@{/procedimentos}"
+                >Consultar procedimento</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <section class="panel mb-3">
-    <form class="row g-2 align-items-end" method="get">
-      <div class="col-md-2">
-        <label class="form-label">Tipo</label>
-        <select class="form-select" name="tipo">
-          <option value="">Todos</option>
-          <option value="TFD" th:selected="${tipo=='TFD'}">TFD</option>
-          <option value="APAC" th:selected="${tipo=='APAC'}">APAC</option>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Status</label>
-        <select class="form-select" name="status">
-          <option value="">Todos</option>
-          <option th:each="s : ${statusSolicitacao}" th:value="${s}" th:text="${s}" th:selected="${status==s}"></option>
-        </select>
-      </div>
-      <div class="col-md-5">
-        <label class="form-label">Busca</label>
-        <input class="form-control" name="q" th:value="${q}" placeholder="Paciente, protocolo ou procedimento">
-      </div>
-      <div class="col-md-2 d-flex gap-2">
-        <button class="btn btn-outline-success w-100">Filtrar</button>
-        <a class="btn btn-outline-secondary" th:href="@{/solicitacoes}">Limpar</a>
-      </div>
-    </form>
-  </section>
+      <section class="panel mb-3">
+        <form class="row g-2 align-items-end" method="get">
+          <div class="col-md-2">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" name="tipo">
+              <option value="">Todos</option>
+              <option value="TFD" th:selected="${tipo=='TFD'}">TFD</option>
+              <option value="APAC" th:selected="${tipo=='APAC'}">APAC</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+              <option value="">Todos</option>
+              <option
+                th:each="s : ${statusSolicitacao}"
+                th:value="${s}"
+                th:text="${s}"
+                th:selected="${status==s}"
+              ></option>
+            </select>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Busca</label>
+            <input
+              class="form-control"
+              name="q"
+              th:value="${q}"
+              placeholder="Paciente, protocolo ou procedimento"
+            />
+          </div>
+          <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-outline-success w-100">Filtrar</button>
+            <a class="btn btn-outline-secondary" th:href="@{/solicitacoes}"
+              >Limpar</a
+            >
+          </div>
+        </form>
+      </section>
 
-  <section class="panel table-panel">
-    <div class="section-title-row">
-      <div>
-        <h2 class="section-title">Solicitações em acompanhamento</h2>
-        <p class="section-subtitle">Use o botão acompanhar para visualizar histórico, anexos, parecer e situação atual.</p>
-      </div>
-    </div>
+      <section class="panel table-panel">
+        <div class="section-title-row">
+          <div>
+            <h2 class="section-title">Solicitações em acompanhamento</h2>
+            <p class="section-subtitle">
+              Use o botão acompanhar para visualizar histórico, anexos, parecer
+              e situação atual.
+            </p>
+          </div>
+        </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Protocolo</th>
-            <th>Paciente</th>
-            <th>Procedimento</th>
-            <th>Prioridade</th>
-            <th>Status</th>
-            <th>Entrada</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:if="${#lists.isEmpty(itens)}">
-            <td colspan="7" class="text-center text-muted py-4">Nenhuma solicitação encontrada.</td>
-          </tr>
-          <tr th:each="s : ${itens}">
-            <td>
-              <a class="fw-semibold text-decoration-none" th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">SOL-000001</a>
-              <div class="small text-secondary" th:text="${s.tipo_solicitacao}">TFD</div>
-            </td>
-            <td><span th:text="${s.paciente_nome}"></span><div class="small text-secondary" th:text="${s.paciente_cns}"></div></td>
-            <td><span th:text="${s.procedimento_codigo}"></span><div class="small text-secondary" th:text="${s.procedimento_descricao}"></div></td>
-            <td>
-              <span class="badge bg-danger" th:if="${s.prioridade == 'URGENTE'}">URGENTE</span>
-              <span class="badge bg-warning text-dark" th:if="${s.prioridade == 'ALTA'}">ALTA</span>
-              <span class="badge bg-primary" th:if="${s.prioridade == null or s.prioridade == 'NORMAL'}">NORMAL</span>
-            </td>
-            <td>
-              <span class="badge bg-secondary" th:if="${s.status == 'RASCUNHO'}">Rascunho</span>
-              <span class="badge bg-info text-dark" th:if="${s.status == 'ENVIADA'}">Enviada</span>
-              <span class="badge bg-warning text-dark" th:if="${s.status == 'EM_ANALISE'}">Em análise</span>
-              <span class="badge bg-danger" th:if="${s.status == 'PENDENTE_DOCUMENTACAO'}">Pendente</span>
-              <span class="badge bg-success" th:if="${s.status == 'APROVADA'}">Aprovada</span>
-              <span class="badge bg-dark" th:if="${s.status == 'NEGADA'}">Negada</span>
-              <span class="badge bg-primary" th:if="${s.status == 'FINALIZADA'}">Finalizada</span>
-              <span class="badge bg-light text-dark border" th:if="${s.status != 'RASCUNHO' and s.status != 'ENVIADA' and s.status != 'EM_ANALISE' and s.status != 'PENDENTE_DOCUMENTACAO' and s.status != 'APROVADA' and s.status != 'NEGADA' and s.status != 'FINALIZADA'}" th:text="${s.status}">Status</span>
-            </td>
-            <td th:text="${s.data_entrada}"></td>
-            <td>
-              <a class="btn btn-sm btn-outline-primary" th:href="@{/solicitacoes/{id}(id=${s.id})}">Acompanhar</a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Protocolo</th>
+                <th>Paciente</th>
+                <th>Procedimento</th>
+                <th>Prioridade</th>
+                <th>Status</th>
+                <th>Entrada</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(itens)}">
+                <td colspan="7" class="text-center text-muted py-4">
+                  Nenhuma solicitação encontrada.
+                </td>
+              </tr>
+              <tr th:each="s : ${itens}">
+                <td>
+                  <a
+                    class="fw-semibold text-decoration-none"
+                    th:href="@{/solicitacoes/{id}(id=${s.id})}"
+                    th:text="${s.numero_solicitacao ?: s.numero_protocolo}"
+                    >SOL-000001</a
+                  >
+                  <div
+                    class="small text-secondary"
+                    th:text="${s.tipo_solicitacao}"
+                  >
+                    TFD
+                  </div>
+                </td>
+                <td>
+                  <span th:text="${s.paciente_nome}"></span>
+                  <div
+                    class="small text-secondary"
+                    th:text="${s.paciente_cns}"
+                  ></div>
+                </td>
+                <td>
+                  <span th:text="${s.procedimento_codigo}"></span>
+                  <div
+                    class="small text-secondary"
+                    th:text="${s.procedimento_descricao}"
+                  ></div>
+                </td>
+                <td>
+                  <span
+                    class="badge bg-danger"
+                    th:if="${s.prioridade == 'URGENTE'}"
+                    >URGENTE</span
+                  >
+                  <span
+                    class="badge bg-warning text-dark"
+                    th:if="${s.prioridade == 'ALTA'}"
+                    >ALTA</span
+                  >
+                  <span
+                    class="badge bg-primary"
+                    th:if="${s.prioridade == null or s.prioridade == 'NORMAL'}"
+                    >NORMAL</span
+                  >
+                </td>
+                <td>
+                  <span
+                    class="badge bg-secondary"
+                    th:if="${s.status == 'RASCUNHO'}"
+                    >Rascunho</span
+                  >
+                  <span
+                    class="badge bg-info text-dark"
+                    th:if="${s.status == 'ENVIADA'}"
+                    >Enviada</span
+                  >
+                  <span
+                    class="badge bg-warning text-dark"
+                    th:if="${s.status == 'EM_ANALISE'}"
+                    >Em análise</span
+                  >
+                  <span
+                    class="badge bg-danger"
+                    th:if="${s.status == 'AGUARDANDO_DOCUMENTOS'}"
+                    >Aguardando documentos</span
+                  >
+                  <span
+                    class="badge bg-success"
+                    th:if="${s.status == 'AUTORIZADA'}"
+                    >Autorizada</span
+                  >
+                  <span
+                    class="badge bg-dark"
+                    th:if="${s.status == 'INDEFERIDA'}"
+                    >Indeferida</span
+                  >
+                  <span
+                    class="badge bg-warning text-dark"
+                    th:if="${s.status == 'DEVOLVIDA_CORRECAO'}"
+                    >Devolvida para correção</span
+                  >
+                  <span
+                    class="badge bg-primary"
+                    th:if="${s.status == 'IMPRESSA'}"
+                    >Impressa</span
+                  >
+                  <span
+                    class="badge bg-primary"
+                    th:if="${s.status == 'FINALIZADA'}"
+                    >Finalizada</span
+                  >
+                  <span
+                    class="badge bg-light text-dark border"
+                    th:if="${s.status != 'RASCUNHO' and s.status != 'ENVIADA' and s.status != 'EM_ANALISE' and s.status != 'AGUARDANDO_DOCUMENTOS' and s.status != 'AUTORIZADA' and s.status != 'INDEFERIDA' and s.status != 'DEVOLVIDA_CORRECAO' and s.status != 'IMPRESSA' and s.status != 'FINALIZADA'}"
+                    th:text="${s.status}"
+                    >Status</span
+                  >
+                </td>
+                <td th:text="${s.data_entrada}"></td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a
+                      class="btn btn-outline-primary"
+                      th:href="@{/solicitacoes/{id}(id=${s.id})}"
+                      >Acompanhar</a
+                    >
+                    <a
+                      class="btn btn-outline-danger"
+                      target="_blank"
+                      th:if="${s.status == 'AUTORIZADA' or s.status == 'IMPRESSA'}"
+                      th:href="@{/impressao/{id}(id=${s.id})}"
+                      >PDF</a
+                    >
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
