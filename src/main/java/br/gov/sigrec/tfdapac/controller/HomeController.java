@@ -1,6 +1,8 @@
 package br.gov.sigrec.tfdapac.controller;
 
 import br.gov.sigrec.tfdapac.service.CurrentUserService;
+import java.util.List;
+import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -27,8 +29,6 @@ public class HomeController {
                 select status, count(*) total
                 from regulacao_tfd.solicitacoes
                 where numero_protocolo is not null
-                  and numero_protocolo not ilike '<!doctype%'
-                  and numero_protocolo not ilike '%<html%'
                 group by status
                 order by status
                 """) : jdbcTemplate.queryForList("""
@@ -36,36 +36,51 @@ public class HomeController {
                 from regulacao_tfd.solicitacoes
                 where (usuario_criacao = ? or (? is not null and unidade_solicitante_id = ?))
                   and numero_protocolo is not null
-                  and numero_protocolo not ilike '<!doctype%'
-                  and numero_protocolo not ilike '%<html%'
                 group by status
                 order by status
                 """, userId, unidadeId, unidadeId));
 
-        model.addAttribute("recentes", admin ? jdbcTemplate.queryForList("""
+        List<Map<String, Object>> recentes = admin ? jdbcTemplate.queryForList("""
                 select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.prioridade, s.status, s.data_entrada, p.nome paciente_nome
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 where s.numero_protocolo is not null
-                  and s.numero_protocolo not ilike '<!doctype%'
-                  and s.numero_protocolo not ilike '%<html%'
-                  and p.nome not ilike '<!doctype%'
-                  and p.nome not ilike '%<html%'
                 order by s.data_entrada desc
-                limit 10
+                limit 25
                 """) : jdbcTemplate.queryForList("""
                 select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.prioridade, s.status, s.data_entrada, p.nome paciente_nome
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 where (s.usuario_criacao = ? or (? is not null and s.unidade_solicitante_id = ?))
                   and s.numero_protocolo is not null
-                  and s.numero_protocolo not ilike '<!doctype%'
-                  and s.numero_protocolo not ilike '%<html%'
-                  and p.nome not ilike '<!doctype%'
-                  and p.nome not ilike '%<html%'
                 order by s.data_entrada desc
-                limit 10
-                """, userId, unidadeId, unidadeId));
+                limit 25
+                """, userId, unidadeId, unidadeId);
+
+        model.addAttribute("recentes", recentes.stream()
+                .filter(this::registroValido)
+                .limit(10)
+                .toList());
+
         return "dashboard/index";
+    }
+
+    private boolean registroValido(Map<String, Object> item) {
+        return textoValido(item.get("numero_protocolo"))
+                && textoValido(item.get("paciente_nome"))
+                && textoValido(item.get("tipo_solicitacao"))
+                && textoValido(item.get("status"));
+    }
+
+    private boolean textoValido(Object valor) {
+        if (valor == null) {
+            return false;
+        }
+        String texto = valor.toString().toLowerCase();
+        return !texto.contains("<!doctype")
+                && !texto.contains("<html")
+                && !texto.contains("<nav")
+                && !texto.contains("ops, ocorreu um erro")
+                && !texto.contains("internal server error");
     }
 }
