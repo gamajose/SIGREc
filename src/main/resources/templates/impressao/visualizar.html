@@ -9,13 +9,18 @@
     <div>
       <span class="eyebrow">Impressão</span>
       <h1 class="page-title mb-1">Impressão da solicitação</h1>
-      <p class="page-subtitle mb-0">Confira os dados da solicitação e use o botão imprimir para salvar em PDF.</p>
+      <p class="page-subtitle mb-0">O PDF foi gerado automaticamente e salvo no armazenamento local do sistema.</p>
     </div>
     <div class="page-actions btn-group">
-      <button type="button" class="btn btn-success" onclick="window.print()">Imprimir / Salvar PDF</button>
+      <a class="btn btn-success" th:href="@{/impressao/{id}(id=${solicitacao['id']})}">Baixar PDF</a>
       <a class="btn btn-outline-secondary" th:href="@{/solicitacoes/{id}(id=${solicitacao['id']})}">Voltar</a>
     </div>
   </section>
+
+  <div class="alert alert-info no-print" th:if="${pdfPath != null}">
+    <strong>PDF salvo em:</strong>
+    <div th:text="${pdfPath}"></div>
+  </div>
 
   <section class="panel">
     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -48,26 +53,6 @@
       <div class="col-md-3"><strong>Sexo:</strong><br><span th:text="${solicitacao['paciente_sexo']}">Sexo</span></div>
       <div class="col-md-6"><strong>Mãe:</strong><br><span th:text="${solicitacao['paciente_mae']}">Mãe</span></div>
     </div>
-
-    <h3 class="h5">Procedimento</h3>
-    <div class="row g-3 mb-3">
-      <div class="col-md-3"><strong>Código:</strong><br><span th:text="${solicitacao['procedimento_codigo']}">Código</span></div>
-      <div class="col-md-9"><strong>Descrição:</strong><br><span th:text="${solicitacao['procedimento_descricao']}">Procedimento</span></div>
-      <div class="col-md-3"><strong>CID principal:</strong><br><span th:text="${solicitacao['cid10_principal']}">CID</span></div>
-      <div class="col-md-9"><strong>Diagnóstico:</strong><br><span th:text="${solicitacao['descricao_diagnostico']}">Diagnóstico</span></div>
-    </div>
-
-    <h3 class="h5">Unidades e profissionais</h3>
-    <div class="row g-3 mb-3">
-      <div class="col-md-6"><strong>Unidade solicitante:</strong><br><span th:text="${solicitacao['unidade_nome']}">Unidade</span></div>
-      <div class="col-md-6"><strong>Unidade autorizadora:</strong><br><span th:text="${solicitacao['unidade_autorizadora_nome']}">Unidade autorizadora</span></div>
-      <div class="col-md-6"><strong>Profissional solicitante:</strong><br><span th:text="${solicitacao['profissional_solicitante_nome']}">Profissional</span></div>
-      <div class="col-md-6"><strong>Profissional autorizador:</strong><br><span th:text="${solicitacao['profissional_autorizador_nome']}">Autorizador</span></div>
-    </div>
-
-    <h3 class="h5">Justificativa / Observações</h3>
-    <p th:text="${solicitacao['justificativa']}">Justificativa</p>
-    <p th:if="${solicitacao['observacao_regulacao'] != null}"><strong>Observação da regulação:</strong> <span th:text="${solicitacao['observacao_regulacao']}"></span></p>
   </section>
 </main>
 
