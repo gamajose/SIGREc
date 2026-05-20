@@ -28,14 +28,14 @@ public class NotificacaoController {
 
         model.addAttribute("notificacoes", jdbcTemplate.queryForList("""
                 select *
-                from regulacao_tfd.notificacoes
+                from regulacao_tfd.notificacoes_sistema
                 where usuario_id = ?
                 order by criado_em desc
                 limit 100
                 """, usuarioId));
 
         jdbcTemplate.update("""
-                update regulacao_tfd.notificacoes
+                update regulacao_tfd.notificacoes_sistema
                 set lida = true,
                     lida_em = current_timestamp
                 where usuario_id = ?
@@ -52,7 +52,7 @@ public class NotificacaoController {
 
         Integer total = jdbcTemplate.queryForObject("""
                 select count(*)
-                from regulacao_tfd.notificacoes
+                from regulacao_tfd.notificacoes_sistema
                 where usuario_id = ?
                   and lida = false
                 """, Integer.class, usuarioId);
@@ -65,7 +65,7 @@ public class NotificacaoController {
         Long usuarioId = currentUserService.id(auth);
 
         jdbcTemplate.update("""
-                update regulacao_tfd.notificacoes
+                update regulacao_tfd.notificacoes_sistema
                 set lida = true,
                     lida_em = current_timestamp
                 where id = ?
@@ -80,7 +80,7 @@ public class NotificacaoController {
         Long usuarioId = currentUserService.id(auth);
 
         jdbcTemplate.update("""
-                update regulacao_tfd.notificacoes
+                update regulacao_tfd.notificacoes_sistema
                 set lida = true,
                     lida_em = current_timestamp
                 where usuario_id = ?
