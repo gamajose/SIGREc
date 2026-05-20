@@ -20,7 +20,7 @@
     </div>
     <div class="page-actions d-flex gap-2 flex-wrap">
       <a class="btn btn-outline-success" th:if="${adminLogado or reguladorLogado}" th:href="@{/regulacao/{id}(id=${solicitacao['id']})}">Abrir regulação</a>
-      <a class="btn btn-success" th:href="@{/impressao/{id}(id=${solicitacao['id']})}" target="_blank">Imprimir PDF</a>
+      <a class="btn btn-success" th:if="${solicitacao['status'] == 'AUTORIZADA' or solicitacao['status'] == 'IMPRESSA'}" th:href="@{/impressao/{id}/visualizar(id=${solicitacao['id']})}">Imprimir / Salvar PDF</a>
       <a class="btn btn-outline-secondary" th:href="@{/solicitacoes}">Voltar</a>
     </div>
   </section>
@@ -35,14 +35,14 @@
 
     <div class="row g-3">
       <div class="col-md-4"><div class="alert alert-light border h-100 mb-0"><strong>Status</strong><br><span class="badge bg-info text-dark" th:text="${solicitacao['status'] ?: '-'}">Status</span></div></div>
-      <div class="col-md-4"><div class="alert alert-light border h-100 mb-0"><strong>Ação necessária</strong><br><span th:if="${solicitacao['status'] == 'PENDENTE_DOCUMENTACAO'}">Verifique a orientação da regulação e envie a documentação solicitada conforme fluxo indicado.</span><span th:if="${solicitacao['status'] != 'PENDENTE_DOCUMENTACAO'}">Nenhuma ação pendente no momento.</span></div></div>
-      <div class="col-md-4"><div class="alert alert-light border h-100 mb-0"><strong>Orientação da regulação</strong><br><span th:text="${solicitacao['parecer_regulacao'] ?: 'Acompanhe o histórico para verificar novas movimentações.'}"></span></div></div>
+      <div class="col-md-4"><div class="alert alert-light border h-100 mb-0"><strong>Ação necessária</strong><br><span th:if="${solicitacao['status'] == 'AGUARDANDO_DOCUMENTOS'}">Verifique a orientação da regulação e envie a documentação solicitada conforme fluxo indicado.</span><span th:if="${solicitacao['status'] != 'AGUARDANDO_DOCUMENTOS'}">Nenhuma ação pendente no momento.</span></div></div>
+      <div class="col-md-4"><div class="alert alert-light border h-100 mb-0"><strong>Orientação da regulação</strong><br><span th:text="${solicitacao['parecer_regulacao'] ?: 'Acompanhe as movimentações da solicitação para verificar novas orientações.'}"></span></div></div>
     </div>
   </section>
 
   <div class="row g-3 mb-3">
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div><span class="badge bg-primary" th:text="${solicitacao['prioridade'] ?: 'NORMAL'}">NORMAL</span></div></div></div>
-    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Entrada</span><div class="h6 mb-0" th:text="${solicitacao['data_entrada'] ?: solicitacao['criado_em'] ?: '-'}">Data</div></div></div>
+    <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Entrada</span><div class="h6 mb-0" th:text="${#strings.substring((solicitacao['data_entrada'] != null ? solicitacao['data_entrada'] : solicitacao['criado_em']).toString(), 0, 19)}">Data</div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Procedimento</span><div class="h6 mb-0" th:text="${solicitacao['procedimento_codigo'] ?: '-'}">Código</div></div></div>
     <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Tipo</span><div class="h6 mb-0" th:text="${solicitacao['tipo_solicitacao'] ?: '-'}">TFD</div></div></div>
   </div>
@@ -91,20 +91,6 @@
     </div>
 
     <div class="col-lg-4">
-      <section class="panel mb-3">
-        <h2 class="section-title">Histórico</h2>
-        <p class="section-subtitle">Movimentações registradas durante o fluxo da solicitação.</p>
-        <div th:if="${#lists.isEmpty(historico)}" class="text-muted">Nenhum histórico registrado.</div>
-        <div class="border-start ps-3" th:if="${!#lists.isEmpty(historico)}">
-          <div class="mb-3" th:each="h:${historico}">
-            <strong th:text="${h['acao'] ?: h['tipo'] ?: 'Movimentação'}"></strong>
-            <div class="small text-secondary" th:text="${(h['criado_em'] ?: '-') + ' - ' + (h['usuario_nome'] ?: h['nome'] ?: '')}"></div>
-            <div th:if="${h['status_anterior'] != null or h['status_novo'] != null}" th:text="${(h['status_anterior'] ?: '-') + ' → ' + (h['status_novo'] ?: '-')}"></div>
-            <div class="small" th:text="${h['observacao'] ?: ''}"></div>
-          </div>
-        </div>
-      </section>
-
       <section class="panel">
         <h2 class="section-title">Documentos enviados</h2>
         <p class="section-subtitle">Documentos vinculados durante o envio ou tratativa da solicitação.</p>
