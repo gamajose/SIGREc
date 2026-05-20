@@ -1,12 +1,85 @@
-@GetMapping("/impressao/{id}/visualizar")
-public String visualizar(@PathVariable Long id, Model model) {
-    var solicitacao = solicitacaoService.detalhe(id);
-    var complemento = "TFD".equals(solicitacao.get("tipo_solicitacao"))
-            ? solicitacaoService.tfd(id)
-            : solicitacaoService.apac(id);
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Impressão da solicitação')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
 
-    model.addAttribute("solicitacao", solicitacao);
-    model.addAttribute("complemento", complemento);
+<main class="page">
+  <section class="page-hero mb-3 no-print">
+    <div>
+      <span class="eyebrow">Impressão</span>
+      <h1 class="page-title mb-1">Impressão da solicitação</h1>
+      <p class="page-subtitle mb-0">Confira os dados da solicitação e use o botão imprimir para salvar em PDF.</p>
+    </div>
+    <div class="page-actions btn-group">
+      <button type="button" class="btn btn-success" onclick="window.print()">Imprimir / Salvar PDF</button>
+      <a class="btn btn-outline-secondary" th:href="@{/solicitacoes/{id}(id=${solicitacao['id']})}">Voltar</a>
+    </div>
+  </section>
 
-    return "impressao/visualizar";
-}
+  <section class="panel">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h2 class="h4 mb-1">SIGREc TFD/APAC</h2>
+        <p class="text-muted mb-0">Comprovante de solicitação/autorização</p>
+      </div>
+      <div class="text-end">
+        <strong>Protocolo</strong>
+        <div th:text="${solicitacao['numero_solicitacao'] != null ? solicitacao['numero_solicitacao'] : solicitacao['numero_protocolo']}">SOL-000001</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3 class="h5">Dados da solicitação</h3>
+    <div class="row g-3 mb-3">
+      <div class="col-md-3"><strong>Tipo:</strong><br><span th:text="${solicitacao['tipo_solicitacao']}">TFD</span></div>
+      <div class="col-md-3"><strong>Status:</strong><br><span th:text="${solicitacao['status']}">AUTORIZADA</span></div>
+      <div class="col-md-3"><strong>Prioridade:</strong><br><span th:text="${solicitacao['prioridade']}">NORMAL</span></div>
+      <div class="col-md-3"><strong>Entrada:</strong><br><span th:text="${#strings.substring((solicitacao['data_entrada'] != null ? solicitacao['data_entrada'] : solicitacao['criado_em']).toString(), 0, 19)}">Data</span></div>
+    </div>
+
+    <h3 class="h5">Paciente</h3>
+    <div class="row g-3 mb-3">
+      <div class="col-md-6"><strong>Nome:</strong><br><span th:text="${solicitacao['paciente_nome']}">Paciente</span></div>
+      <div class="col-md-3"><strong>CNS:</strong><br><span th:text="${solicitacao['paciente_cns']}">CNS</span></div>
+      <div class="col-md-3"><strong>CPF:</strong><br><span th:text="${solicitacao['paciente_cpf']}">CPF</span></div>
+      <div class="col-md-3"><strong>Nascimento:</strong><br><span th:text="${solicitacao['paciente_nascimento']}">Nascimento</span></div>
+      <div class="col-md-3"><strong>Sexo:</strong><br><span th:text="${solicitacao['paciente_sexo']}">Sexo</span></div>
+      <div class="col-md-6"><strong>Mãe:</strong><br><span th:text="${solicitacao['paciente_mae']}">Mãe</span></div>
+    </div>
+
+    <h3 class="h5">Procedimento</h3>
+    <div class="row g-3 mb-3">
+      <div class="col-md-3"><strong>Código:</strong><br><span th:text="${solicitacao['procedimento_codigo']}">Código</span></div>
+      <div class="col-md-9"><strong>Descrição:</strong><br><span th:text="${solicitacao['procedimento_descricao']}">Procedimento</span></div>
+      <div class="col-md-3"><strong>CID principal:</strong><br><span th:text="${solicitacao['cid10_principal']}">CID</span></div>
+      <div class="col-md-9"><strong>Diagnóstico:</strong><br><span th:text="${solicitacao['descricao_diagnostico']}">Diagnóstico</span></div>
+    </div>
+
+    <h3 class="h5">Unidades e profissionais</h3>
+    <div class="row g-3 mb-3">
+      <div class="col-md-6"><strong>Unidade solicitante:</strong><br><span th:text="${solicitacao['unidade_nome']}">Unidade</span></div>
+      <div class="col-md-6"><strong>Unidade autorizadora:</strong><br><span th:text="${solicitacao['unidade_autorizadora_nome']}">Unidade autorizadora</span></div>
+      <div class="col-md-6"><strong>Profissional solicitante:</strong><br><span th:text="${solicitacao['profissional_solicitante_nome']}">Profissional</span></div>
+      <div class="col-md-6"><strong>Profissional autorizador:</strong><br><span th:text="${solicitacao['profissional_autorizador_nome']}">Autorizador</span></div>
+    </div>
+
+    <h3 class="h5">Justificativa / Observações</h3>
+    <p th:text="${solicitacao['justificativa']}">Justificativa</p>
+    <p th:if="${solicitacao['observacao_regulacao'] != null}"><strong>Observação da regulação:</strong> <span th:text="${solicitacao['observacao_regulacao']}"></span></p>
+  </section>
+</main>
+
+<style>
+  @media print {
+    .no-print, nav { display: none !important; }
+    body { background: #fff !important; }
+    .page { margin: 0 !important; padding: 0 !important; }
+    .panel { border: 0 !important; box-shadow: none !important; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
