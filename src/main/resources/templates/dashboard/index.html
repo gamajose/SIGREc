@@ -54,9 +54,7 @@
             <td colspan="6" class="text-center text-muted py-4">Nenhuma movimentação recente encontrada.</td>
           </tr>
           <tr th:each="s : ${recentes}">
-            <td>
-              <a class="fw-semibold text-decoration-none" th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">Protocolo</a>
-            </td>
+            <td><a class="fw-semibold text-decoration-none" th:href="@{/solicitacoes/{id}(id=${s.id})}" th:text="${s.numero_solicitacao ?: s.numero_protocolo}">Protocolo</a></td>
             <td th:text="${s.paciente_nome}">Paciente</td>
             <td><span class="badge bg-light text-dark border" th:text="${s.tipo_solicitacao}">Tipo</span></td>
             <td>
@@ -80,6 +78,18 @@
   </section>
 </main>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const painel = document.querySelector('.table-panel');
+    if (!painel) return;
+    Array.from(painel.querySelectorAll('section, div, article')).forEach(function (el) {
+      const texto = (el.textContent || '').toLowerCase();
+      if (texto.indexOf('ops, ocorreu um erro') >= 0 || texto.indexOf('não foi possível concluir') >= 0 || texto.indexOf('voltar para o início') >= 0) {
+        el.remove();
+      }
+    });
+  });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
