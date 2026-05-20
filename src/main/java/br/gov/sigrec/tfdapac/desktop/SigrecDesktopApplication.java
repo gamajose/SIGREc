@@ -11,9 +11,16 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 
 import java.awt.Desktop;
 import java.net.HttpURLConnection;
@@ -70,25 +77,55 @@ public class SigrecDesktopApplication extends Application {
             }
             executor.shutdown();
             Platform.runLater(() -> {
-                webView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+                WebEngine engine = webView.getEngine();
+
+                engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
                     if (newState == Worker.State.SUCCEEDED) {
                         loading.setVisible(false);
                         webView.setVisible(true);
+                        interceptarLinksPdf(engine);
                     }
                 });
-                webView.getEngine().locationProperty().addListener((obs, oldUrl, newUrl) -> {
-                    if (newUrl != null && newUrl.matches("http://localhost:" + port + "/impressao/\\d+.*")) {
+
+                engine.locationProperty().addListener((obs, oldUrl, newUrl) -> {
+                    if (ehUrlPdf(newUrl)) {
                         abrirNoNavegadorExterno(newUrl);
-                        if (oldUrl != null && !oldUrl.equals(newUrl)) {
-                            webView.getEngine().load(oldUrl);
-                        } else {
-                            webView.getEngine().load("http://localhost:" + port);
-                        }
+                        Platform.runLater(() -> engine.load(oldUrl != null ? oldUrl : "http://localhost:" + port));
                     }
                 });
-                webView.getEngine().load("http://localhost:" + port);
+
+                engine.load("http://localhost:" + port);
             });
         }, 0, 700, TimeUnit.MILLISECONDS);
+    }
+
+    private void interceptarLinksPdf(WebEngine engine) {
+        Document document = engine.getDocument();
+        if (document == null) {
+            return;
+        }
+
+        NodeList links = document.getElementsByTagName("a");
+        for (int i = 0; i < links.getLength(); i++) {
+            Element link = (Element) links.item(i);
+            String href = link.getAttribute("href");
+            if (!ehUrlPdf(href)) {
+                continue;
+            }
+
+            ((EventTarget) link).addEventListener("click", new EventListener() {
+                @Override
+                public void handleEvent(Event event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    abrirNoNavegadorExterno(href);
+                }
+            }, true);
+        }
+    }
+
+    private boolean ehUrlPdf(String url) {
+        return url != null && url.matches("https?://localhost:" + port + "/impressao/\\d+.*");
     }
 
     private void abrirNoNavegadorExterno(String url) {
