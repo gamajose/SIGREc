@@ -29,12 +29,17 @@ public class RelatorioController {
     @GetMapping("/relatorios")
     public String index(Model model) {
         model.addAttribute("porStatus", jdbcTemplate.queryForList("""
-                select status, count(*) total from regulacao_tfd.solicitacoes group by status order by status
+                select status, count(*) total
+                from regulacao_tfd.solicitacoes
+                group by status
+                order by status
                 """));
         model.addAttribute("porUnidade", jdbcTemplate.queryForList("""
                 select u.nome unidade, count(*) total
-                from regulacao_tfd.solicitacoes s join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
-                group by u.nome order by u.nome
+                from regulacao_tfd.solicitacoes s
+                join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
+                group by u.nome
+                order by u.nome
                 """));
         model.addAttribute("tempoMedio", jdbcTemplate.queryForList("""
                 select tipo_solicitacao, avg(extract(epoch from (data_autorizacao - data_entrada))/3600)::numeric(10,2) horas
@@ -42,30 +47,67 @@ public class RelatorioController {
                 where data_autorizacao is not null
                 group by tipo_solicitacao
                 """));
-        model.addAttribute("reimpressoes", jdbcTemplate.queryForList("""
-                select s.numero_protocolo, p.nome paciente, i.tipo_formulario, i.criado_em, u.nome usuario
-                from regulacao_tfd.impressoes i
-                join regulacao_tfd.solicitacoes s on s.id = i.solicitacao_id
+        model.addAttribute("historicoSolicitacoes", jdbcTemplate.queryForList("""
+                select s.id,
+                       s.numero_protocolo,
+                       s.tipo_solicitacao,
+                       p.nome paciente,
+                       u.nome unidade,
+                       coalesce(pr.codigo, s.procedimento_codigo_externo) procedimento_codigo,
+                       coalesce(pr.descricao, vpu.descricao, '') procedimento_descricao,
+                       s.status,
+                       s.prioridade,
+                       s.data_entrada,
+                       s.data_analise,
+                       s.data_autorizacao,
+                       s.observacao_regulacao,
+                       s.motivo_indeferimento,
+                       h.observacao ultima_observacao,
+                       h.criado_em ultima_movimentacao,
+                       h.acao ultima_acao,
+                       usu.nome usuario_movimentacao
+                from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
-                left join regulacao_tfd.usuarios u on u.id = i.usuario_id
-                where i.reimpressao
-                order by i.criado_em desc limit 50
+                join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
+                left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
+                left join regulacao_tfd.vw_procedimentos_unificados vpu on vpu.codigo = s.procedimento_codigo_externo
+                left join lateral (
+                    select h.*
+                    from regulacao_tfd.solicitacao_historico h
+                    where h.solicitacao_id = s.id
+                    order by h.criado_em desc
+                    limit 1
+                ) h on true
+                left join regulacao_tfd.usuarios usu on usu.id = h.usuario_id
+                where s.status not in ('ENVIADA','EM_ANALISE')
+                order by coalesce(h.criado_em, s.data_analise, s.data_autorizacao, s.data_entrada) desc
+                limit 200
                 """));
         return "relatorios/index";
     }
 
     @GetMapping("/relatorios/fila.csv")
     public ResponseEntity<String> filaCsv() {
-        StringBuilder csv = new StringBuilder("protocolo;tipo;paciente;unidade;procedimento;prioridade;status;data_entrada\n");
+        StringBuilder csv = new StringBuilder("protocolo;tipo;paciente;unidade;procedimento;prioridade;status;data_entrada;data_decisao;motivo_parecer\n");
         jdbcTemplate.queryForList("""
                 select s.numero_protocolo, s.tipo_solicitacao, p.nome paciente, u.nome unidade,
-                       coalesce(pr.codigo || ' - ' || pr.descricao, '') procedimento,
-                       s.prioridade, s.status, s.data_entrada
+                       coalesce(pr.codigo || ' - ' || pr.descricao, coalesce(s.procedimento_codigo_externo, '')) procedimento,
+                       s.prioridade, s.status, s.data_entrada,
+                       coalesce(s.data_autorizacao, s.data_analise) data_decisao,
+                       coalesce(s.motivo_indeferimento, s.observacao_regulacao, h.observacao, '') motivo_parecer
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
                 left join regulacao_tfd.procedimentos pr on pr.id = s.procedimento_principal_id
-                order by s.data_entrada desc
+                left join lateral (
+                    select h.observacao
+                    from regulacao_tfd.solicitacao_historico h
+                    where h.solicitacao_id = s.id
+                    order by h.criado_em desc
+                    limit 1
+                ) h on true
+                where s.status not in ('ENVIADA','EM_ANALISE')
+                order by coalesce(s.data_autorizacao, s.data_analise, s.data_entrada) desc
                 """).forEach(r -> csv.append(escape(r.get("numero_protocolo"))).append(';')
                 .append(escape(r.get("tipo_solicitacao"))).append(';')
                 .append(escape(r.get("paciente"))).append(';')
@@ -73,10 +115,12 @@ public class RelatorioController {
                 .append(escape(r.get("procedimento"))).append(';')
                 .append(escape(r.get("prioridade"))).append(';')
                 .append(escape(r.get("status"))).append(';')
-                .append(escape(r.get("data_entrada"))).append('\n'));
+                .append(escape(r.get("data_entrada"))).append(';')
+                .append(escape(r.get("data_decisao"))).append(';')
+                .append(escape(r.get("motivo_parecer"))).append('\n'));
         return ResponseEntity.ok()
                 .contentType(new MediaType("text", "csv"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("fila-tfd-apac.csv").build().toString())
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("historico-solicitacoes.csv").build().toString())
                 .body(csv.toString());
     }
 
@@ -86,39 +130,48 @@ public class RelatorioController {
         Document document = new Document(PageSize.A4.rotate(), 24, 24, 24, 24);
         PdfWriter.getInstance(document, out);
         document.open();
-        document.add(new Paragraph("Relatorio de fila TFD/APAC"));
+        document.add(new Paragraph("Historico de solicitacoes TFD/APAC"));
         document.add(new Paragraph(" "));
         PdfPTable table = new PdfPTable(7);
         table.setWidthPercentage(100);
         table.addCell("Protocolo");
         table.addCell("Tipo");
         table.addCell("Paciente");
-        table.addCell("Unidade solicitante");
-        table.addCell("Unidade autorizadora");
-        table.addCell("Prioridade");
+        table.addCell("Unidade");
         table.addCell("Status");
+        table.addCell("Decisao");
+        table.addCell("Motivo/Parecer");
         jdbcTemplate.queryForList("""
                 select s.numero_protocolo, s.tipo_solicitacao, p.nome paciente, u.nome unidade,
-                       coalesce(ua.nome, '') autorizadora, s.prioridade, s.status
+                       s.status,
+                       coalesce(s.data_autorizacao, s.data_analise) data_decisao,
+                       coalesce(s.motivo_indeferimento, s.observacao_regulacao, h.observacao, '') motivo_parecer
                 from regulacao_tfd.solicitacoes s
                 join regulacao_tfd.pacientes p on p.id = s.paciente_id
                 join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
-                left join regulacao_tfd.unidades_saude ua on ua.id = s.unidade_autorizadora_id
-                order by s.data_entrada desc
+                left join lateral (
+                    select h.observacao
+                    from regulacao_tfd.solicitacao_historico h
+                    where h.solicitacao_id = s.id
+                    order by h.criado_em desc
+                    limit 1
+                ) h on true
+                where s.status not in ('ENVIADA','EM_ANALISE')
+                order by coalesce(s.data_autorizacao, s.data_analise, s.data_entrada) desc
                 """).forEach(r -> {
             table.addCell(escape(r.get("numero_protocolo")));
             table.addCell(escape(r.get("tipo_solicitacao")));
             table.addCell(escape(r.get("paciente")));
             table.addCell(escape(r.get("unidade")));
-            table.addCell(escape(r.get("autorizadora")));
-            table.addCell(escape(r.get("prioridade")));
             table.addCell(escape(r.get("status")));
+            table.addCell(escape(r.get("data_decisao")));
+            table.addCell(escape(r.get("motivo_parecer")));
         });
         document.add(table);
         document.close();
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline().filename("fila-tfd-apac.pdf").build().toString())
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline().filename("historico-solicitacoes.pdf").build().toString())
                 .body(out.toByteArray());
     }
 
