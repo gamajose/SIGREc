@@ -11,20 +11,20 @@
     <section class="page-hero mb-3">
         <div>
             <span class="eyebrow">Regulação</span>
-            <h1 class="page-title mb-1" th:text="${solicitacao.numero_solicitacao ?: solicitacao.numero_protocolo}">Protocolo</h1>
-            <p class="page-subtitle mb-0" th:text="${solicitacao.paciente_nome + ' - ' + solicitacao.tipo_solicitacao}"></p>
+            <h1 class="page-title mb-1" th:text="${solicitacao['numero_solicitacao'] ?: solicitacao['numero_protocolo'] ?: '-'}">Protocolo</h1>
+            <p class="page-subtitle mb-0" th:text="${(solicitacao['paciente_nome'] ?: '-') + ' - ' + (solicitacao['tipo_solicitacao'] ?: '-')}"></p>
         </div>
         <div class="page-actions d-flex gap-2">
-            <a class="btn btn-outline-secondary" th:href="@{/solicitacoes/{id}(id=${solicitacao.id})}">Ver detalhe</a>
-            <a class="btn btn-success" target="_blank" th:href="@{/impressao/{id}(id=${solicitacao.id})}">Gerar PDF</a>
+            <a class="btn btn-outline-secondary" th:href="@{/solicitacoes/{id}(id=${solicitacao['id']})}">Ver detalhe</a>
+            <a class="btn btn-success" target="_blank" th:href="@{/impressao/{id}(id=${solicitacao['id']})}">Gerar PDF</a>
         </div>
     </section>
 
     <div class="row g-3 mb-3">
-        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Status atual</span><div class="h5 mb-0" th:text="${solicitacao.status}">STATUS</div></div></div>
-        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div class="h5 mb-0" th:text="${solicitacao.prioridade ?: 'NORMAL'}">NORMAL</div></div></div>
-        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Tipo</span><div class="h5 mb-0" th:text="${solicitacao.tipo_solicitacao}">TFD</div></div></div>
-        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Procedimento</span><div class="h6 mb-0" th:text="${solicitacao.procedimento_codigo ?: '-'}">Código</div></div></div>
+        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Status atual</span><div class="h5 mb-0" th:text="${solicitacao['status'] ?: '-'}">STATUS</div></div></div>
+        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Prioridade</span><div class="h5 mb-0" th:text="${solicitacao['prioridade'] ?: 'NORMAL'}">NORMAL</div></div></div>
+        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Tipo</span><div class="h5 mb-0" th:text="${solicitacao['tipo_solicitacao'] ?: '-'}">TFD</div></div></div>
+        <div class="col-md-3"><div class="panel h-100"><span class="eyebrow">Procedimento</span><div class="h6 mb-0" th:text="${solicitacao['procedimento_codigo'] ?: '-'}">Código</div></div></div>
     </div>
 
     <div class="row g-3">
@@ -37,10 +37,10 @@
                     </div>
                 </div>
                 <dl class="row mb-0">
-                    <dt class="col-sm-3">Unidade</dt><dd class="col-sm-9" th:text="${solicitacao.unidade_nome}"></dd>
-                    <dt class="col-sm-3">Procedimento</dt><dd class="col-sm-9" th:text="${(solicitacao.procedimento_codigo ?: '') + ' - ' + (solicitacao.procedimento_descricao ?: '')}"></dd>
-                    <dt class="col-sm-3">Diagnóstico</dt><dd class="col-sm-9" th:text="${solicitacao.descricao_diagnostico}"></dd>
-                    <dt class="col-sm-3">Justificativa</dt><dd class="col-sm-9" th:text="${solicitacao.justificativa ?: solicitacao.justificativa_clinica}"></dd>
+                    <dt class="col-sm-3">Unidade</dt><dd class="col-sm-9" th:text="${solicitacao['unidade_nome'] ?: '-'}"></dd>
+                    <dt class="col-sm-3">Procedimento</dt><dd class="col-sm-9" th:text="${(solicitacao['procedimento_codigo'] ?: '') + ' - ' + (solicitacao['procedimento_descricao'] ?: '')}"></dd>
+                    <dt class="col-sm-3">Diagnóstico</dt><dd class="col-sm-9" th:text="${solicitacao['descricao_diagnostico'] ?: '-'}"></dd>
+                    <dt class="col-sm-3">Justificativa</dt><dd class="col-sm-9" th:text="${solicitacao['justificativa'] ?: solicitacao['justificativa_clinica'] ?: '-'}"></dd>
                 </dl>
             </section>
 
@@ -57,11 +57,11 @@
                         <tbody>
                             <tr th:if="${#lists.isEmpty(historico)}"><td colspan="5" class="text-center text-muted py-4">Nenhum histórico registrado.</td></tr>
                             <tr th:each="h:${historico}">
-                                <td th:text="${#temporals.format(h.criado_em, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                                <td th:text="${h.usuario_nome ?: h.nome}"></td>
-                                <td th:text="${h.acao ?: h.tipo}"></td>
-                                <td th:text="${(h.status_anterior ?: '-') + ' → ' + (h.status_novo ?: '-')}"></td>
-                                <td th:text="${h.observacao}"></td>
+                                <td th:text="${h['criado_em'] ?: '-'}"></td>
+                                <td th:text="${h['usuario_nome'] ?: h['nome'] ?: '-'}"></td>
+                                <td th:text="${h['acao'] ?: h['tipo'] ?: '-'}"></td>
+                                <td th:text="${(h['status_anterior'] ?: '-') + ' → ' + (h['status_novo'] ?: '-')}"></td>
+                                <td th:text="${h['observacao'] ?: '-'}"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -78,30 +78,18 @@
                     </div>
                 </div>
 
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao.id})}" class="mb-3">
+                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3">
                     <input type="hidden" name="novo_status" value="APROVADA">
                     <label class="form-label">Autorizador</label>
                     <select class="form-select mb-2" name="profissional_autorizador_id">
                         <option value="">Selecione quando autorizar</option>
-                        <option th:each="p:${autorizadores}" th:value="${p.id}" th:text="${p.nome}"></option>
+                        <option th:each="p:${autorizadores}" th:value="${p['id']}" th:text="${p['nome'] ?: '-'}"></option>
                     </select>
                     <div class="row g-2">
-                        <div class="col-md-6">
-                            <label class="form-label">Número autorização</label>
-                            <input class="form-control" name="numero_autorizacao" placeholder="Número autorização">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Número APAC</label>
-                            <input class="form-control" name="numero_apac" placeholder="Número APAC">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Validade início</label>
-                            <input class="form-control" type="date" name="validade_inicio">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Validade fim</label>
-                            <input class="form-control" type="date" name="validade_fim">
-                        </div>
+                        <div class="col-md-6"><label class="form-label">Número autorização</label><input class="form-control" name="numero_autorizacao" placeholder="Número autorização"></div>
+                        <div class="col-md-6"><label class="form-label">Número APAC</label><input class="form-control" name="numero_apac" placeholder="Número APAC"></div>
+                        <div class="col-md-6"><label class="form-label">Validade início</label><input class="form-control" type="date" name="validade_inicio"></div>
+                        <div class="col-md-6"><label class="form-label">Validade fim</label><input class="form-control" type="date" name="validade_fim"></div>
                     </div>
                     <label class="form-label mt-2">Parecer da aprovação</label>
                     <textarea class="form-control mb-3" name="observacao" placeholder="Informe o parecer da aprovação"></textarea>
@@ -110,31 +98,24 @@
 
                 <hr>
 
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao.id})}" class="mb-3">
+                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3">
                     <input type="hidden" name="novo_status" value="PENDENTE_DOCUMENTACAO">
                     <label class="form-label">Documento ou ajuste necessário</label>
                     <select class="form-select mb-2" name="tipo_pendencia">
-                        <option>Laudo médico atualizado</option>
-                        <option>Pedido médico</option>
-                        <option>Exames complementares</option>
-                        <option>Documento pessoal</option>
-                        <option>Cartão SUS</option>
-                        <option>Comprovante de residência</option>
-                        <option>Correção do procedimento</option>
-                        <option>Outros</option>
+                        <option>Laudo médico atualizado</option><option>Pedido médico</option><option>Exames complementares</option><option>Documento pessoal</option><option>Cartão SUS</option><option>Comprovante de residência</option><option>Correção do procedimento</option><option>Outros</option>
                     </select>
                     <textarea class="form-control mb-3" name="observacao" required placeholder="Descreva a pendência para o solicitante"></textarea>
                     <button class="btn btn-outline-warning w-100">Solicitar documento/correção</button>
                 </form>
 
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao.id})}" class="mb-3">
+                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3">
                     <input type="hidden" name="novo_status" value="NEGADA">
                     <label class="form-label">Motivo do indeferimento</label>
                     <textarea class="form-control mb-3" name="observacao" required placeholder="Informe o motivo do indeferimento"></textarea>
                     <button class="btn btn-outline-danger w-100">Negar solicitação</button>
                 </form>
 
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao.id})}">
+                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}">
                     <input type="hidden" name="novo_status" value="DEVOLVIDA">
                     <label class="form-label">Motivo da devolução</label>
                     <textarea class="form-control mb-3" name="observacao" required placeholder="Informe o que precisa ser corrigido"></textarea>
