@@ -16,7 +16,10 @@
         </div>
         <div class="page-actions d-flex gap-2">
             <a class="btn btn-outline-secondary" th:href="@{/solicitacoes/{id}(id=${solicitacao['id']})}">Ver detalhe</a>
-            <a class="btn btn-success" target="_blank" th:href="@{/impressao/{id}(id=${solicitacao['id']})}">Gerar PDF</a>
+            <a class="btn btn-success"
+               target="_blank"
+               th:if="${solicitacao['status'] == 'AUTORIZADA' or solicitacao['status'] == 'IMPRESSA'}"
+               th:href="@{/impressao/{id}(id=${solicitacao['id']})}">Gerar PDF</a>
         </div>
     </section>
 
@@ -61,95 +64,71 @@
 
         <div class="col-lg-5">
             <section class="panel">
-                <div class="section-title-row"><div><h2 class="section-title">Decisão da regulação</h2><p class="section-subtitle">Registre aprovação, indeferimento ou pendência para o solicitante.</p></div></div>
-
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3 regulacao-decisao-form">
-                    <input type="hidden" name="novo_status" value="AUTORIZADA">
-                    <label class="form-label">Autorizador</label>
-                    <select class="form-select mb-2" name="profissional_autorizador_id">
-                        <option value="">Selecione quando autorizar</option>
-                        <option th:each="p:${autorizadores}" th:value="${p['id']}" th:text="${p['nome'] ?: '-'}"></option>
-                    </select>
-                    <div class="row g-2">
-                        <div class="col-md-6"><label class="form-label">Número autorização</label><input class="form-control" name="numero_autorizacao" placeholder="Número autorização"></div>
-                        <div class="col-md-6"><label class="form-label">Número APAC</label><input class="form-control" name="numero_apac" placeholder="Número APAC"></div>
-                        <div class="col-md-6"><label class="form-label">Validade início</label><input class="form-control sigrec-date-br" type="text" name="validade_inicio" placeholder="__/__/____" maxlength="10" inputmode="numeric" autocomplete="off"></div>
-                        <div class="col-md-6"><label class="form-label">Validade fim</label><input class="form-control sigrec-date-br" type="text" name="validade_fim" placeholder="__/__/____" maxlength="10" inputmode="numeric" autocomplete="off"></div>
+                <div class="section-title-row">
+                    <div>
+                        <h2 class="section-title">Decisão da regulação</h2>
+                        <p class="section-subtitle">Registre aprovação, indeferimento ou pendência para o solicitante.</p>
                     </div>
-                    <label class="form-label mt-2">Parecer da aprovação</label>
-                    <textarea class="form-control mb-3" name="observacao" placeholder="Informe o parecer da aprovação"></textarea>
-                    <button class="btn btn-success w-100">Aprovar solicitação</button>
-                </form>
+                </div>
 
-                <hr>
+                <div class="alert alert-success"
+                     th:if="${solicitacao['status'] == 'AUTORIZADA' or solicitacao['status'] == 'IMPRESSA'}">
+                    Solicitação já autorizada. Utilize apenas visualização e impressão.
+                </div>
 
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3">
-                    <input type="hidden" name="novo_status" value="AGUARDANDO_DOCUMENTOS">
-                    <label class="form-label">Documento ou ajuste necessário</label>
-                    <select class="form-select mb-2" name="tipo_pendencia">
-                        <option>Laudo médico atualizado</option><option>Pedido médico</option><option>Exames complementares</option><option>Documento pessoal</option><option>Cartão SUS</option><option>Comprovante de residência</option><option>Correção do procedimento</option><option>Outros</option>
-                    </select>
-                    <textarea class="form-control mb-3" name="observacao" required placeholder="Descreva a pendência para o solicitante"></textarea>
-                    <button class="btn btn-outline-warning w-100">Solicitar documento/correção</button>
-                </form>
+                <div class="alert alert-dark"
+                     th:if="${solicitacao['status'] == 'INDEFERIDA' or solicitacao['status'] == 'FINALIZADA'}">
+                    Solicitação finalizada. Não é possível realizar nova análise.
+                </div>
 
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3">
-                    <input type="hidden" name="novo_status" value="INDEFERIDA">
-                    <label class="form-label">Motivo do indeferimento</label>
-                    <textarea class="form-control mb-3" name="observacao" required placeholder="Informe o motivo do indeferimento"></textarea>
-                    <button class="btn btn-outline-danger w-100">Negar solicitação</button>
-                </form>
+                <div th:if="${solicitacao['status'] != 'AUTORIZADA' and solicitacao['status'] != 'IMPRESSA' and solicitacao['status'] != 'INDEFERIDA' and solicitacao['status'] != 'FINALIZADA'}">
 
-                <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}">
-                    <input type="hidden" name="novo_status" value="DEVOLVIDA_CORRECAO">
-                    <label class="form-label">Motivo da devolução</label>
-                    <textarea class="form-control mb-3" name="observacao" required placeholder="Informe o que precisa ser corrigido"></textarea>
-                    <button class="btn btn-outline-secondary w-100">Devolver para correção</button>
-                </form>
+                    <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3 regulacao-decisao-form">
+                        <input type="hidden" name="novo_status" value="AUTORIZADA">
+                        <label class="form-label">Autorizador</label>
+                        <select class="form-select mb-2" name="profissional_autorizador_id">
+                            <option value="">Selecione quando autorizar</option>
+                            <option th:each="p:${autorizadores}" th:value="${p['id']}" th:text="${p['nome'] ?: '-'}"></option>
+                        </select>
+                        <div class="row g-2">
+                            <div class="col-md-6"><label class="form-label">Número autorização</label><input class="form-control" name="numero_autorizacao" placeholder="Número autorização"></div>
+                            <div class="col-md-6"><label class="form-label">Número APAC</label><input class="form-control" name="numero_apac" placeholder="Número APAC"></div>
+                            <div class="col-md-6"><label class="form-label">Validade início</label><input class="form-control sigrec-date-br" type="text" name="validade_inicio" placeholder="__/__/____" maxlength="10"></div>
+                            <div class="col-md-6"><label class="form-label">Validade fim</label><input class="form-control sigrec-date-br" type="text" name="validade_fim" placeholder="__/__/____" maxlength="10"></div>
+                        </div>
+                        <label class="form-label mt-2">Parecer da aprovação</label>
+                        <textarea class="form-control mb-3" name="observacao" placeholder="Informe o parecer da aprovação"></textarea>
+                        <button class="btn btn-success w-100">Aprovar solicitação</button>
+                    </form>
+
+                    <hr>
+
+                    <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3">
+                        <input type="hidden" name="novo_status" value="AGUARDANDO_DOCUMENTOS">
+                        <label class="form-label">Documento ou ajuste necessário</label>
+                        <textarea class="form-control mb-3" name="observacao" required placeholder="Descreva a pendência para o solicitante"></textarea>
+                        <button class="btn btn-outline-warning w-100">Solicitar documento/correção</button>
+                    </form>
+
+                    <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}" class="mb-3">
+                        <input type="hidden" name="novo_status" value="INDEFERIDA">
+                        <label class="form-label">Motivo do indeferimento</label>
+                        <textarea class="form-control mb-3" name="observacao" required placeholder="Informe o motivo do indeferimento"></textarea>
+                        <button class="btn btn-outline-danger w-100">Indeferir solicitação</button>
+                    </form>
+
+                    <form method="post" th:action="@{/regulacao/{id}/status(id=${solicitacao['id']})}">
+                        <input type="hidden" name="novo_status" value="DEVOLVIDA_CORRECAO">
+                        <label class="form-label">Motivo da devolução</label>
+                        <textarea class="form-control mb-3" name="observacao" required placeholder="Informe o que precisa ser corrigido"></textarea>
+                        <button class="btn btn-outline-secondary w-100">Devolver para correção</button>
+                    </form>
+                </div>
             </section>
         </div>
     </div>
 </main>
 
-<script>
-function somenteNumeros(valor) { return (valor || '').replace(/\D/g, ''); }
-function formatarDataBr(valor) {
-    const n = somenteNumeros(valor).slice(0, 8);
-    if (n.length <= 2) return n;
-    if (n.length <= 4) return n.slice(0, 2) + '/' + n.slice(2);
-    return n.slice(0, 2) + '/' + n.slice(2, 4) + '/' + n.slice(4);
-}
-function dataBrValida(valor) {
-    if (!valor) return true;
-    const m = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (!m) return false;
-    const dia = Number(m[1]); const mes = Number(m[2]); const ano = Number(m[3]);
-    const data = new Date(ano, mes - 1, dia);
-    return data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia;
-}
-function feedback(campo, texto) {
-    let div = campo.parentElement.querySelector('.invalid-feedback');
-    if (!div) { div = document.createElement('div'); div.className = 'invalid-feedback'; campo.parentElement.appendChild(div); }
-    div.textContent = texto;
-}
-document.querySelectorAll('.sigrec-date-br').forEach(campo => {
-    campo.addEventListener('input', function () { campo.value = formatarDataBr(campo.value); campo.classList.remove('is-invalid'); });
-    campo.addEventListener('blur', function () { if (!dataBrValida(campo.value)) { feedback(campo, 'Data inválida. Use o formato dd/mm/aaaa.'); campo.classList.add('is-invalid'); } });
-});
-document.querySelectorAll('.regulacao-decisao-form').forEach(form => {
-    form.addEventListener('submit', function (event) {
-        let ok = true;
-        form.querySelectorAll('.sigrec-date-br').forEach(campo => {
-            if (!dataBrValida(campo.value)) { feedback(campo, 'Data inválida. Use o formato dd/mm/aaaa.'); campo.classList.add('is-invalid'); ok = false; }
-        });
-        if (!ok) { event.preventDefault(); return; }
-        form.querySelectorAll('.sigrec-date-br').forEach(campo => {
-            const m = campo.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-            if (m) campo.value = `${m[3]}-${m[2]}-${m[1]}`;
-        });
-    });
-});
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
