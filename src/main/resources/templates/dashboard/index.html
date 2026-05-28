@@ -14,7 +14,7 @@
       <h1 class="page-title mb-1">Fila TFD/APAC</h1>
       <p class="page-subtitle mb-0">Entrada, análise, autorização, impressão e histórico regulatório.</p>
     </div>
-    <div class="page-actions btn-group">
+    <div class="page-actions btn-group" th:if="${adminLogado or solicitanteLogado}">
       <a class="btn btn-success" th:href="@{/solicitacoes/nova/TFD}">Nova TFD</a>
       <a class="btn btn-outline-success" th:href="@{/solicitacoes/nova/APAC}">Nova APAC</a>
     </div>

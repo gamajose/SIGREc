@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import br.gov.sigrec.tfdapac.service.CurrentUserService;
 import br.gov.sigrec.tfdapac.service.LookupService;
 import br.gov.sigrec.tfdapac.service.SolicitacaoService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -49,6 +50,7 @@ public class SolicitacaoController {
     }
 
     @GetMapping("/solicitacoes/nova/{tipo}")
+    @PreAuthorize("hasAnyRole('ADMIN','SOLICITANTE')")
     public String nova(@PathVariable String tipo, @RequestParam(defaultValue = "") String q, Model model) {
         model.addAttribute("tipo", tipo.toUpperCase());
         model.addAttribute("pacientes", lookupService.pacientes(q));
@@ -78,6 +80,7 @@ public class SolicitacaoController {
     }
 
     @PostMapping("/solicitacoes")
+    @PreAuthorize("hasAnyRole('ADMIN','SOLICITANTE')")
     public String criar(@RequestParam Map<String, String> form, Authentication auth, RedirectAttributes ra) {
         Long id = solicitacaoService.criar(form, currentUserService.id(auth));
         ra.addFlashAttribute("ok", "Solicitacao enviada para regulacao.");

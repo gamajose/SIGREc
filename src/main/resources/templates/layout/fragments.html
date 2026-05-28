@@ -71,7 +71,7 @@
 
           <div class="collapse navbar-collapse sigrec-nav-collapse" id="navMenu">
             <ul class="navbar-nav me-auto sigrec-nav-buttons">
-              <li class="nav-item"><a class="nav-link nav-button" th:href="@{/solicitacoes}">Solicitações</a></li>
+              <li class="nav-item" th:if="${adminLogado or solicitanteLogado}"><a class="nav-link nav-button" th:href="@{/solicitacoes}">Solicitações</a></li>
               <li class="nav-item" th:if="${adminLogado or reguladorLogado}"><a class="nav-link nav-button" th:href="@{/regulacao/fila}">Regulação</a></li>
               <li class="nav-item"><a class="nav-link nav-button" th:href="@{/pacientes}">Pacientes</a></li>
               <li class="nav-item"><a class="nav-link nav-button" th:href="@{/unidades}">Unidades</a></li>

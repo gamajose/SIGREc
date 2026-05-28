@@ -2,6 +2,8 @@ package br.gov.sigrec.tfdapac.controller;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,7 +55,7 @@ public class CadastroController {
         return "unidades/list";
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','REGULACAO')")
+    @PreAuthorize("hasAnyRole('ADMIN','REGULADOR')")
     @PostMapping("/unidades")
     public String salvarUnidade(@RequestParam Map<String, String> f, RedirectAttributes ra) {
         jdbcTemplate.update("""
@@ -83,14 +85,17 @@ public class CadastroController {
 
     @PreAuthorize("hasAnyRole('ADMIN','REGULADOR','SOLICITANTE')")
     @PostMapping("/profissionais")
-    public String salvarProfissional(@RequestParam Map<String, String> f, RedirectAttributes ra) {
+    public String salvarProfissional(@RequestParam Map<String, String> f, Authentication authentication, RedirectAttributes ra) {
+        boolean podeDefinirAtuacao = hasRole(authentication, "ADMIN") || hasRole(authentication, "REGULADOR");
+        boolean solicitante = podeDefinirAtuacao ? "on".equals(f.get("solicitante")) : true;
+        boolean autorizador = podeDefinirAtuacao && "on".equals(f.get("autorizador"));
+
         jdbcTemplate.update("""
             insert into regulacao_tfd.profissionais
             (nome, cpf_cns, conselho, registro_conselho, especialidade, unidade_id, solicitante, autorizador, ativo)
             values (?, ?, ?, ?, ?, ?, ?, ?, true)
             """, f.get("nome"), f.get("cpf_cns"), f.get("conselho"), f.get("registro_conselho"),
-                f.get("especialidade"), nullableLong(f.get("unidade_id")), "on".equals(f.get("solicitante")),
-                "on".equals(f.get("autorizador")));
+                f.get("especialidade"), nullableLong(f.get("unidade_id")), solicitante, autorizador);
         ra.addFlashAttribute("ok", "Profissional cadastrado.");
         return "redirect:/profissionais";
     }
@@ -118,7 +123,7 @@ public class CadastroController {
         return "procedimentos/list";
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','REGULACAO')")
+    @PreAuthorize("hasAnyRole('ADMIN','REGULADOR')")
     @PostMapping("/procedimentos")
     public String salvarProcedimento(@RequestParam Map<String, String> f, RedirectAttributes ra) {
         jdbcTemplate.update("""
@@ -130,7 +135,7 @@ public class CadastroController {
         return "redirect:/procedimentos";
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','REGULACAO')")
+    @PreAuthorize("hasAnyRole('ADMIN','REGULADOR')")
     @PostMapping("/procedimentos/{id}/toggle")
     public String toggleProcedimento(@PathVariable Long id) {
         jdbcTemplate.update("update regulacao_tfd.procedimentos set ativo = not ativo where id = ?", id);
@@ -187,6 +192,16 @@ public class CadastroController {
 
     private Long nullableLong(String value) {
         return value == null || value.isBlank() ? null : Long.valueOf(value);
+    }
+
+    private boolean hasRole(Authentication authentication, String role) {
+        if (authentication == null) {
+            return false;
+        }
+        String authority = "ROLE_" + role;
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(authority::equals);
     }
 
     private java.math.BigDecimal decimal(String value) {

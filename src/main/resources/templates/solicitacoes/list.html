@@ -19,7 +19,7 @@
             acesse os detalhes do processo.
           </p>
         </div>
-        <div class="page-actions btn-group">
+        <div class="page-actions btn-group" th:if="${adminLogado or solicitanteLogado}">
           <a class="btn btn-success" th:href="@{/solicitacoes/nova/TFD}"
             >Nova TFD</a
           >

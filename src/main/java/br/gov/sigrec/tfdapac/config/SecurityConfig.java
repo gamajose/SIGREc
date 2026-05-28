@@ -70,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/relatorios/**").hasRole("ADMIN")
                         .requestMatchers("/solicitacoes/**").hasAnyRole("ADMIN", "SOLICITANTE", "REGULADOR")
                         .requestMatchers("/impressao/**").permitAll()
-                        .requestMatchers("/pacientes/**", "/solicitacoes/**", "/unidades/**", "/profissionais/**", "/procedimentos/**", "/anexos/**").hasAnyRole("ADMIN", "SOLICITANTE")
+                        .requestMatchers("/pacientes/**", "/unidades/**", "/profissionais/**", "/procedimentos/**", "/anexos/**").hasAnyRole("ADMIN", "SOLICITANTE", "REGULADOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

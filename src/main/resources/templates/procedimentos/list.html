@@ -35,7 +35,7 @@
                     </div>
                 </form>
 
-                <form class="row g-2" method="post" th:action="@{/procedimentos}">
+                <form class="row g-2" method="post" th:action="@{/procedimentos}" th:if="${adminLogado or reguladorLogado}">
                     <div class="col-md-2">
                         <input class="form-control"
                                name="codigo"

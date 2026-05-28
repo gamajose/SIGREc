@@ -6,7 +6,7 @@
 <main class="page">
   <div th:replace="~{layout/fragments :: alerts}"></div>
   <h1 class="h3">Profissionais</h1>
-  <div class="panel mb-3" th:if="${adminLogado}">
+  <div class="panel mb-3" th:if="${adminLogado or reguladorLogado or solicitanteLogado}">
     <form class="row g-2" method="post" th:action="@{/profissionais}">
       <div class="col-md-4"><input class="form-control" name="nome" placeholder="Nome" required></div>
       <div class="col-md-2"><input class="form-control" name="cpf_cns" placeholder="CPF/CNS"></div>
@@ -14,8 +14,9 @@
       <div class="col-md-2"><input class="form-control" name="registro_conselho" placeholder="Registro"></div>
       <div class="col-md-3"><input class="form-control" name="especialidade" placeholder="Especialidade"></div>
       <div class="col-md-6"><select class="form-select" name="unidade_id"><option value="">Unidade</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option></select></div>
-      <div class="col-md-2 form-check mt-3"><input class="form-check-input" type="checkbox" name="solicitante" checked> <label class="form-check-label">Solicitante</label></div>
-      <div class="col-md-2 form-check mt-3"><input class="form-check-input" type="checkbox" name="autorizador"> <label class="form-check-label">Autorizador</label></div>
+      <div class="col-md-2 form-check mt-3" th:if="${adminLogado or reguladorLogado}"><input class="form-check-input" type="checkbox" name="solicitante" checked> <label class="form-check-label">Solicitante</label></div>
+      <div class="col-md-2 form-check mt-3" th:if="${adminLogado or reguladorLogado}"><input class="form-check-input" type="checkbox" name="autorizador"> <label class="form-check-label">Autorizador</label></div>
+      <input type="hidden" name="solicitante" value="on" th:if="${solicitanteLogado and !adminLogado and !reguladorLogado}">
       <div class="col-md-2"><button class="btn btn-success w-100">Salvar</button></div>
     </form>
   </div>
