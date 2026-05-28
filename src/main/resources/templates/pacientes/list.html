@@ -15,26 +15,30 @@
             </div>
             <div class="panel mb-3">
                 <h2 class="h5">Novo paciente</h2>
-                <form class="row g-2" method="post" th:action="@{/pacientes}">
+                <form class="row g-2 sigrec-validated-form" method="post" th:action="@{/pacientes}">
                     <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome completo" required></div>
                     <div class="col-md-3"><input class="form-control" name="cns" placeholder="Cartao SUS"></div>
-                    <div class="col-md-3"><input class="form-control" name="cpf" placeholder="CPF"></div>
+                    <div class="col-md-3"><input class="form-control" name="cpf" placeholder="___.___.___-__" inputmode="numeric" autocomplete="off" data-mask="cpf" data-digits="11"></div>
                     <div class="col-md-2"><input class="form-control" name="rg" placeholder="RG"></div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <input class="form-control"
                                type="text"
                                name="data_nascimento"
-                               placeholder="Data nascimento. Ex: 25061992 ou 25/06/1992"
-                               inputmode="numeric">
+                               placeholder="__/__/____"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               data-mask="date"
+                               data-digits="8">
                     </div>
                     <div class="col-md-2"><select class="form-select" name="sexo"><option value="">Sexo</option><option>FEMININO</option><option>MASCULINO</option><option>OUTRO</option></select></div>
                     <div class="col-md-2"><input class="form-control" name="raca_cor" placeholder="Raca/cor"></div>
-                    <div class="col-md-4"><input class="form-control" name="nome_mae" placeholder="Nome da mae"></div>
-                    <div class="col-md-6"><input class="form-control" name="endereco" placeholder="Endereco"></div>
+                    <div class="col-md-3"><input class="form-control" name="nome_mae" placeholder="Nome da mae"></div>
+                    <div class="col-md-2"><input class="form-control" name="cep" placeholder="_____-___" inputmode="numeric" autocomplete="off" data-mask="cep" data-digits="8" data-cep-lookup></div>
+                    <div class="col-md-4"><input class="form-control" name="endereco" data-cep-logradouro placeholder="Endereco"></div>
+                    <div class="col-md-3"><input class="form-control" name="bairro" data-cep-bairro placeholder="Bairro"></div>
                     <div class="col-md-3"><input class="form-control" name="municipio" placeholder="Municipio"></div>
                     <div class="col-md-1"><input class="form-control" name="uf" placeholder="UF" maxlength="2"></div>
-                    <div class="col-md-2"><input class="form-control" name="cep" placeholder="CEP"></div>
-                    <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone"></div>
+                    <div class="col-md-3"><input class="form-control" name="telefone" placeholder="(__)_____-____" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
                     <div class="col-md-4"><input class="form-control" name="email" placeholder="E-mail"></div>
                     <div class="col-md-5"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
                     <div class="col-12"><button class="btn btn-success">Salvar paciente</button></div>

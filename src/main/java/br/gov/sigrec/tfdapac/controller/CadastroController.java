@@ -40,11 +40,11 @@ public class CadastroController {
     public String salvarPaciente(@RequestParam Map<String, String> f, RedirectAttributes ra) {
         jdbcTemplate.update("""
                 insert into regulacao_tfd.pacientes
-                (nome, cns, cpf, rg, data_nascimento, sexo, raca_cor, nome_mae, endereco, municipio, uf, cep, telefone, email, responsavel)
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, f.get("nome"), f.get("cns"), f.get("cpf"), f.get("rg"), date(f.get("data_nascimento")),
-                f.get("sexo"), f.get("raca_cor"), f.get("nome_mae"), f.get("endereco"), f.get("municipio"),
-                f.get("uf"), f.get("cep"), f.get("telefone"), f.get("email"), f.get("responsavel"));
+                (nome, cns, cpf, rg, data_nascimento, sexo, raca_cor, nome_mae, endereco, bairro, municipio, uf, cep, telefone, email, responsavel)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, f.get("nome"), digits(f.get("cns")), digits(f.get("cpf")), f.get("rg"), date(f.get("data_nascimento")),
+                f.get("sexo"), f.get("raca_cor"), f.get("nome_mae"), f.get("endereco"), f.get("bairro"),
+                f.get("municipio"), f.get("uf"), digits(f.get("cep")), digits(f.get("telefone")), f.get("email"), f.get("responsavel"));
         ra.addFlashAttribute("ok", "Paciente cadastrado.");
         return "redirect:/pacientes";
     }
@@ -61,7 +61,7 @@ public class CadastroController {
         jdbcTemplate.update("""
                 insert into regulacao_tfd.unidades_saude (nome, cnes, municipio, uf, telefone, responsavel, ativo)
                 values (?, ?, ?, ?, ?, ?, true)
-                """, f.get("nome"), f.get("cnes"), f.get("municipio"), f.get("uf"), f.get("telefone"), f.get("responsavel"));
+                """, f.get("nome"), digits(f.get("cnes")), f.get("municipio"), f.get("uf"), digits(f.get("telefone")), f.get("responsavel"));
         jdbcTemplate.update("""
                 update regulacao_tfd.unidades_saude
                 set tipo_unidade = ?
@@ -94,7 +94,7 @@ public class CadastroController {
             insert into regulacao_tfd.profissionais
             (nome, cpf_cns, conselho, registro_conselho, especialidade, unidade_id, solicitante, autorizador, ativo)
             values (?, ?, ?, ?, ?, ?, ?, ?, true)
-            """, f.get("nome"), f.get("cpf_cns"), f.get("conselho"), f.get("registro_conselho"),
+            """, f.get("nome"), digits(f.get("cpf_cns")), f.get("conselho"), f.get("registro_conselho"),
                 f.get("especialidade"), nullableLong(f.get("unidade_id")), solicitante, autorizador);
         ra.addFlashAttribute("ok", "Profissional cadastrado.");
         return "redirect:/profissionais";
@@ -192,6 +192,10 @@ public class CadastroController {
 
     private Long nullableLong(String value) {
         return value == null || value.isBlank() ? null : Long.valueOf(value);
+    }
+
+    private String digits(String value) {
+        return value == null ? null : value.replaceAll("\\D", "");
     }
 
     private boolean hasRole(Authentication authentication, String role) {

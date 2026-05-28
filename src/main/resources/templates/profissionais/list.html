@@ -7,7 +7,7 @@
   <div th:replace="~{layout/fragments :: alerts}"></div>
   <h1 class="h3">Profissionais</h1>
   <div class="panel mb-3" th:if="${adminLogado or reguladorLogado or solicitanteLogado}">
-    <form class="row g-2" method="post" th:action="@{/profissionais}">
+    <form class="row g-2 sigrec-validated-form" method="post" th:action="@{/profissionais}">
       <div class="col-md-4"><input class="form-control" name="nome" placeholder="Nome" required></div>
       <div class="col-md-2"><input class="form-control" name="cpf_cns" placeholder="CPF/CNS"></div>
       <div class="col-md-1"><input class="form-control" name="conselho" placeholder="CRM"></div>
