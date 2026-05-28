@@ -56,7 +56,7 @@ public class PdfService {
 
     private byte[] gerarBytes(Map<String, Object> solicitacao, Map<String, Object> complemento) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Document doc = new Document(PageSize.A4, 28, 28, 28, 28);
+        Document doc = new Document(PageSize.A4, 22, 22, 18, 18);
         PdfWriter.getInstance(doc, out);
         doc.open();
         String tipo = text(solicitacao, "tipo_solicitacao");
@@ -117,18 +117,18 @@ public class PdfService {
     }
 
     private void title(Document doc, String text) throws Exception {
-        Font font = new Font(Font.HELVETICA, 14, Font.BOLD);
+        Font font = new Font(Font.HELVETICA, 11, Font.BOLD);
         Paragraph p = new Paragraph(text, font);
         p.setAlignment(Element.ALIGN_CENTER);
-        p.setSpacingAfter(14);
+        p.setSpacingAfter(5);
         doc.add(p);
     }
 
     private void alert(Document doc, String text) throws Exception {
-        Font font = new Font(Font.HELVETICA, 11, Font.BOLD);
+        Font font = new Font(Font.HELVETICA, 8, Font.BOLD);
         Paragraph p = new Paragraph(text, font);
         p.setAlignment(Element.ALIGN_CENTER);
-        p.setSpacingAfter(8);
+        p.setSpacingAfter(4);
         doc.add(p);
     }
 
@@ -136,7 +136,7 @@ public class PdfService {
         blockTitle(doc, title);
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
-        table.setSpacingAfter(8);
+        table.setSpacingAfter(4);
         for (String[] row : rows) {
             cell(table, row[0], true);
             cell(table, row[1], false);
@@ -150,11 +150,12 @@ public class PdfService {
         blockTitle(doc, title);
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
-        PdfPCell cell = new PdfPCell(new Phrase(value == null ? "" : value));
-        cell.setMinimumHeight(52);
-        cell.setPadding(7);
+        Font font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+        PdfPCell cell = new PdfPCell(new Phrase(value == null ? "" : value, font));
+        cell.setMinimumHeight(34);
+        cell.setPadding(4);
         table.addCell(cell);
-        table.setSpacingAfter(8);
+        table.setSpacingAfter(4);
         doc.add(table);
     }
 
@@ -166,17 +167,17 @@ public class PdfService {
     }
 
     private void blockTitle(Document doc, String title) throws Exception {
-        Font font = new Font(Font.HELVETICA, 10, Font.BOLD);
+        Font font = new Font(Font.HELVETICA, 8, Font.BOLD);
         Paragraph p = new Paragraph(title.toUpperCase(), font);
-        p.setSpacingBefore(4);
-        p.setSpacingAfter(3);
+        p.setSpacingBefore(2);
+        p.setSpacingAfter(1);
         doc.add(p);
     }
 
     private void cell(PdfPTable table, Object value, boolean label) {
-        Font font = new Font(Font.HELVETICA, 8, label ? Font.BOLD : Font.NORMAL);
+        Font font = new Font(Font.HELVETICA, 7, label ? Font.BOLD : Font.NORMAL);
         PdfPCell cell = new PdfPCell(new Phrase(value == null ? "" : value.toString(), font));
-        cell.setPadding(5);
+        cell.setPadding(3);
         cell.setBorder(Rectangle.BOX);
         table.addCell(cell);
     }
