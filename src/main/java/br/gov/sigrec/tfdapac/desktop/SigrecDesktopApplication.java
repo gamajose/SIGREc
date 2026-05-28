@@ -14,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import netscape.javascript.JSObject;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,6 +37,7 @@ public class SigrecDesktopApplication extends Application {
     private static final Pattern IMPRESSAO_URL_PATTERN = Pattern.compile("(^|.*/)?impressao/(\\d+)(?:/.*)?(?:[?#].*)?$");
 
     private ConfigurableApplicationContext context;
+    private DesktopBridge desktopBridge;
     private final int port = Integer.parseInt(System.getenv().getOrDefault("SERVER_PORT", "8080"));
 
     @Override
@@ -88,6 +90,7 @@ public class SigrecDesktopApplication extends Application {
                     if (newState == Worker.State.SUCCEEDED) {
                         loading.setVisible(false);
                         webView.setVisible(true);
+                        configurarPonteJavascript(engine);
                         interceptarLinksPdf(engine);
                     }
                 });
@@ -109,6 +112,41 @@ public class SigrecDesktopApplication extends Application {
                 engine.load("http://localhost:" + port);
             });
         }, 0, 700, TimeUnit.MILLISECONDS);
+    }
+
+    private void configurarPonteJavascript(WebEngine engine) {
+        try {
+            desktopBridge = new DesktopBridge();
+            JSObject window = (JSObject) engine.executeScript("window");
+            window.setMember("sigrecDesktop", desktopBridge);
+            engine.executeScript("""
+                    (function() {
+                        if (window.__sigrecPdfInterceptorInstalled) {
+                            return;
+                        }
+                        window.__sigrecPdfInterceptorInstalled = true;
+                        document.addEventListener('click', function(event) {
+                            var element = event.target;
+                            while (element && element.tagName !== 'A') {
+                                element = element.parentElement;
+                            }
+                            if (!element) {
+                                return;
+                            }
+                            var href = element.getAttribute('href') || element.href;
+                            if (!href || !/(^|\\/)impressao\\/\\d+(?:\\/|$|[?#])/.test(href)) {
+                                return;
+                            }
+                            event.preventDefault();
+                            event.stopPropagation();
+                            event.stopImmediatePropagation();
+                            window.sigrecDesktop.openPdf(href);
+                        }, true);
+                    })();
+                    """);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void interceptarLinksPdf(WebEngine engine) {
@@ -158,6 +196,12 @@ public class SigrecDesktopApplication extends Application {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public final class DesktopBridge {
+        public void openPdf(String url) {
+            normalizarUrlPdf(url).ifPresent(SigrecDesktopApplication.this::abrirNoNavegadorExterno);
         }
     }
 
