@@ -117,7 +117,7 @@ public class PdfService {
     }
 
     private void title(Document doc, String text) throws Exception {
-        Font font = new Font(Font.HELVETICA, 11, Font.BOLD);
+        Font font = new Font(Font.HELVETICA, 12, Font.BOLD);
         Paragraph p = new Paragraph(text, font);
         p.setAlignment(Element.ALIGN_CENTER);
         p.setSpacingAfter(5);
@@ -125,7 +125,7 @@ public class PdfService {
     }
 
     private void alert(Document doc, String text) throws Exception {
-        Font font = new Font(Font.HELVETICA, 8, Font.BOLD);
+        Font font = new Font(Font.HELVETICA, 11, Font.BOLD);
         Paragraph p = new Paragraph(text, font);
         p.setAlignment(Element.ALIGN_CENTER);
         p.setSpacingAfter(4);
@@ -150,7 +150,7 @@ public class PdfService {
         blockTitle(doc, title);
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
-        Font font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+        Font font = new Font(Font.HELVETICA, 10, Font.NORMAL);
         PdfPCell cell = new PdfPCell(new Phrase(value == null ? "" : value, font));
         cell.setMinimumHeight(34);
         cell.setPadding(4);
@@ -167,7 +167,7 @@ public class PdfService {
     }
 
     private void blockTitle(Document doc, String title) throws Exception {
-        Font font = new Font(Font.HELVETICA, 8, Font.BOLD);
+        Font font = new Font(Font.HELVETICA, 11, Font.BOLD);
         Paragraph p = new Paragraph(title.toUpperCase(), font);
         p.setSpacingBefore(2);
         p.setSpacingAfter(1);
@@ -175,7 +175,7 @@ public class PdfService {
     }
 
     private void cell(PdfPTable table, Object value, boolean label) {
-        Font font = new Font(Font.HELVETICA, 7, label ? Font.BOLD : Font.NORMAL);
+        Font font = new Font(Font.HELVETICA, 10, label ? Font.BOLD : Font.NORMAL);
         PdfPCell cell = new PdfPCell(new Phrase(value == null ? "" : value.toString(), font));
         cell.setPadding(3);
         cell.setBorder(Rectangle.BOX);
