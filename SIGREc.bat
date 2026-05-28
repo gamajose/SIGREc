@@ -3,7 +3,7 @@ setlocal
 
 set JAVA_HOME=C:\Program Files\Java\jdk-21.0.11
 set PATH=%JAVA_HOME%\bin;%PATH%
-set DB_HOST=192.168.3.200
+set DB_HOST=192.168.42.128
 set DB_PORT=5432
 set DB_NAME=segrec
 set DB_USER=jose
