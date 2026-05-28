@@ -69,7 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/regulacao/**").hasAnyRole("ADMIN", "REGULADOR")
                         .requestMatchers("/relatorios/**").hasRole("ADMIN")
                         .requestMatchers("/solicitacoes/**").hasAnyRole("ADMIN", "SOLICITANTE", "REGULADOR")
-                        .requestMatchers("/impressao/**").hasAnyRole("ADMIN", "REGULADOR")
+                        .requestMatchers("/impressao/**").permitAll()
                         .requestMatchers("/pacientes/**", "/solicitacoes/**", "/unidades/**", "/profissionais/**", "/procedimentos/**", "/anexos/**").hasAnyRole("ADMIN", "SOLICITANTE")
                         .anyRequest().authenticated()
                 )

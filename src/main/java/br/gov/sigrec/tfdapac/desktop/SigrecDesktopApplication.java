@@ -1,6 +1,7 @@
 package br.gov.sigrec.tfdapac.desktop;
 
 import br.gov.sigrec.tfdapac.TfdApacApplication;
+import br.gov.sigrec.tfdapac.service.DesktopPrintTokenService;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
@@ -187,7 +188,9 @@ public class SigrecDesktopApplication extends Application {
             return Optional.empty();
         }
 
-        return Optional.of("http://localhost:" + port + "/impressao/" + matcher.group(2));
+        Long solicitacaoId = Long.parseLong(matcher.group(2));
+        return Optional.of("http://localhost:" + port + "/impressao/" + solicitacaoId
+                + "?desktopToken=" + DesktopPrintTokenService.createToken(solicitacaoId));
     }
 
     private void abrirNoNavegadorExterno(String url) {
