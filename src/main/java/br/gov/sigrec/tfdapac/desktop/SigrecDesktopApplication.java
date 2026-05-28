@@ -26,10 +26,15 @@ import java.awt.Desktop;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SigrecDesktopApplication extends Application {
+    private static final Pattern IMPRESSAO_URL_PATTERN = Pattern.compile("(^|.*/)?impressao/(\\d+)(?:/.*)?(?:[?#].*)?$");
+
     private ConfigurableApplicationContext context;
     private final int port = Integer.parseInt(System.getenv().getOrDefault("SERVER_PORT", "8080"));
 
@@ -88,9 +93,16 @@ public class SigrecDesktopApplication extends Application {
                 });
 
                 engine.locationProperty().addListener((obs, oldUrl, newUrl) -> {
-                    if (ehUrlPdf(newUrl)) {
-                        abrirNoNavegadorExterno(newUrl);
-                        Platform.runLater(() -> engine.load(oldUrl != null ? oldUrl : "http://localhost:" + port));
+                    Optional<String> urlPdf = normalizarUrlPdf(newUrl);
+                    if (urlPdf.isPresent()) {
+                        abrirNoNavegadorExterno(urlPdf.get());
+                        Platform.runLater(() -> {
+                            if (oldUrl != null && !normalizarUrlPdf(oldUrl).isPresent()) {
+                                engine.load(oldUrl);
+                            } else {
+                                engine.load("http://localhost:" + port);
+                            }
+                        });
                     }
                 });
 
@@ -109,7 +121,8 @@ public class SigrecDesktopApplication extends Application {
         for (int i = 0; i < links.getLength(); i++) {
             Element link = (Element) links.item(i);
             String href = link.getAttribute("href");
-            if (!ehUrlPdf(href)) {
+            Optional<String> urlPdf = normalizarUrlPdf(href);
+            if (urlPdf.isEmpty()) {
                 continue;
             }
 
@@ -118,14 +131,24 @@ public class SigrecDesktopApplication extends Application {
                 public void handleEvent(Event event) {
                     event.preventDefault();
                     event.stopPropagation();
-                    abrirNoNavegadorExterno(href);
+                    abrirNoNavegadorExterno(urlPdf.get());
                 }
             }, true);
         }
     }
 
-    private boolean ehUrlPdf(String url) {
-        return url != null && url.matches("https?://localhost:" + port + "/impressao/\\d+.*");
+    private Optional<String> normalizarUrlPdf(String url) {
+        if (url == null || url.isBlank()) {
+            return Optional.empty();
+        }
+
+        String urlTratada = url.trim();
+        Matcher matcher = IMPRESSAO_URL_PATTERN.matcher(urlTratada);
+        if (!matcher.matches()) {
+            return Optional.empty();
+        }
+
+        return Optional.of("http://localhost:" + port + "/impressao/" + matcher.group(2));
     }
 
     private void abrirNoNavegadorExterno(String url) {
