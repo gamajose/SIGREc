@@ -27,6 +27,7 @@ import java.awt.Desktop;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -193,6 +194,12 @@ public class SigrecDesktopApplication extends Application {
         try {
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                 Desktop.getDesktop().browse(new URI(url));
+                return;
+            }
+
+            String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+            if (os.contains("win")) {
+                new ProcessBuilder("cmd", "/c", "start", "", url).start();
             }
         } catch (Exception e) {
             e.printStackTrace();
