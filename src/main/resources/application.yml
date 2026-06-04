@@ -2,7 +2,7 @@ spring:
   application:
     name: sigrec-tfd-apac
   datasource:
-    url: jdbc:postgresql://${DB_HOST:192.168.42.128}:${DB_PORT:5432}/${DB_NAME:segrec}
+    url: jdbc:postgresql://${DB_HOST:192.168.28.128}:${DB_PORT:5432}/${DB_NAME:segrec}
     username: ${DB_USER:jose}
     password: ${DB_PASSWORD:Joseluiz1}
   flyway:
@@ -37,4 +37,3 @@ sigrec:
   jwt-expiration-minutes: ${SIGREC_JWT_EXPIRATION_MINUTES:480}
   mail-from: ${SIGREC_MAIL_FROM:no-reply@sigrec.local}
   mail-enabled: ${SIGREC_MAIL_ENABLED:false}
-

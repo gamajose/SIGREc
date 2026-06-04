@@ -16,7 +16,7 @@ BEGIN
         CREATE SERVER tb_procedimento_srv
         FOREIGN DATA WRAPPER postgres_fdw
         OPTIONS (
-            host '192.168.42.128',
+            host '192.168.28.128',
             port '5432',
             dbname 'tb_procedimento'
         );
