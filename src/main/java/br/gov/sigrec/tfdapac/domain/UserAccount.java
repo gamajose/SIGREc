@@ -23,6 +23,9 @@ public class UserAccount {
     @Column(nullable = false, unique = true, length = 80)
     private String username;
 
+    @Column(name = "codigo_usuario", length = 40)
+    private String codigoUsuario;
+
     @Column(nullable = false, length = 140)
     private String nome;
 
@@ -60,6 +63,9 @@ public class UserAccount {
         createdAt = now;
         updatedAt = now;
         senhaHash = passwordHash;
+        if (codigoUsuario == null || codigoUsuario.isBlank()) {
+            codigoUsuario = username;
+        }
     }
 
     @PreUpdate
@@ -81,6 +87,17 @@ public class UserAccount {
         if (this.nome == null || this.nome.isBlank()) {
             this.nome = username;
         }
+        if (this.codigoUsuario == null || this.codigoUsuario.isBlank()) {
+            this.codigoUsuario = username;
+        }
+    }
+
+    public String getCodigoUsuario() {
+        return codigoUsuario;
+    }
+
+    public void setCodigoUsuario(String codigoUsuario) {
+        this.codigoUsuario = codigoUsuario;
     }
 
     public String getEmail() {
