@@ -2,7 +2,6 @@ package br.gov.sigrec.tfdapac.config;
 
 import br.gov.sigrec.tfdapac.service.AuditService;
 import br.gov.sigrec.tfdapac.repository.UserAccountRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,9 +17,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
@@ -34,8 +33,8 @@ public class SecurityConfig {
 
     @Bean
     UserDetailsService userDetailsService(UserAccountRepository userAccountRepository) {
-        return username -> {
-            var dbUser = userAccountRepository.findByUsername(username)
+        return login -> {
+            var dbUser = userAccountRepository.findByUsernameOrCodigoUsuario(login)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado"));
             List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + dbUser.getRole().name()));
             return User.withUsername(dbUser.getUsername())
@@ -63,7 +62,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/requisicoes/**"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/token").permitAll()
-                        .requestMatchers("/css/**", "/sounds/**", "/login").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/sounds/**", "/login", "/esqueci-senha").permitAll()
                         .requestMatchers("/requisicoes/**").hasAnyRole("ADMIN", "SOLICITANTE")
                         .requestMatchers("/usuarios/**", "/parametros/**").hasRole("ADMIN")
                         .requestMatchers("/regulacao/**").hasAnyRole("ADMIN", "REGULADOR")
