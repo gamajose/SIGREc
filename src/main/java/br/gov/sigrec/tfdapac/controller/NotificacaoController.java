@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class NotificacaoController {
@@ -34,15 +35,40 @@ public class NotificacaoController {
                 limit 100
                 """, usuarioId));
 
+        return "notificacoes/list";
+    }
+
+    @GetMapping("/notificacoes/{id}/abrir")
+    public String abrir(@PathVariable Long id, Authentication auth, RedirectAttributes ra) {
+        Long usuarioId = currentUserService.id(auth);
+
+        Map<String, Object> notificacao = jdbcTemplate.queryForMap("""
+                select id, url
+                from regulacao_tfd.notificacoes_sistema
+                where id = ?
+                  and usuario_id = ?
+                """, id, usuarioId);
+
         jdbcTemplate.update("""
                 update regulacao_tfd.notificacoes_sistema
                 set lida = true,
-                    lida_em = current_timestamp
-                where usuario_id = ?
-                  and lida = false
-                """, usuarioId);
+                    lida_em = coalesce(lida_em, current_timestamp)
+                where id = ?
+                  and usuario_id = ?
+                """, id, usuarioId);
 
-        return "notificacoes/list";
+        Object url = notificacao.get("url");
+        String destino = url == null ? "" : url.toString().trim();
+        if (destino.isBlank()) {
+            ra.addFlashAttribute("ok", "Notificação marcada como lida.");
+            return "redirect:/notificacoes";
+        }
+
+        if (!destino.startsWith("/")) {
+            destino = "/" + destino;
+        }
+
+        return "redirect:" + destino;
     }
 
     @GetMapping("/api/notificacoes/contador")
