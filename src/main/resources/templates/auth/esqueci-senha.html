@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Recuperar senha')}"></head>
+<body>
+<main class="page" style="max-width: 460px;">
+  <div class="panel mt-5">
+    <h1 class="h4 mb-2">Recuperação de senha</h1>
+    <p class="text-secondary mb-4">Informe seu usuário, código ou e-mail cadastrado.</p>
+    <div th:replace="~{layout/fragments :: alerts}"></div>
+    <form th:action="@{/esqueci-senha}" method="post">
+      <label class="form-label">Usuário, código ou e-mail</label>
+      <input class="form-control mb-3" name="identificador" required autofocus>
+      <button class="btn btn-success w-100">Solicitar recuperação</button>
+    </form>
+    <div class="text-center mt-3">
+      <a th:href="@{/login}" class="text-decoration-none">Voltar para o login</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>
