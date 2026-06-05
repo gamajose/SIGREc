@@ -9,12 +9,15 @@
     <div class="alert alert-danger" th:if="${param.error}">Usuario ou senha invalidos.</div>
     <div class="alert alert-success" th:if="${param.logout}">Sessao encerrada.</div>
     <form th:action="@{/login}" method="post">
-      <label class="form-label">Usuario</label>
+      <label class="form-label">Usuario ou codigo</label>
       <input class="form-control mb-3" name="username" autocomplete="username" required autofocus>
       <label class="form-label">Senha</label>
-      <input class="form-control mb-4" name="password" type="password" autocomplete="current-password" required>
+      <input class="form-control mb-3" name="password" type="password" autocomplete="current-password" required>
       <button class="btn btn-success w-100">Entrar</button>
     </form>
+    <div class="text-center mt-3">
+      <a th:href="@{/esqueci-senha}" class="text-decoration-none">Esqueci minha senha</a>
+    </div>
   </div>
 </main>
 </body>
