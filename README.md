@@ -63,7 +63,7 @@ Troque a senha antes de usar com dados reais.
 ## Variaveis principais
 
 ```text
-DB_HOST=192.168.28.128
+DB_HOST=192.168.3.200
 DB_PORT=5432
 DB_NAME=segrec
 DB_USER=jose
@@ -71,7 +71,7 @@ DB_PASSWORD=Joseluiz1
 SIGREC_STORAGE_PATH=./storage
 ```
 
-Com essas variaveis, a aplicacao acessa o PostgreSQL do container `postgres17` na VM `192.168.28.128`, porta `5432`, banco `segrec`.
+Com essas variaveis, a aplicacao acessa o PostgreSQL do container `postgres17` na VM `192.168.3.200`, porta `5432`, banco `segrec`.
 Para acesso externo pela internet, o IP fixo informado e `45.162.247.32`; use-o apenas quando a rede externa estiver roteada/liberada para a porta do PostgreSQL.
 
 ## Observacoes

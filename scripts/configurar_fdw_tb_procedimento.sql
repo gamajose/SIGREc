@@ -16,12 +16,15 @@ BEGIN
         CREATE SERVER tb_procedimento_srv
         FOREIGN DATA WRAPPER postgres_fdw
         OPTIONS (
-            host '192.168.28.128',
+            host '192.168.3.200',
             port '5432',
             dbname 'tb_procedimento'
         );
     END IF;
 END $$;
+
+ALTER SERVER tb_procedimento_srv
+OPTIONS (SET host '192.168.3.200', SET port '5432', SET dbname 'tb_procedimento');
 
 DROP USER MAPPING IF EXISTS FOR CURRENT_USER SERVER tb_procedimento_srv;
 
