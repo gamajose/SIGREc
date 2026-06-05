@@ -78,7 +78,7 @@ public class GlobalModelAdvice {
 
         return jdbcTemplate.queryForObject("""
             select count(*)
-            from regulacao_tfd.notificacoes
+            from regulacao_tfd.notificacoes_sistema
             where usuario_id = ?
               and lida = false
             """, Integer.class, usuarioId);
