@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Perfil completo')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <h1 class="h3">Perfil completo</h1>
+  <p class="text-muted">Atualize seus dados pessoais e os dados da unidade vinculada.</p>
+
+  <form class="panel sigrec-validated-form" method="post" th:action="@{/perfil/completo}">
+    <h2 class="h5">Dados pessoais</h2>
+    <div class="row g-2 mb-3">
+      <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome completo" th:value="${perfil['nome']}" required></div>
+      <div class="col-md-3"><input class="form-control" name="username" placeholder="Username/login" th:value="${perfil['username']}" readonly></div>
+      <div class="col-md-3"><input class="form-control" name="codigo_usuario" placeholder="Código do usuário" th:value="${perfil['codigo_usuario']}"></div>
+      <div class="col-md-6"><input class="form-control" name="email" type="email" placeholder="E-mail" th:value="${perfil['email']}"></div>
+      <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone" th:value="${perfil['telefone']}" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
+      <div class="col-md-3"><input class="form-control" name="senha" type="password" placeholder="Nova senha"></div>
+    </div>
+
+    <h2 class="h5">Dados da unidade</h2>
+    <div class="row g-2">
+      <div class="col-md-6"><input class="form-control" name="unidade_nome" placeholder="Unidade vinculada" th:value="${perfil['unidade_nome']}" readonly></div>
+      <div class="col-md-3"><input class="form-control" name="unidade_telefone" placeholder="Telefone da unidade" th:value="${perfil['unidade_telefone']}" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
+      <div class="col-md-3"><input class="form-control" name="unidade_cep" placeholder="CEP da unidade" th:value="${perfil['unidade_cep']}" inputmode="numeric" autocomplete="off" data-mask="cep" data-digits="8" data-cep-lookup></div>
+      <div class="col-md-5"><input class="form-control" name="unidade_endereco" data-cep-logradouro placeholder="Rua da unidade" th:value="${perfil['unidade_endereco']}"></div>
+      <div class="col-md-2"><input class="form-control" name="unidade_numero" placeholder="Número" th:value="${perfil['unidade_numero']}"></div>
+      <div class="col-md-3"><input class="form-control" name="unidade_bairro" data-cep-bairro placeholder="Bairro" th:value="${perfil['unidade_bairro']}"></div>
+      <div class="col-md-2"><input class="form-control" name="unidade_complemento" placeholder="Complemento" th:value="${perfil['unidade_complemento']}"></div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <a class="btn btn-outline-secondary" th:href="@{/}">Cancelar</a>
+      <button class="btn btn-success">Salvar perfil</button>
+    </div>
+  </form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
