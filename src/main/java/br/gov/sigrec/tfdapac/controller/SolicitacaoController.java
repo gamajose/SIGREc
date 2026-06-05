@@ -35,13 +35,14 @@ public class SolicitacaoController {
             @RequestParam(defaultValue = "") String q,
             Authentication auth,
             Model model) {
+        boolean visualizaTodas = currentUserService.isAdmin(auth) || currentUserService.isRegulador(auth);
         model.addAttribute("itens", solicitacaoService.filaDoUsuario(
                 status,
                 tipo,
                 q,
                 currentUserService.id(auth),
                 currentUserService.unidadeId(auth),
-                currentUserService.isAdmin(auth)));
+                visualizaTodas));
         model.addAttribute("status", status);
         model.addAttribute("tipo", tipo);
         model.addAttribute("q", q);
@@ -89,7 +90,8 @@ public class SolicitacaoController {
 
     @GetMapping("/solicitacoes/{id}")
     public String detalhe(@PathVariable Long id, Model model, Authentication auth) {
-        if (!solicitacaoService.podeAcessar(id, currentUserService.id(auth), currentUserService.unidadeId(auth), currentUserService.isAdmin(auth))) {
+        boolean visualizaTodas = currentUserService.isAdmin(auth) || currentUserService.isRegulador(auth);
+        if (!solicitacaoService.podeAcessar(id, currentUserService.id(auth), currentUserService.unidadeId(auth), visualizaTodas)) {
             return "redirect:/solicitacoes";
         }
         var solicitacao = solicitacaoService.detalhe(id);
