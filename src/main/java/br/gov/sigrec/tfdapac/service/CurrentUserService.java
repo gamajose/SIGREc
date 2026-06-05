@@ -34,11 +34,23 @@ public class CurrentUserService {
     }
 
     public boolean isAdmin(Authentication authentication) {
+        return hasRole(authentication, "ROLE_ADMIN");
+    }
+
+    public boolean isRegulador(Authentication authentication) {
+        return hasRole(authentication, "ROLE_REGULADOR");
+    }
+
+    public boolean isSolicitante(Authentication authentication) {
+        return hasRole(authentication, "ROLE_SOLICITANTE");
+    }
+
+    private boolean hasRole(Authentication authentication, String role) {
         if (authentication == null) {
             return false;
         }
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch("ROLE_ADMIN"::equals);
+                .anyMatch(role::equals);
     }
 }
