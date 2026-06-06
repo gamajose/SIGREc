@@ -26,13 +26,30 @@ public class CadastroController {
     }
 
     @GetMapping("/pacientes")
-    public String pacientes(@RequestParam(defaultValue = "") String q, Model model) {
+    public String pacientes(@RequestParam(defaultValue = "") String q,
+                            @RequestParam(defaultValue = "") String municipio,
+                            @RequestParam(defaultValue = "") String uf,
+                            @RequestParam(defaultValue = "") String dataInicio,
+                            @RequestParam(defaultValue = "") String dataFim,
+                            Model model) {
         model.addAttribute("q", q);
+        model.addAttribute("municipio", municipio);
+        model.addAttribute("uf", uf);
+        model.addAttribute("dataInicio", dataInicio);
+        model.addAttribute("dataFim", dataFim);
+        model.addAttribute("municipios", jdbcTemplate.queryForList("select distinct municipio from regulacao_tfd.pacientes where municipio is not null and municipio <> '' order by municipio"));
+        model.addAttribute("ufs", jdbcTemplate.queryForList("select distinct uf from regulacao_tfd.pacientes where uf is not null and uf <> '' order by uf"));
         model.addAttribute("itens", jdbcTemplate.queryForList("""
-                select * from regulacao_tfd.pacientes
-                where ? = '' or nome ilike ? or cns ilike ? or cpf ilike ?
-                order by nome limit 100
-                """, q, like(q), like(q), like(q)));
+                select row_number() over (order by nome) numero, *
+                from regulacao_tfd.pacientes
+                where (? = '' or nome ilike ? or cns ilike ? or cpf ilike ? or municipio ilike ?)
+                  and (? = '' or municipio = ?)
+                  and (? = '' or uf = ?)
+                  and (? = '' or data_nascimento >= ?::date)
+                  and (? = '' or data_nascimento <= ?::date)
+                order by nome
+                limit 300
+                """, q, like(q), like(q), like(q), like(q), municipio, municipio, uf, uf, dataInicio, dataInicio, dataFim, dataFim));
         return "pacientes/list";
     }
 
