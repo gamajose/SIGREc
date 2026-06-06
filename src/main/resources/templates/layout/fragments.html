@@ -92,10 +92,10 @@
                   th:text="${notificacoesNaoLidas}">0</span>
               </a>
 
-              <button class="profile-summary" type="button" data-bs-toggle="modal" data-bs-target="#perfilModal" title="Perfil">
+              <a class="profile-summary text-decoration-none" th:href="@{/perfil/completo}" title="Perfil completo">
                 <span class="profile-avatar" th:text="${#strings.substring(usuarioLogado,0,1).toUpperCase()}">U</span>
                 <span class="profile-name" th:text="${usuarioLogado}">Usuário</span>
-              </button>
+              </a>
 
               <form th:action="@{/logout}" method="post" class="m-0">
                 <button class="btn btn-outline-danger btn-sm sigrec-logout-button">Sair</button>
@@ -144,52 +144,11 @@
       </script>
     </nav>
 
-    <div th:fragment="profileModal">
-      <div class="modal fade" id="perfilModal" tabindex="-1" aria-hidden="true" data-bs-keyboard="true" data-bs-backdrop="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <form th:action="@{/perfil}" method="post">
-              <div class="modal-header">
-                <h5 class="modal-title">Perfil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-              </div>
-              <div class="modal-body">
-                <div class="alert alert-info" th:if="${!adminLogado}">Para alterar seus dados, abra uma solicitação no suporte.</div>
-                <label class="form-label">Nome</label>
-                <input class="form-control mb-2" name="nome" th:value="${perfilLogado.nome}" th:readonly="${!adminLogado}" />
-                <label class="form-label">E-mail</label>
-                <input class="form-control mb-2" name="email" type="email" th:value="${perfilLogado.email}" th:readonly="${!adminLogado}" />
-                <label class="form-label">Endereço</label>
-                <input class="form-control mb-2" name="endereco" th:value="${perfilLogado.endereco}" th:readonly="${!adminLogado}" />
-                <label class="form-label" th:if="${adminLogado}">Nova senha</label>
-                <input class="form-control" th:if="${adminLogado}" name="senha" type="password" placeholder="Deixe vazio para manter" />
-              </div>
-              <div class="modal-footer">
-                <a class="btn btn-outline-success" th:if="${!adminLogado}" th:href="@{/suporte}">Solicitar alteração</a>
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button class="btn btn-success" th:if="${adminLogado}">Salvar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div th:fragment="profileModal"></div>
 
     <div th:fragment="alerts">
       <div class="alert alert-success" th:if="${ok}" th:text="${ok}"></div>
       <div class="alert alert-danger" th:if="${erro}" th:text="${erro}"></div>
     </div>
-
-    <script>
-      document.addEventListener("keydown", function (event) {
-        if (event.key !== "Escape") return;
-        const modalElement = document.querySelector(".modal.show");
-        if (!modalElement || typeof bootstrap === "undefined") return;
-        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-        modal.hide();
-        document.body.classList.remove("modal-open");
-        document.querySelectorAll(".modal-backdrop").forEach(function (backdrop) { backdrop.remove(); });
-      });
-    </script>
   </body>
 </html>
