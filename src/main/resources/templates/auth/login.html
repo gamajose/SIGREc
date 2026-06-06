@@ -5,14 +5,14 @@
 <main class="page" style="max-width: 460px;">
   <div class="panel mt-5">
     <h1 class="h4 brand-mark mb-1">SIGREc TFD/APAC</h1>
-    <p class="text-secondary mb-4">Acesso interno de regulacao municipal.</p>
-    <div class="alert alert-danger" th:if="${param.error}">Usuario ou senha invalidos.</div>
-    <div class="alert alert-success" th:if="${param.logout}">Sessao encerrada.</div>
+    <p class="text-secondary mb-4">Acesso interno de regulação municipal.</p>
+    <div class="alert alert-danger" th:if="${param.error}">Usuário/código ou senha inválidos.</div>
+    <div class="alert alert-success" th:if="${param.logout}">Sessão encerrada com sucesso.</div>
     <form th:action="@{/login}" method="post">
-      <label class="form-label">Usuario ou codigo</label>
-      <input class="form-control mb-3" name="username" autocomplete="username" required autofocus>
+      <label class="form-label">Usuário ou código</label>
+      <input class="form-control mb-3" name="username" autocomplete="username" placeholder="Digite seu usuário ou código" required autofocus>
       <label class="form-label">Senha</label>
-      <input class="form-control mb-3" name="password" type="password" autocomplete="current-password" required>
+      <input class="form-control mb-3" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
       <button class="btn btn-success w-100">Entrar</button>
     </form>
     <div class="text-center mt-3">
