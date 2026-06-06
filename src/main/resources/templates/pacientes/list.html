@@ -28,6 +28,10 @@
   </form>
 
   <div class="panel">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="text-muted small">Total: <strong th:text="${totalRegistros}">0</strong> paciente(s)</span>
+      <span class="text-muted small">Página <strong th:text="${page}">1</strong> de <strong th:text="${totalPaginas}">1</strong></span>
+    </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead><tr><th>#</th><th>Nome</th><th>CNS</th><th>CPF</th><th>Nascimento</th><th>Município</th><th>UF</th><th>Telefone</th></tr></thead>
@@ -45,6 +49,10 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temAnterior} ? ' disabled'" th:href="@{/pacientes(q=${q},municipio=${municipio},uf=${uf},dataInicio=${dataInicio},dataFim=${dataFim},page=${page - 1})}">Anterior</a>
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temProxima} ? ' disabled'" th:href="@{/pacientes(q=${q},municipio=${municipio},uf=${uf},dataInicio=${dataInicio},dataFim=${dataFim},page=${page + 1})}">Próxima</a>
     </div>
   </div>
 </main>
