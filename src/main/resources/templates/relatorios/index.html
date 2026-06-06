@@ -16,43 +16,24 @@
 
   <form class="panel mb-3" method="get" th:action="@{/relatorios}">
     <div class="row g-2 align-items-end">
-      <div class="col-md-3">
-        <label class="form-label">Buscar</label>
-        <input class="form-control" name="q" th:value="${q}" placeholder="Paciente ou protocolo">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Data inicial</label>
-        <input class="form-control" name="dataInicio" type="date" th:value="${dataInicio}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Data final</label>
-        <input class="form-control" name="dataFim" type="date" th:value="${dataFim}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Estado</label>
-        <select class="form-select" name="estado">
-          <option value="">Todos</option>
-          <option th:each="e:${estados}" th:value="${e.status}" th:text="${e.status}" th:selected="${e.status == estado}"></option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Prioridade</label>
-        <select class="form-select" name="prioridade">
-          <option value="">Todas</option>
-          <option th:each="p:${prioridades}" th:value="${p.prioridade}" th:text="${p.prioridade}" th:selected="${p.prioridade == prioridade}"></option>
-        </select>
-      </div>
-      <div class="col-md-1 d-grid">
-        <button class="btn btn-success">Filtrar</button>
-      </div>
-      <div class="col-md-12 text-end">
-        <a class="btn btn-sm btn-outline-secondary" th:href="@{/relatorios}">Limpar filtros</a>
-      </div>
+      <div class="col-md-3"><label class="form-label">Buscar</label><input class="form-control" name="q" th:value="${q}" placeholder="Paciente ou protocolo"></div>
+      <div class="col-md-2"><label class="form-label">Data inicial</label><input class="form-control" name="dataInicio" type="date" th:value="${dataInicio}"></div>
+      <div class="col-md-2"><label class="form-label">Data final</label><input class="form-control" name="dataFim" type="date" th:value="${dataFim}"></div>
+      <div class="col-md-2"><label class="form-label">Estado</label><select class="form-select" name="estado"><option value="">Todos</option><option th:each="e:${estados}" th:value="${e.status}" th:text="${e.status}" th:selected="${e.status == estado}"></option></select></div>
+      <div class="col-md-2"><label class="form-label">Prioridade</label><select class="form-select" name="prioridade"><option value="">Todas</option><option th:each="p:${prioridades}" th:value="${p.prioridade}" th:text="${p.prioridade}" th:selected="${p.prioridade == prioridade}"></option></select></div>
+      <div class="col-md-1 d-grid"><button class="btn btn-success">Filtrar</button></div>
+      <div class="col-md-12 text-end"><a class="btn btn-sm btn-outline-secondary" th:href="@{/relatorios}">Limpar filtros</a></div>
     </div>
   </form>
 
   <div class="panel mt-3">
-    <h2 class="h5">Histórico de solicitações</h2>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h5 mb-0">Histórico de solicitações</h2>
+      <div class="text-end">
+        <div class="text-muted small">Total: <strong th:text="${totalRegistros}">0</strong> registro(s)</div>
+        <div class="text-muted small">Página <strong th:text="${page}">1</strong> de <strong th:text="${totalPaginas}">1</strong></div>
+      </div>
+    </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead><tr><th>#</th><th>Protocolo</th><th>Paciente</th><th>Tipo</th><th>Prioridade</th><th>Estado</th><th>Entrada</th><th>Imprimir</th></tr></thead>
@@ -80,6 +61,10 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temAnterior} ? ' disabled'" th:href="@{/relatorios(q=${q},dataInicio=${dataInicio},dataFim=${dataFim},estado=${estado},prioridade=${prioridade},page=${page - 1})}">Anterior</a>
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temProxima} ? ' disabled'" th:href="@{/relatorios(q=${q},dataInicio=${dataInicio},dataFim=${dataFim},estado=${estado},prioridade=${prioridade},page=${page + 1})}">Próxima</a>
     </div>
   </div>
 </main>
