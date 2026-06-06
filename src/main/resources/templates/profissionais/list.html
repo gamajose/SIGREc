@@ -26,6 +26,10 @@
   </form>
 
   <div class="panel">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="text-muted small">Total: <strong th:text="${totalRegistros}">0</strong> profissional(is)</span>
+      <span class="text-muted small">Página <strong th:text="${page}">1</strong> de <strong th:text="${totalPaginas}">1</strong></span>
+    </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead><tr><th>#</th><th>Nome</th><th>Documento</th><th>Conselho</th><th>Especialidade</th><th>Unidade</th><th>Atuação</th></tr></thead>
@@ -43,6 +47,10 @@
         </tbody>
       </table>
     </div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temAnterior} ? ' disabled'" th:href="@{/profissionais(q=${q},conselho=${conselho},uf=${uf},page=${page - 1})}">Anterior</a>
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temProxima} ? ' disabled'" th:href="@{/profissionais(q=${q},conselho=${conselho},uf=${uf},page=${page + 1})}">Próxima</a>
+    </div>
   </div>
 </main>
 
@@ -55,7 +63,7 @@
           <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome" required></div>
           <div class="col-md-3"><input class="form-control" name="cpf_cns" placeholder="CPF/CNS"></div>
           <div class="col-md-1"><input class="form-control" name="conselho" placeholder="CRM"></div>
-          <div class="col-md-2"><input class="form-control" name="registro_conselho" placeholder="Registro"></div>
+          <div class="col-md-2"><input class="form-control" name="registro_conselho" placeholder="Registro" data-conselho-lookup></div>
           <div class="col-md-4"><input class="form-control" name="especialidade" placeholder="Especialidade"></div>
           <div class="col-md-6"><select class="form-select" name="unidade_id"><option value="">Unidade</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option></select></div>
           <div class="col-md-2 form-check mt-2" th:if="${adminLogado or reguladorLogado}"><input class="form-check-input" type="checkbox" name="solicitante" checked> <label class="form-check-label">Solicitante</label></div>
