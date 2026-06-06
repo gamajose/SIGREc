@@ -1,117 +1,108 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="~{layout/fragments :: head('Procedimentos')}"></head>
-
-    <body>
-        <nav th:replace="~{layout/fragments :: nav}"></nav>
+<head th:replace="~{layout/fragments :: head('Procedimentos')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
 <div th:replace="~{layout/fragments :: profileModal}"></div>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
 
-        <main class="page">
-            <div th:replace="~{layout/fragments :: alerts}"></div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <span class="eyebrow">SIGTAP</span>
+      <h1 class="h3 mb-1">Procedimentos</h1>
+      <p class="text-muted mb-0">Consulte, cadastre e mantenha procedimentos manuais do sistema.</p>
+    </div>
+    <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#novoProcedimentoModal" th:if="${adminLogado or reguladorLogado}">Novo procedimento</button>
+  </div>
 
-            <h1 class="h3">Procedimentos</h1>
+  <form class="panel mb-3" method="get" th:action="@{/procedimentos}">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-10"><label class="form-label">Buscar</label><input class="form-control" name="q" th:value="${q}" placeholder="Código ou descrição"></div>
+      <div class="col-md-1 d-grid"><button class="btn btn-success">Filtrar</button></div>
+      <div class="col-md-1 d-grid"><a class="btn btn-outline-secondary" th:href="@{/procedimentos}">Limpar</a></div>
+    </div>
+  </form>
 
-            <div class="panel mb-3">
-                <form class="row g-2 mb-3" method="get">
-                    <div class="col-md-8">
-                        <input class="form-control"
-                               name="q"
-                               th:value="${q}"
-                               placeholder="Codigo ou descricao">
-                    </div>
+  <div class="panel">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="text-muted small">Total: <strong th:text="${totalRegistros}">0</strong> procedimento(s)</span>
+      <span class="text-muted small">Página <strong th:text="${page}">1</strong> de <strong th:text="${totalPaginas}">1</strong></span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>#</th><th>Código</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Origem</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody>
+          <tr th:if="${#lists.isEmpty(itens)}"><td colspan="8" class="text-center text-muted py-4">Nenhum procedimento encontrado.</td></tr>
+          <tr th:each="i : ${itens}">
+            <td th:text="${i.numero}">1</td>
+            <td th:text="${i.codigo}">0301010072</td>
+            <td th:text="${i.descricao}">Descrição</td>
+            <td th:text="${i.tipo}">Tipo</td>
+            <td th:text="${i.valor}">0.00</td>
+            <td th:text="${i.origem}">manual</td>
+            <td><span class="badge" th:classappend="${i.ativo} ? ' bg-success' : ' bg-secondary'" th:text="${i.ativo ? 'Ativo' : 'Inativo'}">Ativo</span></td>
+            <td>
+              <div class="btn-group btn-group-sm" th:if="${i.id_local != null and (adminLogado or reguladorLogado)}">
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" th:attr="data-bs-target='#editarProcedimentoModal' + ${i.id_local}">✏️</button>
+                <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" th:attr="data-bs-target='#excluirProcedimentoModal' + ${i.id_local}">🗑️</button>
+              </div>
+              <span th:if="${i.id_local == null}" class="text-muted small">SIGTAP</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temAnterior} ? ' disabled'" th:href="@{/procedimentos(q=${q},page=${page - 1})}">Anterior</a>
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temProxima} ? ' disabled'" th:href="@{/procedimentos(q=${q},page=${page + 1})}">Próxima</a>
+    </div>
+  </div>
+</main>
 
-                    <div class="col-md-2">
-                        <select class="form-control" name="origem">
-                            <option value="" th:selected="${origem == ''}">Todas origens</option>
-                            <option value="SIGTAP" th:selected="${origem == 'SIGTAP'}">SIGTAP</option>
-                            <option value="manual" th:selected="${origem == 'manual'}">Manual</option>
-                        </select>
-                    </div>
+<div class="modal fade" id="novoProcedimentoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+    <form method="post" th:action="@{/procedimentos}">
+      <div class="modal-header"><h5 class="modal-title">Novo procedimento</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+      <div class="modal-body"><div class="row g-2">
+        <div class="col-md-3"><label class="form-label">Código</label><input class="form-control" name="codigo" required></div>
+        <div class="col-md-9"><label class="form-label">Descrição</label><input class="form-control" name="descricao" required></div>
+        <div class="col-md-4"><label class="form-label">Tipo</label><input class="form-control" name="tipo"></div>
+        <div class="col-md-4"><label class="form-label">Valor</label><input class="form-control" name="valor" placeholder="0.00"></div>
+        <div class="col-md-4 form-check mt-4"><input class="form-check-input" type="checkbox" name="ativo" checked> <label class="form-check-label">Ativo</label></div>
+      </div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success">Salvar</button></div>
+    </form>
+  </div></div>
+</div>
 
-                    <div class="col-md-2">
-                        <button class="btn btn-outline-success w-100">
-                            Buscar
-                        </button>
-                    </div>
-                </form>
+<div th:each="i : ${itens}" th:if="${i.id_local != null}">
+  <div class="modal fade" th:id="${'editarProcedimentoModal' + i.id_local}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+      <form method="post" th:action="@{/procedimentos/{id}/editar(id=${i.id_local})}">
+        <div class="modal-header"><h5 class="modal-title">Editar procedimento</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+        <div class="modal-body"><div class="row g-2">
+          <div class="col-md-3"><label class="form-label">Código</label><input class="form-control" name="codigo" th:value="${i.codigo}" required></div>
+          <div class="col-md-9"><label class="form-label">Descrição</label><input class="form-control" name="descricao" th:value="${i.descricao}" required></div>
+          <div class="col-md-4"><label class="form-label">Tipo</label><input class="form-control" name="tipo" th:value="${i.tipo}"></div>
+          <div class="col-md-4"><label class="form-label">Valor</label><input class="form-control" name="valor" th:value="${i.valor}"></div>
+          <div class="col-md-4 form-check mt-4"><input class="form-check-input" type="checkbox" name="ativo" th:checked="${i.ativo}"> <label class="form-check-label">Ativo</label></div>
+        </div></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success">Salvar alterações</button></div>
+      </form>
+    </div></div>
+  </div>
+  <div class="modal fade" th:id="${'excluirProcedimentoModal' + i.id_local}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content">
+      <form method="post" th:action="@{/procedimentos/{id}/excluir(id=${i.id_local})}">
+        <div class="modal-header"><h5 class="modal-title">Excluir procedimento</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+        <div class="modal-body"><p>Confirma a exclusão do procedimento?</p><p class="fw-semibold" th:text="${i.codigo + ' - ' + i.descricao}">Procedimento</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger">Excluir</button></div>
+      </form>
+    </div></div>
+  </div>
+</div>
 
-                <form class="row g-2" method="post" th:action="@{/procedimentos}" th:if="${adminLogado or reguladorLogado}">
-                    <div class="col-md-2">
-                        <input class="form-control"
-                               name="codigo"
-                               placeholder="Codigo"
-                               required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <input class="form-control"
-                               name="descricao"
-                               placeholder="Descricao"
-                               required>
-                    </div>
-
-                    <div class="col-md-2">
-                        <input class="form-control"
-                               name="tipo"
-                               placeholder="Tipo">
-                    </div>
-
-                    <div class="col-md-1">
-                        <input class="form-control"
-                               name="valor"
-                               placeholder="Valor">
-                    </div>
-
-                    <div class="col-md-1">
-                        <button class="btn btn-success w-100">
-                            Salvar
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="panel">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Codigo</th>
-                            <th>Descricao</th>
-                            <th>Tipo</th>
-                            <th>Valor</th>
-                            <th>Origem</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr th:each="i : ${itens}">
-                            <td th:text="${i.codigo}"></td>
-                            <td th:text="${i.descricao}"></td>
-                            <td th:text="${i.tipo}"></td>
-                            <td th:text="${i.valor}"></td>
-                            <td th:text="${i.origem}"></td>
-                            <td th:text="${i.ativo ? 'Ativo' : 'Inativo'}"></td>
-
-<!--                            <td>
-                                <form th:if="${i.id_local != null}"
-                                      method="post"
-                                      th:action="@{'/procedimentos/' + ${i.id_local} + '/toggle'}">
-                                    <button class="btn btn-sm btn-outline-secondary">
-                                        Alternar
-                                    </button>
-                                </form>
-
-                                <span th:if="${i.id_local == null}" class="text-muted">
-                                    SIGTAP
-                                </span>
-                            </td>-->
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
