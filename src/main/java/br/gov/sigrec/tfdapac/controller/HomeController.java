@@ -22,10 +22,33 @@ public class HomeController {
     @GetMapping("/")
     public String dashboard(Model model, Authentication auth) {
         boolean admin = currentUserService.isAdmin(auth);
+        boolean regulador = currentUserService.isRegulador(auth);
+        boolean visualizaTodas = admin || regulador;
         Long userId = currentUserService.id(auth);
         Long unidadeId = currentUserService.unidadeId(auth);
 
-        model.addAttribute("contadores", admin ? jdbcTemplate.queryForList("""
+        model.addAttribute("indicadores", visualizaTodas ? jdbcTemplate.queryForMap("""
+                select count(*) filter (where data_entrada::date = current_date) hoje,
+                       count(*) filter (where status in ('ENVIADA','EM_ANALISE')) pendentes,
+                       count(*) filter (where status = 'AUTORIZADA') autorizadas,
+                       count(*) filter (where status = 'DEVOLVIDA_CORRECAO') devolvidas,
+                       count(*) filter (where status = 'INDEFERIDA') indeferidas,
+                       count(*) filter (where status = 'IMPRESSA') impressas
+                from regulacao_tfd.solicitacoes
+                where numero_protocolo is not null
+                """) : jdbcTemplate.queryForMap("""
+                select count(*) filter (where data_entrada::date = current_date) hoje,
+                       count(*) filter (where status in ('ENVIADA','EM_ANALISE')) pendentes,
+                       count(*) filter (where status = 'AUTORIZADA') autorizadas,
+                       count(*) filter (where status = 'DEVOLVIDA_CORRECAO') devolvidas,
+                       count(*) filter (where status = 'INDEFERIDA') indeferidas,
+                       count(*) filter (where status = 'IMPRESSA') impressas
+                from regulacao_tfd.solicitacoes
+                where numero_protocolo is not null
+                  and (usuario_criacao = ? or (? is not null and unidade_solicitante_id = ?))
+                """, userId, unidadeId, unidadeId));
+
+        model.addAttribute("contadores", visualizaTodas ? jdbcTemplate.queryForList("""
                 select status, count(*) total
                 from regulacao_tfd.solicitacoes
                 where numero_protocolo is not null
@@ -40,13 +63,8 @@ public class HomeController {
                 order by status
                 """, userId, unidadeId, unidadeId));
 
-        List<Map<String, Object>> recentes = admin ? jdbcTemplate.queryForList("""
-                select s.id,
-                       s.numero_protocolo,
-                       s.numero_solicitacao,
-                       s.tipo_solicitacao,
-                       s.prioridade,
-                       s.status,
+        List<Map<String, Object>> recentes = visualizaTodas ? jdbcTemplate.queryForList("""
+                select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.prioridade, s.status,
                        coalesce(to_char(s.data_entrada, 'DD/MM/YYYY HH24:MI:SS'), '-') as entrada_formatada,
                        p.nome paciente_nome
                 from regulacao_tfd.solicitacoes s
@@ -56,12 +74,7 @@ public class HomeController {
                 order by s.data_entrada desc
                 limit 10
                 """) : jdbcTemplate.queryForList("""
-                select s.id,
-                       s.numero_protocolo,
-                       s.numero_solicitacao,
-                       s.tipo_solicitacao,
-                       s.prioridade,
-                       s.status,
+                select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.prioridade, s.status,
                        coalesce(to_char(s.data_entrada, 'DD/MM/YYYY HH24:MI:SS'), '-') as entrada_formatada,
                        p.nome paciente_nome
                 from regulacao_tfd.solicitacoes s
@@ -74,7 +87,6 @@ public class HomeController {
                 """, userId, unidadeId, unidadeId);
 
         model.addAttribute("recentes", recentes);
-
         return "dashboard/index";
     }
 }
