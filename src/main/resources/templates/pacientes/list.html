@@ -1,59 +1,77 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="~{layout/fragments :: head('Pacientes')}"></head>
-    <body>
-        <nav th:replace="~{layout/fragments :: nav}"></nav>
+<head th:replace="~{layout/fragments :: head('Pacientes')}"></head>
+<body>
+<nav th:replace="~{layout/fragments :: nav}"></nav>
 <div th:replace="~{layout/fragments :: profileModal}"></div>
-        <main class="page">
-            <div th:replace="~{layout/fragments :: alerts}"></div>
-            <h1 class="h3">Pacientes</h1>
-            <div class="panel mb-3">
-                <form class="row g-2" method="get">
-                    <div class="col-md-10"><input class="form-control" name="q" th:value="${q}" placeholder="Nome, CNS ou CPF"></div>
-                    <div class="col-md-2"><button class="btn btn-outline-success w-100">Pesquisar</button></div>
-                </form>
-            </div>
-            <div class="panel mb-3">
-                <h2 class="h5">Novo paciente</h2>
-                <form class="row g-2 sigrec-validated-form" method="post" th:action="@{/pacientes}">
-                    <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome completo" required></div>
-                    <div class="col-md-3"><input class="form-control" name="cns" placeholder="Cartao SUS"></div>
-                    <div class="col-md-3"><input class="form-control" name="cpf" placeholder="CPF" inputmode="numeric" autocomplete="off" data-mask="cpf" data-digits="11"></div>
-                    <div class="col-md-2"><input class="form-control" name="rg" placeholder="RG"></div>
-                    <div class="col-md-3">
-                        <input class="form-control"
-                               type="text"
-                               name="data_nascimento"
-                               placeholder="Data de nascimento"
-                               inputmode="numeric"
-                               autocomplete="off"
-                               data-mask="date"
-                               data-digits="8">
-                    </div>
-                    <div class="col-md-2"><select class="form-select" name="sexo"><option value="">Sexo</option><option>FEMININO</option><option>MASCULINO</option><option>OUTRO</option></select></div>
-                    <div class="col-md-2"><input class="form-control" name="raca_cor" placeholder="Raca/cor"></div>
-                    <div class="col-md-3"><input class="form-control" name="nome_mae" placeholder="Nome da mae"></div>
-                    <div class="col-md-2"><input class="form-control" name="cep" placeholder="CEP" inputmode="numeric" autocomplete="off" data-mask="cep" data-digits="8" data-cep-lookup></div>
-                    <div class="col-md-4"><input class="form-control" name="endereco" data-cep-logradouro placeholder="Endereco"></div>
-                    <div class="col-md-3"><input class="form-control" name="bairro" data-cep-bairro placeholder="Bairro"></div>
-                    <div class="col-md-3"><input class="form-control" name="municipio" data-cep-municipio placeholder="Municipio"></div>
-                    <div class="col-md-1"><input class="form-control" name="uf" data-cep-uf placeholder="UF" maxlength="2"></div>
-                    <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
-                    <div class="col-md-4"><input class="form-control" name="email" placeholder="E-mail"></div>
-                    <div class="col-md-5"><input class="form-control" name="responsavel" placeholder="Responsavel"></div>
-                    <div class="col-12"><button class="btn btn-success">Salvar paciente</button></div>
-                </form>
-            </div>
-            <div class="panel">
-                <table class="table table-hover">
-                    <thead><tr><th>Nome</th><th>CNS</th><th>CPF</th><th>Nascimento</th><th>Municipio</th><th>Telefone</th></tr></thead>
-                    <tbody><tr th:each="i : ${itens}">
-                            <td th:text="${i.nome}"></td><td th:text="${i.cns}"></td><td th:text="${i.cpf}"></td>
-                            <td th:text="${i.data_nascimento}"></td><td th:text="${i.municipio}"></td><td th:text="${i.telefone}"></td>
-                        </tr></tbody>
-                </table>
-            </div>
-        </main>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+<main class="page">
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <span class="eyebrow">Cadastros</span>
+      <h1 class="h3 mb-1">Pacientes</h1>
+      <p class="text-muted mb-0">Consulte pacientes por nome, CNS, CPF ou município.</p>
+    </div>
+    <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#novoPacienteModal">Novo paciente</button>
+  </div>
+
+  <form class="panel mb-3" method="get" th:action="@{/pacientes}">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-8"><label class="form-label">Buscar</label><input class="form-control" name="q" th:value="${q}" placeholder="Nome, CNS, CPF ou município"></div>
+      <div class="col-md-2 d-grid"><button class="btn btn-success">Pesquisar</button></div>
+      <div class="col-md-2 d-grid"><a class="btn btn-outline-secondary" th:href="@{/pacientes}">Limpar</a></div>
+    </div>
+  </form>
+
+  <div class="panel">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>#</th><th>Nome</th><th>CNS</th><th>CPF</th><th>Nascimento</th><th>Município</th><th>Telefone</th></tr></thead>
+        <tbody>
+          <tr th:if="${#lists.isEmpty(itens)}"><td colspan="7" class="text-center text-muted py-4">Nenhum paciente encontrado.</td></tr>
+          <tr th:each="i, stat : ${itens}">
+            <td th:text="${stat.count}">1</td>
+            <td th:text="${i.nome}">Nome</td>
+            <td th:text="${i.cns}">CNS</td>
+            <td th:text="${i.cpf}">CPF</td>
+            <td th:text="${i.data_nascimento}">Nascimento</td>
+            <td th:text="${i.municipio}">Município</td>
+            <td th:text="${i.telefone}">Telefone</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="modal fade" id="novoPacienteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <form class="sigrec-validated-form" method="post" th:action="@{/pacientes}">
+        <div class="modal-header"><h5 class="modal-title">Novo paciente</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+        <div class="modal-body"><div class="row g-2">
+          <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome completo" required></div>
+          <div class="col-md-3"><input class="form-control" name="cns" placeholder="Cartão SUS"></div>
+          <div class="col-md-3"><input class="form-control" name="cpf" placeholder="CPF" inputmode="numeric" autocomplete="off" data-mask="cpf" data-digits="11"></div>
+          <div class="col-md-2"><input class="form-control" name="rg" placeholder="RG"></div>
+          <div class="col-md-3"><input class="form-control" type="text" name="data_nascimento" placeholder="Data de nascimento" inputmode="numeric" autocomplete="off" data-mask="date" data-digits="8"></div>
+          <div class="col-md-2"><select class="form-select" name="sexo"><option value="">Sexo</option><option>FEMININO</option><option>MASCULINO</option><option>OUTRO</option></select></div>
+          <div class="col-md-2"><input class="form-control" name="raca_cor" placeholder="Raça/cor"></div>
+          <div class="col-md-3"><input class="form-control" name="nome_mae" placeholder="Nome da mãe"></div>
+          <div class="col-md-2"><input class="form-control" name="cep" placeholder="CEP" inputmode="numeric" autocomplete="off" data-mask="cep" data-digits="8" data-cep-lookup></div>
+          <div class="col-md-4"><input class="form-control" name="endereco" data-cep-logradouro placeholder="Endereço"></div>
+          <div class="col-md-3"><input class="form-control" name="bairro" data-cep-bairro placeholder="Bairro"></div>
+          <div class="col-md-3"><input class="form-control" name="municipio" data-cep-municipio placeholder="Município"></div>
+          <div class="col-md-1"><input class="form-control" name="uf" data-cep-uf placeholder="UF" maxlength="2"></div>
+          <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
+          <div class="col-md-4"><input class="form-control" name="email" placeholder="E-mail"></div>
+          <div class="col-md-5"><input class="form-control" name="responsavel" placeholder="Responsável"></div>
+        </div></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success">Salvar paciente</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
