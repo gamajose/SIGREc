@@ -50,8 +50,24 @@ public class CadastroController {
     }
 
     @GetMapping("/unidades")
-    public String unidades(Model model) {
-        model.addAttribute("itens", jdbcTemplate.queryForList("select * from regulacao_tfd.unidades_saude order by nome"));
+    public String unidades(@RequestParam(defaultValue = "") String q,
+                           @RequestParam(defaultValue = "") String tipo,
+                           @RequestParam(defaultValue = "") String uf,
+                           Model model) {
+        model.addAttribute("q", q);
+        model.addAttribute("tipo", tipo);
+        model.addAttribute("uf", uf);
+        model.addAttribute("tiposUnidade", jdbcTemplate.queryForList("select distinct tipo_unidade from regulacao_tfd.unidades_saude where tipo_unidade is not null order by tipo_unidade"));
+        model.addAttribute("ufsUnidade", jdbcTemplate.queryForList("select distinct uf from regulacao_tfd.unidades_saude where uf is not null and uf <> '' order by uf"));
+        model.addAttribute("itens", jdbcTemplate.queryForList("""
+                select row_number() over (order by nome) numero, *
+                from regulacao_tfd.unidades_saude
+                where (? = '' or nome ilike ? or cnes ilike ? or municipio ilike ?)
+                  and (? = '' or tipo_unidade = ?)
+                  and (? = '' or uf = ?)
+                order by nome
+                limit 300
+                """, q, like(q), like(q), like(q), tipo, tipo, uf, uf));
         return "unidades/list";
     }
 
@@ -72,13 +88,26 @@ public class CadastroController {
     }
 
     @GetMapping("/profissionais")
-    public String profissionais(Model model) {
+    public String profissionais(@RequestParam(defaultValue = "") String q,
+                                @RequestParam(defaultValue = "") String conselho,
+                                @RequestParam(defaultValue = "") String uf,
+                                Model model) {
+        model.addAttribute("q", q);
+        model.addAttribute("conselho", conselho);
+        model.addAttribute("uf", uf);
+        model.addAttribute("conselhos", jdbcTemplate.queryForList("select distinct conselho from regulacao_tfd.profissionais where conselho is not null and conselho <> '' order by conselho"));
+        model.addAttribute("ufs", jdbcTemplate.queryForList("select distinct uf_conselho from regulacao_tfd.profissionais where uf_conselho is not null and uf_conselho <> '' order by uf_conselho"));
         model.addAttribute("itens", jdbcTemplate.queryForList("""
-                select p.*, u.nome unidade_nome
+                select row_number() over (order by p.nome) numero,
+                       p.*, u.nome unidade_nome
                 from regulacao_tfd.profissionais p
                 left join regulacao_tfd.unidades_saude u on u.id = p.unidade_id
+                where (? = '' or p.nome ilike ? or p.cpf_cns ilike ? or p.registro_conselho ilike ?)
+                  and (? = '' or p.conselho = ?)
+                  and (? = '' or p.uf_conselho = ?)
                 order by p.nome
-                """));
+                limit 300
+                """, q, like(q), like(q), like(q), conselho, conselho, uf, uf));
         model.addAttribute("unidades", jdbcTemplate.queryForList("select id, nome from regulacao_tfd.unidades_saude order by nome"));
         return "profissionais/list";
     }
@@ -106,9 +135,7 @@ public class CadastroController {
             Model model) {
         model.addAttribute("q", q);
         model.addAttribute("origem", origem);
-
         String busca = like(q);
-
         model.addAttribute("itens", jdbcTemplate.queryForList("""
             select codigo, descricao, tipo, valor, ativo, origem
             from regulacao_tfd.vw_procedimentos_unificados
@@ -116,10 +143,7 @@ public class CadastroController {
               and (? = '' or origem = ?)
             order by descricao
             limit 100
-            """,
-                q, busca, busca,
-                origem, origem));
-
+            """, q, busca, busca, origem, origem));
         return "procedimentos/list";
     }
 
@@ -143,47 +167,21 @@ public class CadastroController {
     }
 
     private String like(String q) {
-        return "%" + q + "%";
+        return "%" + (q == null ? "" : q.trim()) + "%";
     }
 
     private Date date(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
+        if (value == null || value.isBlank()) return null;
         String v = value.trim();
-
         try {
-            // Formato padrão do input type="date": 1992-06-25
-            if (v.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                return Date.valueOf(LocalDate.parse(v));
-            }
-
-            // Remove qualquer coisa que não seja número.
-            // Aceita: 25061992, 25/06/1992, 25-06-1992, 250692, 25/06/92
+            if (v.matches("\\d{4}-\\d{2}-\\d{2}")) return Date.valueOf(LocalDate.parse(v));
             String numeros = v.replaceAll("\\D", "");
-
-            if (numeros.length() == 8) {
-                int dia = Integer.parseInt(numeros.substring(0, 2));
-                int mes = Integer.parseInt(numeros.substring(2, 4));
-                int ano = Integer.parseInt(numeros.substring(4, 8));
-
-                return Date.valueOf(LocalDate.of(ano, mes, dia));
-            }
-
+            if (numeros.length() == 8) return Date.valueOf(LocalDate.of(Integer.parseInt(numeros.substring(4, 8)), Integer.parseInt(numeros.substring(2, 4)), Integer.parseInt(numeros.substring(0, 2))));
             if (numeros.length() == 6) {
-                int dia = Integer.parseInt(numeros.substring(0, 2));
-                int mes = Integer.parseInt(numeros.substring(2, 4));
                 int anoCurto = Integer.parseInt(numeros.substring(4, 6));
-
-                // Regra:
-                // 00 a 29 = 2000 a 2029
-                // 30 a 99 = 1930 a 1999
                 int ano = anoCurto <= 29 ? 2000 + anoCurto : 1900 + anoCurto;
-
-                return Date.valueOf(LocalDate.of(ano, mes, dia));
+                return Date.valueOf(LocalDate.of(ano, Integer.parseInt(numeros.substring(2, 4)), Integer.parseInt(numeros.substring(0, 2))));
             }
-
             return null;
         } catch (Exception e) {
             return null;
@@ -199,13 +197,9 @@ public class CadastroController {
     }
 
     private boolean hasRole(Authentication authentication, String role) {
-        if (authentication == null) {
-            return false;
-        }
+        if (authentication == null) return false;
         String authority = "ROLE_" + role;
-        return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(authority::equals);
+        return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(authority::equals);
     }
 
     private java.math.BigDecimal decimal(String value) {
