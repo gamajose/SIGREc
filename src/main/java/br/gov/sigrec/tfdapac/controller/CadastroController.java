@@ -125,21 +125,42 @@ public class CadastroController {
     public String unidades(@RequestParam(defaultValue = "") String q,
                            @RequestParam(defaultValue = "") String tipo,
                            @RequestParam(defaultValue = "") String uf,
+                           @RequestParam(defaultValue = "1") Integer page,
                            Model model) {
+        int pageSize = 20;
+        int paginaAtual = Math.max(page == null ? 1 : page, 1);
+        int offset = (paginaAtual - 1) * pageSize;
+        Integer total = jdbcTemplate.queryForObject("""
+                select count(*)
+                from regulacao_tfd.unidades_saude
+                where (? = '' or nome ilike ? or cnes ilike ? or municipio ilike ?)
+                  and (? = '' or tipo_unidade = ?)
+                  and (? = '' or uf = ?)
+                """, Integer.class, q, like(q), like(q), like(q), tipo, tipo, uf, uf);
+        int totalRegistros = total == null ? 0 : total;
+        int totalPaginas = Math.max((int) Math.ceil(totalRegistros / (double) pageSize), 1);
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+        offset = (paginaAtual - 1) * pageSize;
+
         model.addAttribute("q", q);
         model.addAttribute("tipo", tipo);
         model.addAttribute("uf", uf);
+        model.addAttribute("page", paginaAtual);
+        model.addAttribute("totalPaginas", totalPaginas);
+        model.addAttribute("totalRegistros", totalRegistros);
+        model.addAttribute("temAnterior", paginaAtual > 1);
+        model.addAttribute("temProxima", paginaAtual < totalPaginas);
         model.addAttribute("tiposUnidade", jdbcTemplate.queryForList("select distinct tipo_unidade from regulacao_tfd.unidades_saude where tipo_unidade is not null order by tipo_unidade"));
         model.addAttribute("ufsUnidade", jdbcTemplate.queryForList("select distinct uf from regulacao_tfd.unidades_saude where uf is not null and uf <> '' order by uf"));
         model.addAttribute("itens", jdbcTemplate.queryForList("""
-                select row_number() over (order by nome) numero, *
+                select (? + row_number() over (order by nome)) numero, *
                 from regulacao_tfd.unidades_saude
                 where (? = '' or nome ilike ? or cnes ilike ? or municipio ilike ?)
                   and (? = '' or tipo_unidade = ?)
                   and (? = '' or uf = ?)
                 order by nome
-                limit 300
-                """, q, like(q), like(q), like(q), tipo, tipo, uf, uf));
+                limit ? offset ?
+                """, offset, q, like(q), like(q), like(q), tipo, tipo, uf, uf, pageSize, offset));
         return "unidades/list";
     }
 
@@ -163,14 +184,35 @@ public class CadastroController {
     public String profissionais(@RequestParam(defaultValue = "") String q,
                                 @RequestParam(defaultValue = "") String conselho,
                                 @RequestParam(defaultValue = "") String uf,
+                                @RequestParam(defaultValue = "1") Integer page,
                                 Model model) {
+        int pageSize = 20;
+        int paginaAtual = Math.max(page == null ? 1 : page, 1);
+        int offset = (paginaAtual - 1) * pageSize;
+        Integer total = jdbcTemplate.queryForObject("""
+                select count(*)
+                from regulacao_tfd.profissionais p
+                where (? = '' or p.nome ilike ? or p.cpf_cns ilike ? or p.registro_conselho ilike ?)
+                  and (? = '' or p.conselho = ?)
+                  and (? = '' or p.uf_conselho = ?)
+                """, Integer.class, q, like(q), like(q), like(q), conselho, conselho, uf, uf);
+        int totalRegistros = total == null ? 0 : total;
+        int totalPaginas = Math.max((int) Math.ceil(totalRegistros / (double) pageSize), 1);
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+        offset = (paginaAtual - 1) * pageSize;
+
         model.addAttribute("q", q);
         model.addAttribute("conselho", conselho);
         model.addAttribute("uf", uf);
+        model.addAttribute("page", paginaAtual);
+        model.addAttribute("totalPaginas", totalPaginas);
+        model.addAttribute("totalRegistros", totalRegistros);
+        model.addAttribute("temAnterior", paginaAtual > 1);
+        model.addAttribute("temProxima", paginaAtual < totalPaginas);
         model.addAttribute("conselhos", jdbcTemplate.queryForList("select distinct conselho from regulacao_tfd.profissionais where conselho is not null and conselho <> '' order by conselho"));
         model.addAttribute("ufs", jdbcTemplate.queryForList("select distinct uf_conselho from regulacao_tfd.profissionais where uf_conselho is not null and uf_conselho <> '' order by uf_conselho"));
         model.addAttribute("itens", jdbcTemplate.queryForList("""
-                select row_number() over (order by p.nome) numero,
+                select (? + row_number() over (order by p.nome)) numero,
                        p.*, u.nome unidade_nome
                 from regulacao_tfd.profissionais p
                 left join regulacao_tfd.unidades_saude u on u.id = p.unidade_id
@@ -178,8 +220,8 @@ public class CadastroController {
                   and (? = '' or p.conselho = ?)
                   and (? = '' or p.uf_conselho = ?)
                 order by p.nome
-                limit 300
-                """, q, like(q), like(q), like(q), conselho, conselho, uf, uf));
+                limit ? offset ?
+                """, offset, q, like(q), like(q), like(q), conselho, conselho, uf, uf, pageSize, offset));
         model.addAttribute("unidades", jdbcTemplate.queryForList("select id, nome from regulacao_tfd.unidades_saude order by nome"));
         return "profissionais/list";
     }
