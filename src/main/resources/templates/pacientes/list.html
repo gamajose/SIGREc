@@ -10,32 +10,37 @@
     <div>
       <span class="eyebrow">Cadastros</span>
       <h1 class="h3 mb-1">Pacientes</h1>
-      <p class="text-muted mb-0">Consulte pacientes por nome, CNS, CPF ou município.</p>
+      <p class="text-muted mb-0">Consulte pacientes por nome, CNS, CPF, município, UF ou data de nascimento.</p>
     </div>
     <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#novoPacienteModal">Novo paciente</button>
   </div>
 
   <form class="panel mb-3" method="get" th:action="@{/pacientes}">
     <div class="row g-2 align-items-end">
-      <div class="col-md-8"><label class="form-label">Buscar</label><input class="form-control" name="q" th:value="${q}" placeholder="Nome, CNS, CPF ou município"></div>
-      <div class="col-md-2 d-grid"><button class="btn btn-success">Pesquisar</button></div>
-      <div class="col-md-2 d-grid"><a class="btn btn-outline-secondary" th:href="@{/pacientes}">Limpar</a></div>
+      <div class="col-md-3"><label class="form-label">Buscar</label><input class="form-control" name="q" th:value="${q}" placeholder="Nome, CNS, CPF ou município"></div>
+      <div class="col-md-2"><label class="form-label">Município</label><select class="form-select" name="municipio"><option value="">Todos</option><option th:each="m:${municipios}" th:value="${m.municipio}" th:text="${m.municipio}" th:selected="${m.municipio == municipio}"></option></select></div>
+      <div class="col-md-1"><label class="form-label">UF</label><select class="form-select" name="uf"><option value="">Todas</option><option th:each="u:${ufs}" th:value="${u.uf}" th:text="${u.uf}" th:selected="${u.uf == uf}"></option></select></div>
+      <div class="col-md-2"><label class="form-label">Nascimento inicial</label><input class="form-control" type="date" name="dataInicio" th:value="${dataInicio}"></div>
+      <div class="col-md-2"><label class="form-label">Nascimento final</label><input class="form-control" type="date" name="dataFim" th:value="${dataFim}"></div>
+      <div class="col-md-1 d-grid"><button class="btn btn-success">Filtrar</button></div>
+      <div class="col-md-1 d-grid"><a class="btn btn-outline-secondary" th:href="@{/pacientes}">Limpar</a></div>
     </div>
   </form>
 
   <div class="panel">
     <div class="table-responsive">
       <table class="table table-hover align-middle">
-        <thead><tr><th>#</th><th>Nome</th><th>CNS</th><th>CPF</th><th>Nascimento</th><th>Município</th><th>Telefone</th></tr></thead>
+        <thead><tr><th>#</th><th>Nome</th><th>CNS</th><th>CPF</th><th>Nascimento</th><th>Município</th><th>UF</th><th>Telefone</th></tr></thead>
         <tbody>
-          <tr th:if="${#lists.isEmpty(itens)}"><td colspan="7" class="text-center text-muted py-4">Nenhum paciente encontrado.</td></tr>
-          <tr th:each="i, stat : ${itens}">
-            <td th:text="${stat.count}">1</td>
+          <tr th:if="${#lists.isEmpty(itens)}"><td colspan="8" class="text-center text-muted py-4">Nenhum paciente encontrado.</td></tr>
+          <tr th:each="i : ${itens}">
+            <td th:text="${i.numero}">1</td>
             <td th:text="${i.nome}">Nome</td>
             <td th:text="${i.cns}">CNS</td>
             <td th:text="${i.cpf}">CPF</td>
             <td th:text="${i.data_nascimento}">Nascimento</td>
             <td th:text="${i.municipio}">Município</td>
+            <td th:text="${i.uf}">UF</td>
             <td th:text="${i.telefone}">Telefone</td>
           </tr>
         </tbody>
