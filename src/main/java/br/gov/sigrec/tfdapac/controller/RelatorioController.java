@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
@@ -27,28 +28,32 @@ public class RelatorioController {
     }
 
     @GetMapping("/relatorios")
-    public String index(Model model) {
-        model.addAttribute("porStatus", jdbcTemplate.queryForList("""
-                select status, count(*) total
+    public String index(@RequestParam(defaultValue = "") String q,
+                        @RequestParam(defaultValue = "") String dataInicio,
+                        @RequestParam(defaultValue = "") String dataFim,
+                        @RequestParam(defaultValue = "") String estado,
+                        @RequestParam(defaultValue = "") String prioridade,
+                        Model model) {
+        model.addAttribute("q", q);
+        model.addAttribute("dataInicio", dataInicio);
+        model.addAttribute("dataFim", dataFim);
+        model.addAttribute("estado", estado);
+        model.addAttribute("prioridade", prioridade);
+        model.addAttribute("estados", jdbcTemplate.queryForList("""
+                select distinct status
                 from regulacao_tfd.solicitacoes
-                group by status
+                where status not in ('ENVIADA','EM_ANALISE')
                 order by status
                 """));
-        model.addAttribute("porUnidade", jdbcTemplate.queryForList("""
-                select u.nome unidade, count(*) total
-                from regulacao_tfd.solicitacoes s
-                join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
-                group by u.nome
-                order by u.nome
-                """));
-        model.addAttribute("tempoMedio", jdbcTemplate.queryForList("""
-                select tipo_solicitacao, avg(extract(epoch from (data_autorizacao - data_entrada))/3600)::numeric(10,2) horas
+        model.addAttribute("prioridades", jdbcTemplate.queryForList("""
+                select distinct prioridade
                 from regulacao_tfd.solicitacoes
-                where data_autorizacao is not null
-                group by tipo_solicitacao
+                where prioridade is not null
+                order by prioridade
                 """));
         model.addAttribute("historicoSolicitacoes", jdbcTemplate.queryForList("""
-                select s.id,
+                select row_number() over (order by coalesce(h.criado_em, s.data_analise, s.data_autorizacao, s.data_entrada) desc) numero,
+                       s.id,
                        s.numero_protocolo,
                        s.tipo_solicitacao,
                        p.nome paciente,
@@ -80,9 +85,19 @@ public class RelatorioController {
                 ) h on true
                 left join regulacao_tfd.usuarios usu on usu.id = h.usuario_id
                 where s.status not in ('ENVIADA','EM_ANALISE')
+                  and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ?)
+                  and (? = '' or s.status = ?)
+                  and (? = '' or s.prioridade = ?)
+                  and (? = '' or s.data_entrada::date >= ?::date)
+                  and (? = '' or s.data_entrada::date <= ?::date)
                 order by coalesce(h.criado_em, s.data_analise, s.data_autorizacao, s.data_entrada) desc
-                limit 200
-                """));
+                limit 500
+                """,
+                q, like(q), like(q),
+                estado, estado,
+                prioridade, prioridade,
+                dataInicio, dataInicio,
+                dataFim, dataFim));
         return "relatorios/index";
     }
 
@@ -173,6 +188,10 @@ public class RelatorioController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline().filename("historico-solicitacoes.pdf").build().toString())
                 .body(out.toByteArray());
+    }
+
+    private String like(String value) {
+        return "%" + (value == null ? "" : value.trim()) + "%";
     }
 
     private String escape(Object value) {
