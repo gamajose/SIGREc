@@ -39,8 +39,8 @@
             <div class="row g-3">
                 <div class="col-md-8 position-relative">
                     <label class="form-label">Paciente <span class="text-danger">*</span></label>
-                    <input type="hidden" name="paciente_id" id="paciente_id" required>
-                    <input class="form-control review-field" type="text" id="paciente_busca" data-review="Paciente" placeholder="Digite nome, CPF ou CNS do paciente" autocomplete="off" required>
+                    <input type="hidden" name="paciente_id" id="paciente_id" th:value="${pacientePreSelecionado}" required>
+                    <input class="form-control review-field" type="text" id="paciente_busca" data-review="Paciente" th:value="${pacientePreSelecionadoNome}" placeholder="Digite nome, CPF ou CNS do paciente" autocomplete="off" required>
                     <div id="paciente_resultados" class="list-group mt-1" style="position: absolute; z-index: 1000; width: 95%; display: none;"></div>
                     <div class="form-text">Selecione um paciente da lista para vincular corretamente a solicitação.</div>
                 </div>
