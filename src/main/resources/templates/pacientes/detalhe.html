@@ -12,7 +12,11 @@
       <h1 class="h3 mb-1" th:text="${paciente.nome}">Nome do paciente</h1>
       <p class="text-muted mb-0">Ficha administrativa e histórico de solicitações TFD/APAC.</p>
     </div>
-    <a class="btn btn-outline-secondary" th:href="@{/pacientes}">Voltar</a>
+    <div class="d-flex gap-2">
+      <a class="btn btn-success" th:href="@{/solicitacoes/nova/TFD(pacienteId=${paciente.id})}">Nova TFD</a>
+      <a class="btn btn-outline-success" th:href="@{/solicitacoes/nova/APAC(pacienteId=${paciente.id})}">Nova APAC</a>
+      <a class="btn btn-outline-secondary" th:href="@{/pacientes}">Voltar</a>
+    </div>
   </div>
 
   <section class="row g-3 mb-3">
