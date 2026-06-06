@@ -1,75 +1,36 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout/fragments :: head('Notificações')}"></head>
-
 <body>
 <nav th:replace="~{layout/fragments :: nav}"></nav>
 <div th:replace="~{layout/fragments :: profileModal}"></div>
-
 <main class="page">
-    <div th:replace="~{layout/fragments :: alerts}"></div>
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">Notificações</h1>
-
-        <form method="post" th:action="@{/notificacoes/ler-todas}">
-            <button class="btn btn-outline-secondary btn-sm">
-                Marcar todas como lidas
-            </button>
-        </form>
+  <div th:replace="~{layout/fragments :: alerts}"></div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div><span class="eyebrow">Central</span><h1 class="h3 mb-0">Notificações</h1></div>
+    <form method="post" th:action="@{/notificacoes/ler-todas}"><button class="btn btn-outline-secondary btn-sm">Marcar todas como lidas</button></form>
+  </div>
+  <div class="panel">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Status</th><th>Título</th><th>Mensagem</th><th>Data</th><th>Ações</th></tr></thead>
+        <tbody>
+          <tr th:if="${#lists.isEmpty(notificacoes)}"><td colspan="5" class="text-center text-muted py-4">Nenhuma notificação encontrada.</td></tr>
+          <tr th:each="n : ${notificacoes}">
+            <td><span th:if="${n.lida}" class="badge bg-secondary">Lida</span><span th:if="${!n.lida}" class="badge bg-danger">Nova</span></td>
+            <td th:text="${n.titulo}">Título</td>
+            <td th:text="${n.mensagem}">Mensagem</td>
+            <td th:text="${#strings.substring(n.criado_em.toString(), 0, 19)}">Data</td>
+            <td class="text-nowrap">
+              <a th:if="${n.url != null and n.url != ''}" class="btn btn-sm btn-outline-success" th:href="@{/notificacoes/{id}/abrir(id=${n.id})}">Abrir</a>
+              <form th:if="${!n.lida}" method="post" th:action="@{/notificacoes/{id}/ler(id=${n.id})}" class="d-inline"><button class="btn btn-sm btn-outline-secondary">Marcar lida</button></form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-
-    <div class="panel">
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>Status</th>
-                <th>Título</th>
-                <th>Mensagem</th>
-                <th>Data</th>
-                <th>Ações</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr th:if="${#lists.isEmpty(notificacoes)}">
-                <td colspan="5" class="text-center text-muted">
-                    Nenhuma notificação encontrada.
-                </td>
-            </tr>
-
-            <tr th:each="n : ${notificacoes}">
-                <td>
-                    <span th:if="${n.lida}" class="badge bg-secondary">Lida</span>
-                    <span th:if="${!n.lida}" class="badge bg-danger">Nova</span>
-                </td>
-
-                <td th:text="${n.titulo}"></td>
-                <td th:text="${n.mensagem}"></td>
-                <td th:text="${n.criado_em}"></td>
-
-                <td class="text-nowrap">
-                    <a th:if="${n.link != null and n.link != ''}"
-                       class="btn btn-sm btn-outline-success"
-                       th:href="@{${n.link}}">
-                        Abrir
-                    </a>
-
-                    <form th:if="${!n.lida}"
-                          method="post"
-                          th:action="@{/notificacoes/{id}/ler(id=${n.id})}"
-                          class="d-inline">
-                        <button class="btn btn-sm btn-outline-secondary">
-                            Marcar lida
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+  </div>
 </main>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
