@@ -9,11 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class UserAccountService {
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String CODIGO_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
     private final UserAccountRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
@@ -24,13 +28,9 @@ public class UserAccountService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<UserAccount> findAll() {
-        return repository.findAll();
-    }
+    public List<UserAccount> findAll() { return repository.findAll(); }
 
-    public UserAccount find(Long id) {
-        return repository.findById(id).orElseThrow();
-    }
+    public UserAccount find(Long id) { return repository.findById(id).orElseThrow(); }
 
     @Transactional
     public UserAccount create(String username, String email, String rawPassword, UserRole role, Long unidadeId, Long actorId) {
@@ -55,6 +55,7 @@ public class UserAccountService {
 
         UserAccount user = new UserAccount();
         user.setUsername(username);
+        user.setCodigoUsuario(gerarCodigoUsuario());
         user.setNome(defaultValue(form.get("nome"), username));
         user.setEmail(form.get("email"));
         user.setEndereco(form.get("unidade_endereco"));
@@ -114,8 +115,7 @@ public class UserAccountService {
     private void atualizarPerfilCompleto(Long id, Map<String, String> form, boolean perfilCompleto) {
         jdbcTemplate.update("""
                 update regulacao_tfd.usuarios
-                set codigo_usuario = ?,
-                    telefone = ?,
+                set telefone = ?,
                     unidade_telefone = ?,
                     unidade_endereco = ?,
                     unidade_cep = ?,
@@ -127,7 +127,6 @@ public class UserAccountService {
                     data_perfil_atualizado = case when ? then current_timestamp else data_perfil_atualizado end
                 where id = ?
                 """,
-                blankToNull(form.get("codigo_usuario")),
                 digits(form.get("telefone")),
                 digits(form.get("unidade_telefone")),
                 form.get("unidade_endereco"),
@@ -139,6 +138,21 @@ public class UserAccountService {
                 perfilCompleto,
                 perfilCompleto,
                 id);
+    }
+
+    private String gerarCodigoUsuario() {
+        for (int tentativa = 0; tentativa < 20; tentativa++) {
+            String codigo = "USR-" + randomCode(6);
+            Integer total = jdbcTemplate.queryForObject("select count(*) from regulacao_tfd.usuarios where codigo_usuario = ?", Integer.class, codigo);
+            if (total == null || total == 0) return codigo;
+        }
+        throw new IllegalStateException("Nao foi possivel gerar codigo unico para o usuario.");
+    }
+
+    private String randomCode(int size) {
+        StringBuilder sb = new StringBuilder(size);
+        for (int i = 0; i < size; i++) sb.append(CODIGO_CHARS.charAt(RANDOM.nextInt(CODIGO_CHARS.length())));
+        return sb.toString();
     }
 
     private void syncRole(UserAccount user) {
@@ -155,23 +169,8 @@ public class UserAccountService {
                 """, targetId, actorId, action, details);
     }
 
-    private Long nullableLong(String value) {
-        return value == null || value.isBlank() ? null : Long.valueOf(value);
-    }
-
-    private String digits(String value) {
-        return value == null ? null : value.replaceAll("\\D", "");
-    }
-
-    private String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
-    }
-
-    private String defaultValue(String value, String fallback) {
-        return StringUtils.hasText(value) ? value : fallback;
-    }
-
-    private String value(String value) {
-        return value == null ? "" : value;
-    }
+    private Long nullableLong(String value) { return value == null || value.isBlank() ? null : Long.valueOf(value); }
+    private String digits(String value) { return value == null ? null : value.replaceAll("\\D", ""); }
+    private String defaultValue(String value, String fallback) { return StringUtils.hasText(value) ? value : fallback; }
+    private String value(String value) { return value == null ? "" : value; }
 }
