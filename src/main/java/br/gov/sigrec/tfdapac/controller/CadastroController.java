@@ -193,12 +193,30 @@ public class CadastroController {
     }
 
     @GetMapping("/procedimentos")
-    public String procedimentos(@RequestParam(defaultValue = "") String q, @RequestParam(defaultValue = "") String origem, Model model) {
-        model.addAttribute("q", q); model.addAttribute("origem", origem); String busca = like(q);
+    public String procedimentos(@RequestParam(defaultValue = "") String q, @RequestParam(defaultValue = "1") Integer page, Model model) {
+        int pageSize = 20;
+        int paginaAtual = Math.max(page == null ? 1 : page, 1);
+        int offset = (paginaAtual - 1) * pageSize;
+        Integer total = jdbcTemplate.queryForObject("""
+                select count(*) from regulacao_tfd.vw_procedimentos_unificados
+                where (? = '' or codigo ilike ? or descricao ilike ?)
+                """, Integer.class, q, like(q), like(q));
+        int totalRegistros = total == null ? 0 : total;
+        int totalPaginas = Math.max((int) Math.ceil(totalRegistros / (double) pageSize), 1);
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+        offset = (paginaAtual - 1) * pageSize;
+        model.addAttribute("q", q);
+        model.addAttribute("page", paginaAtual);
+        model.addAttribute("totalPaginas", totalPaginas);
+        model.addAttribute("totalRegistros", totalRegistros);
+        model.addAttribute("temAnterior", paginaAtual > 1);
+        model.addAttribute("temProxima", paginaAtual < totalPaginas);
         model.addAttribute("itens", jdbcTemplate.queryForList("""
-            select codigo, descricao, tipo, valor, ativo, origem from regulacao_tfd.vw_procedimentos_unificados
-            where (? = '' or codigo ilike ? or descricao ilike ?) and (? = '' or origem = ?) order by descricao limit 100
-            """, q, busca, busca, origem, origem));
+            select (? + row_number() over (order by descricao)) numero, id_local, codigo, descricao, tipo, valor, ativo, origem
+            from regulacao_tfd.vw_procedimentos_unificados
+            where (? = '' or codigo ilike ? or descricao ilike ?)
+            order by descricao limit ? offset ?
+            """, offset, q, like(q), like(q), pageSize, offset));
         return "procedimentos/list";
     }
 
@@ -207,15 +225,29 @@ public class CadastroController {
     public String salvarProcedimento(@RequestParam Map<String, String> f, RedirectAttributes ra) {
         jdbcTemplate.update("""
                 insert into regulacao_tfd.procedimentos (codigo, descricao, tipo, valor, origem, ativo)
-                values (?, ?, ?, ?, 'manual', true)
-                on conflict (codigo) do update set descricao = excluded.descricao, tipo = excluded.tipo, valor = excluded.valor
-                """, f.get("codigo"), f.get("descricao"), f.get("tipo"), decimal(f.get("valor")));
+                values (?, ?, ?, ?, 'manual', ?)
+                on conflict (codigo) do update set descricao = excluded.descricao, tipo = excluded.tipo, valor = excluded.valor, ativo = excluded.ativo
+                """, f.get("codigo"), f.get("descricao"), f.get("tipo"), decimal(f.get("valor")), "on".equals(f.get("ativo")));
         ra.addFlashAttribute("ok", "Procedimento salvo."); return "redirect:/procedimentos";
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','REGULADOR')")
-    @PostMapping("/procedimentos/{id}/toggle")
-    public String toggleProcedimento(@PathVariable Long id) { jdbcTemplate.update("update regulacao_tfd.procedimentos set ativo = not ativo where id = ?", id); return "redirect:/procedimentos"; }
+    @PostMapping("/procedimentos/{id}/editar")
+    public String editarProcedimento(@PathVariable Long id, @RequestParam Map<String, String> f, RedirectAttributes ra) {
+        jdbcTemplate.update("""
+                update regulacao_tfd.procedimentos
+                set codigo = ?, descricao = ?, tipo = ?, valor = ?, ativo = ?
+                where id = ?
+                """, f.get("codigo"), f.get("descricao"), f.get("tipo"), decimal(f.get("valor")), "on".equals(f.get("ativo")), id);
+        ra.addFlashAttribute("ok", "Procedimento atualizado."); return "redirect:/procedimentos";
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','REGULADOR')")
+    @PostMapping("/procedimentos/{id}/excluir")
+    public String excluirProcedimento(@PathVariable Long id, RedirectAttributes ra) {
+        jdbcTemplate.update("delete from regulacao_tfd.procedimentos where id = ?", id);
+        ra.addFlashAttribute("ok", "Procedimento excluido."); return "redirect:/procedimentos";
+    }
 
     private String like(String q) { return "%" + (q == null ? "" : q.trim()) + "%"; }
     private Date date(String value) {
