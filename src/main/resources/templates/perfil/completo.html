@@ -13,10 +13,11 @@
     <div class="row g-2 mb-3">
       <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome completo" th:value="${perfil['nome']}" required></div>
       <div class="col-md-3"><input class="form-control" name="username" placeholder="Username/login" th:value="${perfil['username']}" readonly></div>
-      <div class="col-md-3"><input class="form-control" name="codigo_usuario" placeholder="Código do usuário" th:value="${perfil['codigo_usuario']}"></div>
-      <div class="col-md-6"><input class="form-control" name="email" type="email" placeholder="E-mail" th:value="${perfil['email']}"></div>
-      <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone" th:value="${perfil['telefone']}" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
+      <div class="col-md-3"><input class="form-control" placeholder="Código do usuário" th:value="${perfil['codigo_usuario']}" readonly></div>
+      <div class="col-md-6"><input class="form-control" name="email" type="email" placeholder="E-mail" th:value="${perfil['email']}" required></div>
+      <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone" th:value="${perfil['telefone']}" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11" required></div>
       <div class="col-md-3"><input class="form-control" name="senha" type="password" placeholder="Nova senha"></div>
+      <div class="col-md-3"><input class="form-control" name="confirmar_senha" type="password" placeholder="Confirmar senha"></div>
     </div>
 
     <h2 class="h5">Dados da unidade</h2>
