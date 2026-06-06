@@ -14,35 +14,55 @@
     </div>
   </div>
 
+  <form class="panel mb-3" method="get" th:action="@{/relatorios}">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Buscar</label>
+        <input class="form-control" name="q" th:value="${q}" placeholder="Paciente ou protocolo">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Data inicial</label>
+        <input class="form-control" name="dataInicio" type="date" th:value="${dataInicio}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Data final</label>
+        <input class="form-control" name="dataFim" type="date" th:value="${dataFim}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Estado</label>
+        <select class="form-select" name="estado">
+          <option value="">Todos</option>
+          <option th:each="e:${estados}" th:value="${e.status}" th:text="${e.status}" th:selected="${e.status == estado}"></option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Prioridade</label>
+        <select class="form-select" name="prioridade">
+          <option value="">Todas</option>
+          <option th:each="p:${prioridades}" th:value="${p.prioridade}" th:text="${p.prioridade}" th:selected="${p.prioridade == prioridade}"></option>
+        </select>
+      </div>
+      <div class="col-md-1 d-grid">
+        <button class="btn btn-success">Filtrar</button>
+      </div>
+      <div class="col-md-12 text-end">
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/relatorios}">Limpar filtros</a>
+      </div>
+    </div>
+  </form>
+
   <div class="panel mt-3">
     <h2 class="h5">Histórico de solicitações</h2>
-
     <div class="table-responsive">
       <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Protocolo</th>
-            <th>Paciente</th>
-            <th>Tipo</th>
-            <th>Prioridade</th>
-            <th>Estado</th>
-            <th>Entrada</th>
-            <th>Imprimir</th>
-          </tr>
-        </thead>
+        <thead><tr><th>#</th><th>Protocolo</th><th>Paciente</th><th>Tipo</th><th>Prioridade</th><th>Estado</th><th>Entrada</th><th>Imprimir</th></tr></thead>
         <tbody>
-          <tr th:if="${#lists.isEmpty(historicoSolicitacoes)}">
-            <td colspan="7" class="text-center text-muted py-4">Nenhuma solicitação encontrada no histórico.</td>
-          </tr>
-
+          <tr th:if="${#lists.isEmpty(historicoSolicitacoes)}"><td colspan="8" class="text-center text-muted py-4">Nenhuma solicitação encontrada no histórico.</td></tr>
           <tr th:each="s : ${historicoSolicitacoes}">
-            <td>
-              <a class="fw-semibold text-decoration-none"
-                 th:href="@{/solicitacoes/{id}(id=${s['id']})}"
-                 th:text="${s['numero_solicitacao'] != null ? s['numero_solicitacao'] : s['numero_protocolo']}">SOL-000001</a>
-            </td>
-            <td th:text="${s['paciente_nome'] != null ? s['paciente_nome'] : s['paciente']}">Paciente</td>
-            <td th:text="${s['tipo_solicitacao'] != null ? s['tipo_solicitacao'] : s['tipo']}">TFD</td>
+            <td th:text="${s['numero']}">1</td>
+            <td><a class="fw-semibold text-decoration-none" th:href="@{/solicitacoes/{id}(id=${s['id']})}" th:text="${s['numero_protocolo']}">SOL-000001</a></td>
+            <td th:text="${s['paciente']}">Paciente</td>
+            <td th:text="${s['tipo_solicitacao']}">TFD</td>
             <td th:text="${s['prioridade']}">NORMAL</td>
             <td>
               <span class="badge bg-success" th:if="${s['status'] == 'AUTORIZADA'}">Autorizada</span>
@@ -50,19 +70,12 @@
               <span class="badge bg-dark" th:if="${s['status'] == 'INDEFERIDA'}">Indeferida</span>
               <span class="badge bg-warning text-dark" th:if="${s['status'] == 'DEVOLVIDA_CORRECAO'}">Devolvida</span>
               <span class="badge bg-danger" th:if="${s['status'] == 'AGUARDANDO_DOCUMENTOS'}">Aguardando documentos</span>
-              <span class="badge bg-light text-dark border"
-                    th:if="${s['status'] != 'AUTORIZADA' and s['status'] != 'IMPRESSA' and s['status'] != 'INDEFERIDA' and s['status'] != 'DEVOLVIDA_CORRECAO' and s['status'] != 'AGUARDANDO_DOCUMENTOS'}"
-                    th:text="${s['status']}">Status</span>
+              <span class="badge bg-light text-dark border" th:if="${s['status'] != 'AUTORIZADA' and s['status'] != 'IMPRESSA' and s['status'] != 'INDEFERIDA' and s['status'] != 'DEVOLVIDA_CORRECAO' and s['status'] != 'AGUARDANDO_DOCUMENTOS'}" th:text="${s['status']}">Status</span>
             </td>
-            <td th:text="${#strings.substring((s['data_entrada'] != null ? s['data_entrada'] : s['criado_em']).toString(), 0, 19)}">Data</td>
+            <td th:text="${#strings.substring(s['data_entrada'].toString(), 0, 19)}">Data</td>
             <td>
-              <a class="btn btn-sm btn-outline-danger"
-                 th:if="${s['status'] == 'AUTORIZADA' or s['status'] == 'IMPRESSA'}"
-                 th:href="@{/impressao/{id}(id=${s['id']})}">PDF</a>
-
-              <a class="btn btn-sm btn-outline-primary"
-                 th:unless="${s['status'] == 'AUTORIZADA' or s['status'] == 'IMPRESSA'}"
-                 th:href="@{/solicitacoes/{id}(id=${s['id']})}">Ver</a>
+              <a class="btn btn-sm btn-outline-danger" th:if="${s['status'] == 'AUTORIZADA' or s['status'] == 'IMPRESSA'}" th:href="@{/impressao/{id}(id=${s['id']})}">PDF</a>
+              <a class="btn btn-sm btn-outline-primary" th:unless="${s['status'] == 'AUTORIZADA' or s['status'] == 'IMPRESSA'}" th:href="@{/solicitacoes/{id}(id=${s['id']})}">Ver</a>
             </td>
           </tr>
         </tbody>
@@ -70,7 +83,6 @@
     </div>
   </div>
 </main>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
