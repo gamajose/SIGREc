@@ -111,6 +111,16 @@ public class CadastroController {
     @GetMapping("/pacientes/{id}")
     public String detalhePaciente(@PathVariable Long id, Model model) {
         model.addAttribute("paciente", jdbcTemplate.queryForMap("select * from regulacao_tfd.pacientes where id = ?", id));
+        model.addAttribute("resumo", jdbcTemplate.queryForMap("""
+                select count(*) total,
+                       count(*) filter (where status = 'AUTORIZADA') autorizadas,
+                       count(*) filter (where status = 'INDEFERIDA') indeferidas,
+                       count(*) filter (where status = 'AGUARDANDO_DOCUMENTOS') aguardando_documentos,
+                       count(*) filter (where status in ('ENVIADA','EM_ANALISE')) em_andamento,
+                       coalesce(to_char(max(data_entrada), 'DD/MM/YYYY HH24:MI:SS'), '-') ultima_movimentacao
+                from regulacao_tfd.solicitacoes
+                where paciente_id = ?
+                """, id));
         model.addAttribute("solicitacoes", jdbcTemplate.queryForList("""
                 select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.status, s.prioridade,
                        coalesce(to_char(s.data_entrada, 'DD/MM/YYYY HH24:MI:SS'), '-') entrada_formatada,
