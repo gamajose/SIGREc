@@ -16,6 +16,15 @@
   </div>
 
   <section class="row g-3 mb-3">
+    <div class="col-md-2 col-sm-6"><div class="panel h-100"><div class="text-secondary small">Solicitações</div><div class="display-6" th:text="${resumo.total ?: 0}">0</div></div></div>
+    <div class="col-md-2 col-sm-6"><div class="panel h-100"><div class="text-secondary small">Autorizadas</div><div class="display-6" th:text="${resumo.autorizadas ?: 0}">0</div></div></div>
+    <div class="col-md-2 col-sm-6"><div class="panel h-100"><div class="text-secondary small">Indeferidas</div><div class="display-6" th:text="${resumo.indeferidas ?: 0}">0</div></div></div>
+    <div class="col-md-2 col-sm-6"><div class="panel h-100"><div class="text-secondary small">Aguard. docs</div><div class="display-6" th:text="${resumo.aguardando_documentos ?: 0}">0</div></div></div>
+    <div class="col-md-2 col-sm-6"><div class="panel h-100"><div class="text-secondary small">Em andamento</div><div class="display-6" th:text="${resumo.em_andamento ?: 0}">0</div></div></div>
+    <div class="col-md-2 col-sm-6"><div class="panel h-100"><div class="text-secondary small">Última movimentação</div><div class="fw-semibold" th:text="${resumo.ultima_movimentacao ?: '-'}">-</div></div></div>
+  </section>
+
+  <section class="row g-3 mb-3">
     <div class="col-md-4"><div class="panel h-100"><h2 class="h6">Identificação</h2><p><strong>CPF:</strong> <span th:text="${paciente.cpf ?: '-'}"></span></p><p><strong>CNS:</strong> <span th:text="${paciente.cns ?: '-'}"></span></p><p><strong>RG:</strong> <span th:text="${paciente.rg ?: '-'}"></span></p><p><strong>Nascimento:</strong> <span th:text="${paciente.data_nascimento ?: '-'}"></span></p><p><strong>Sexo:</strong> <span th:text="${paciente.sexo ?: '-'}"></span></p></div></div>
     <div class="col-md-4"><div class="panel h-100"><h2 class="h6">Família e contato</h2><p><strong>Mãe:</strong> <span th:text="${paciente.nome_mae ?: '-'}"></span></p><p><strong>Responsável:</strong> <span th:text="${paciente.responsavel ?: '-'}"></span></p><p><strong>Telefone:</strong> <span th:text="${paciente.telefone ?: '-'}"></span></p><p><strong>E-mail:</strong> <span th:text="${paciente.email ?: '-'}"></span></p></div></div>
     <div class="col-md-4"><div class="panel h-100"><h2 class="h6">Endereço</h2><p><strong>CEP:</strong> <span th:text="${paciente.cep ?: '-'}"></span></p><p><strong>Endereço:</strong> <span th:text="${paciente.endereco ?: '-'}"></span></p><p><strong>Bairro:</strong> <span th:text="${paciente.bairro ?: '-'}"></span></p><p><strong>Município/UF:</strong> <span th:text="${(paciente.municipio ?: '-') + ' / ' + (paciente.uf ?: '-')}"></span></p></div></div>
