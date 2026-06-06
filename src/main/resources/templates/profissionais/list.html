@@ -19,8 +19,8 @@
     <div class="row g-2 align-items-end">
       <div class="col-md-4"><label class="form-label">Buscar</label><input class="form-control" name="q" th:value="${q}" placeholder="Nome, CPF/CNS ou registro"></div>
       <div class="col-md-3"><label class="form-label">Conselho</label><select class="form-select" name="conselho"><option value="">Todos</option><option th:each="c:${conselhos}" th:value="${c.conselho}" th:text="${c.conselho}" th:selected="${c.conselho == conselho}"></option></select></div>
-      <div class="col-md-2"><label class="form-label">UF</label><select class="form-select" name="uf"><option value="">Todas</option><option th:each="u:${ufs}" th:value="${u.uf_conselho}" th:text="${u.uf_conselho}" th:selected="${u.uf_conselho == uf}"></option></select></div>
-      <div class="col-md-2 d-grid"><button class="btn btn-success">Filtrar</button></div>
+      <div class="col-md-3"><label class="form-label">Tipo de unidade</label><select class="form-select" name="tipoUnidade"><option value="">Todos</option><option th:each="t:${tiposUnidade}" th:value="${t.tipo_unidade}" th:text="${t.tipo_unidade}" th:selected="${t.tipo_unidade == tipoUnidade}"></option></select></div>
+      <div class="col-md-1 d-grid"><button class="btn btn-success">Filtrar</button></div>
       <div class="col-md-1 d-grid"><a class="btn btn-outline-secondary" th:href="@{/profissionais}">Limpar</a></div>
     </div>
   </form>
@@ -32,24 +32,25 @@
     </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
-        <thead><tr><th>#</th><th>Nome</th><th>Documento</th><th>Conselho</th><th>Especialidade</th><th>Unidade</th><th>Atuação</th></tr></thead>
+        <thead><tr><th>#</th><th>Nome</th><th>Documento</th><th>Conselho</th><th>Especialidade</th><th>Unidade</th><th>Tipo unidade</th><th>Atuação</th></tr></thead>
         <tbody>
-          <tr th:if="${#lists.isEmpty(itens)}"><td colspan="7" class="text-center text-muted py-4">Nenhum profissional encontrado.</td></tr>
+          <tr th:if="${#lists.isEmpty(itens)}"><td colspan="8" class="text-center text-muted py-4">Nenhum profissional encontrado.</td></tr>
           <tr th:each="i : ${itens}">
             <td th:text="${i.numero}">1</td>
             <td th:text="${i.nome}">Nome</td>
             <td th:text="${i.cpf_cns}">CPF/CNS</td>
-            <td th:text="${(i.conselho != null ? i.conselho : '') + ' ' + (i.registro_conselho != null ? i.registro_conselho : '')}">Conselho</td>
+            <td th:text="${(i.conselho != null ? i.conselho : '') + ' ' + (i.registro_conselho != null ? i.registro_conselho : '') + ' ' + (i.uf_conselho != null ? i.uf_conselho : '')}">Conselho</td>
             <td th:text="${i.especialidade}">Especialidade</td>
             <td th:text="${i.unidade_nome}">Unidade</td>
+            <td th:text="${i.tipo_unidade}">Tipo</td>
             <td th:text="${(i.solicitante ? 'Solicitante ' : '') + (i.autorizador ? 'Autorizador' : '')}">Atuação</td>
           </tr>
         </tbody>
       </table>
     </div>
     <div class="d-flex justify-content-end gap-2 mt-3">
-      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temAnterior} ? ' disabled'" th:href="@{/profissionais(q=${q},conselho=${conselho},uf=${uf},page=${page - 1})}">Anterior</a>
-      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temProxima} ? ' disabled'" th:href="@{/profissionais(q=${q},conselho=${conselho},uf=${uf},page=${page + 1})}">Próxima</a>
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temAnterior} ? ' disabled'" th:href="@{/profissionais(q=${q},conselho=${conselho},tipoUnidade=${tipoUnidade},page=${page - 1})}">Anterior</a>
+      <a class="btn btn-outline-secondary btn-sm" th:classappend="${!temProxima} ? ' disabled'" th:href="@{/profissionais(q=${q},conselho=${conselho},tipoUnidade=${tipoUnidade},page=${page + 1})}">Próxima</a>
     </div>
   </div>
 </main>
@@ -63,9 +64,10 @@
           <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome" required></div>
           <div class="col-md-3"><input class="form-control" name="cpf_cns" placeholder="CPF/CNS"></div>
           <div class="col-md-1"><input class="form-control" name="conselho" placeholder="CRM"></div>
-          <div class="col-md-2"><input class="form-control" name="registro_conselho" placeholder="Registro" data-conselho-lookup></div>
+          <div class="col-md-2"><input class="form-control" name="uf_conselho" placeholder="UF" maxlength="2"></div>
+          <div class="col-md-3"><input class="form-control" name="registro_conselho" placeholder="Registro" data-conselho-lookup></div>
           <div class="col-md-4"><input class="form-control" name="especialidade" placeholder="Especialidade"></div>
-          <div class="col-md-6"><select class="form-select" name="unidade_id"><option value="">Unidade</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option></select></div>
+          <div class="col-md-5"><select class="form-select" name="unidade_id"><option value="">Unidade</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option></select></div>
           <div class="col-md-2 form-check mt-2" th:if="${adminLogado or reguladorLogado}"><input class="form-check-input" type="checkbox" name="solicitante" checked> <label class="form-check-label">Solicitante</label></div>
           <div class="col-md-2 form-check mt-2" th:if="${adminLogado or reguladorLogado}"><input class="form-check-input" type="checkbox" name="autorizador"> <label class="form-check-label">Autorizador</label></div>
           <input type="hidden" name="solicitante" value="on" th:if="${solicitanteLogado and !adminLogado and !reguladorLogado}">
