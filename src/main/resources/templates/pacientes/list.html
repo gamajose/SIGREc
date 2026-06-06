@@ -39,7 +39,7 @@
           <tr th:if="${#lists.isEmpty(itens)}"><td colspan="8" class="text-center text-muted py-4">Nenhum paciente encontrado.</td></tr>
           <tr th:each="i : ${itens}">
             <td th:text="${i.numero}">1</td>
-            <td th:text="${i.nome}">Nome</td>
+            <td><a class="fw-semibold text-decoration-none" th:href="@{/pacientes/{id}(id=${i.id})}" th:text="${i.nome}">Nome</a></td>
             <td th:text="${i.cns}">CNS</td>
             <td th:text="${i.cpf}">CPF</td>
             <td th:text="${i.data_nascimento}">Nascimento</td>
