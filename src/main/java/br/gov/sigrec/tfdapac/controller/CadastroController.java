@@ -45,14 +45,13 @@ public class CadastroController {
                                                        @RequestParam String registro,
                                                        @RequestParam(defaultValue = "") String uf) {
         var lista = jdbcTemplate.queryForList("""
-                select id, nome, cpf_cns, conselho, registro_conselho, uf_conselho, especialidade, unidade_id
+                select id, nome, cpf_cns, conselho, registro_conselho, especialidade, unidade_id
                 from regulacao_tfd.profissionais
                 where upper(coalesce(conselho, '')) = upper(?)
                   and regexp_replace(coalesce(registro_conselho, ''), '\\D', '', 'g') = ?
-                  and (? = '' or upper(coalesce(uf_conselho, '')) = upper(?))
                 order by id desc
                 limit 1
-                """, conselho, digits(registro), uf, uf);
+                """, conselho, digits(registro));
         return lista.isEmpty() ? Map.of() : lista.get(0);
     }
 
@@ -252,8 +251,7 @@ public class CadastroController {
                 from regulacao_tfd.profissionais p
                 where (? = '' or p.nome ilike ? or p.cpf_cns ilike ? or p.registro_conselho ilike ?)
                   and (? = '' or p.conselho = ?)
-                  and (? = '' or p.uf_conselho = ?)
-                """, Integer.class, q, like(q), like(q), like(q), conselho, conselho, uf, uf);
+                """, Integer.class, q, like(q), like(q), like(q), conselho, conselho);
         int totalRegistros = total == null ? 0 : total;
         int totalPaginas = Math.max((int) Math.ceil(totalRegistros / (double) pageSize), 1);
         if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
@@ -268,7 +266,7 @@ public class CadastroController {
         model.addAttribute("temAnterior", paginaAtual > 1);
         model.addAttribute("temProxima", paginaAtual < totalPaginas);
         model.addAttribute("conselhos", jdbcTemplate.queryForList("select distinct conselho from regulacao_tfd.profissionais where conselho is not null and conselho <> '' order by conselho"));
-        model.addAttribute("ufs", jdbcTemplate.queryForList("select distinct uf_conselho from regulacao_tfd.profissionais where uf_conselho is not null and uf_conselho <> '' order by uf_conselho"));
+        model.addAttribute("ufs", java.util.List.of());
         model.addAttribute("itens", jdbcTemplate.queryForList("""
                 select (? + row_number() over (order by p.nome)) numero,
                        p.*, u.nome unidade_nome
@@ -276,10 +274,9 @@ public class CadastroController {
                 left join regulacao_tfd.unidades_saude u on u.id = p.unidade_id
                 where (? = '' or p.nome ilike ? or p.cpf_cns ilike ? or p.registro_conselho ilike ?)
                   and (? = '' or p.conselho = ?)
-                  and (? = '' or p.uf_conselho = ?)
                 order by p.nome
                 limit ? offset ?
-                """, offset, q, like(q), like(q), like(q), conselho, conselho, uf, uf, pageSize, offset));
+                """, offset, q, like(q), like(q), like(q), conselho, conselho, pageSize, offset));
         model.addAttribute("unidades", jdbcTemplate.queryForList("select id, nome from regulacao_tfd.unidades_saude order by nome"));
         return "profissionais/list";
     }
