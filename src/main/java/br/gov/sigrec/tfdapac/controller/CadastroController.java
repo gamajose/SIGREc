@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Date;
@@ -23,6 +24,19 @@ public class CadastroController {
 
     public CadastroController(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @GetMapping("/api/unidades/cnes/{cnes}")
+    @ResponseBody
+    public Map<String, Object> unidadePorCnes(@PathVariable String cnes) {
+        var lista = jdbcTemplate.queryForList("""
+                select id, nome, cnes, municipio, uf, telefone, responsavel, tipo_unidade
+                from regulacao_tfd.unidades_saude
+                where regexp_replace(coalesce(cnes, ''), '\\D', '', 'g') = ?
+                order by id desc
+                limit 1
+                """, digits(cnes));
+        return lista.isEmpty() ? Map.of() : lista.get(0);
     }
 
     @GetMapping("/pacientes")
