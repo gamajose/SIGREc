@@ -33,12 +33,38 @@ public class RelatorioController {
                         @RequestParam(defaultValue = "") String dataFim,
                         @RequestParam(defaultValue = "") String estado,
                         @RequestParam(defaultValue = "") String prioridade,
+                        @RequestParam(defaultValue = "1") Integer page,
                         Model model) {
+        int pageSize = 20;
+        int paginaAtual = Math.max(page == null ? 1 : page, 1);
+        int offset = (paginaAtual - 1) * pageSize;
+        Integer total = jdbcTemplate.queryForObject("""
+                select count(*)
+                from regulacao_tfd.solicitacoes s
+                join regulacao_tfd.pacientes p on p.id = s.paciente_id
+                where s.status not in ('ENVIADA','EM_ANALISE')
+                  and (? = '' or p.nome ilike ? or s.numero_protocolo ilike ?)
+                  and (? = '' or s.status = ?)
+                  and (? = '' or s.prioridade = ?)
+                  and (? = '' or s.data_entrada::date >= ?::date)
+                  and (? = '' or s.data_entrada::date <= ?::date)
+                """, Integer.class,
+                q, like(q), like(q), estado, estado, prioridade, prioridade, dataInicio, dataInicio, dataFim, dataFim);
+        int totalRegistros = total == null ? 0 : total;
+        int totalPaginas = Math.max((int) Math.ceil(totalRegistros / (double) pageSize), 1);
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+        offset = (paginaAtual - 1) * pageSize;
+
         model.addAttribute("q", q);
         model.addAttribute("dataInicio", dataInicio);
         model.addAttribute("dataFim", dataFim);
         model.addAttribute("estado", estado);
         model.addAttribute("prioridade", prioridade);
+        model.addAttribute("page", paginaAtual);
+        model.addAttribute("totalPaginas", totalPaginas);
+        model.addAttribute("totalRegistros", totalRegistros);
+        model.addAttribute("temAnterior", paginaAtual > 1);
+        model.addAttribute("temProxima", paginaAtual < totalPaginas);
         model.addAttribute("estados", jdbcTemplate.queryForList("""
                 select distinct status
                 from regulacao_tfd.solicitacoes
@@ -52,7 +78,7 @@ public class RelatorioController {
                 order by prioridade
                 """));
         model.addAttribute("historicoSolicitacoes", jdbcTemplate.queryForList("""
-                select row_number() over (order by coalesce(h.criado_em, s.data_analise, s.data_autorizacao, s.data_entrada) desc) numero,
+                select (? + row_number() over (order by coalesce(h.criado_em, s.data_analise, s.data_autorizacao, s.data_entrada) desc)) numero,
                        s.id,
                        s.numero_protocolo,
                        s.tipo_solicitacao,
@@ -91,13 +117,15 @@ public class RelatorioController {
                   and (? = '' or s.data_entrada::date >= ?::date)
                   and (? = '' or s.data_entrada::date <= ?::date)
                 order by coalesce(h.criado_em, s.data_analise, s.data_autorizacao, s.data_entrada) desc
-                limit 500
+                limit ? offset ?
                 """,
+                offset,
                 q, like(q), like(q),
                 estado, estado,
                 prioridade, prioridade,
                 dataInicio, dataInicio,
-                dataFim, dataFim));
+                dataFim, dataFim,
+                pageSize, offset));
         return "relatorios/index";
     }
 
