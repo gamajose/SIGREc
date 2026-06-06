@@ -108,6 +108,21 @@ public class CadastroController {
         return "pacientes/list";
     }
 
+    @GetMapping("/pacientes/{id}")
+    public String detalhePaciente(@PathVariable Long id, Model model) {
+        model.addAttribute("paciente", jdbcTemplate.queryForMap("select * from regulacao_tfd.pacientes where id = ?", id));
+        model.addAttribute("solicitacoes", jdbcTemplate.queryForList("""
+                select s.id, s.numero_protocolo, s.numero_solicitacao, s.tipo_solicitacao, s.status, s.prioridade,
+                       coalesce(to_char(s.data_entrada, 'DD/MM/YYYY HH24:MI:SS'), '-') entrada_formatada,
+                       u.nome unidade_nome
+                from regulacao_tfd.solicitacoes s
+                left join regulacao_tfd.unidades_saude u on u.id = s.unidade_solicitante_id
+                where s.paciente_id = ?
+                order by s.data_entrada desc
+                """, id));
+        return "pacientes/detalhe";
+    }
+
     @PostMapping("/pacientes")
     public String salvarPaciente(@RequestParam Map<String, String> f, RedirectAttributes ra) {
         String duplicidade = verificarDuplicidadePaciente(f);
