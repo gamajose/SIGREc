@@ -21,6 +21,45 @@
   </section>
 
   <section class="row g-3 mb-4">
+    <div class="col-md-2 col-sm-6">
+      <div class="panel h-100">
+        <div class="text-secondary small">Hoje</div>
+        <div class="display-6" th:text="${indicadores['hoje'] ?: 0}">0</div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-6">
+      <div class="panel h-100">
+        <div class="text-secondary small">Pendentes</div>
+        <div class="display-6" th:text="${indicadores['pendentes'] ?: 0}">0</div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-6">
+      <div class="panel h-100">
+        <div class="text-secondary small">Autorizadas</div>
+        <div class="display-6" th:text="${indicadores['autorizadas'] ?: 0}">0</div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-6">
+      <div class="panel h-100">
+        <div class="text-secondary small">Devolvidas</div>
+        <div class="display-6" th:text="${indicadores['devolvidas'] ?: 0}">0</div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-6">
+      <div class="panel h-100">
+        <div class="text-secondary small">Indeferidas</div>
+        <div class="display-6" th:text="${indicadores['indeferidas'] ?: 0}">0</div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-6">
+      <div class="panel h-100">
+        <div class="text-secondary small">Impressas</div>
+        <div class="display-6" th:text="${indicadores['impressas'] ?: 0}">0</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-4">
     <div class="col-md-3" th:each="c : ${contadores}">
       <div class="panel h-100">
         <div class="text-secondary small" th:text="${c.status}">STATUS</div>
