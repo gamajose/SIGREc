@@ -62,16 +62,40 @@ public class CadastroController {
                             @RequestParam(defaultValue = "") String uf,
                             @RequestParam(defaultValue = "") String dataInicio,
                             @RequestParam(defaultValue = "") String dataFim,
+                            @RequestParam(defaultValue = "1") Integer page,
                             Model model) {
+        int pageSize = 20;
+        int paginaAtual = Math.max(page == null ? 1 : page, 1);
+        int offset = (paginaAtual - 1) * pageSize;
+
+        Integer total = jdbcTemplate.queryForObject("""
+                select count(*)
+                from regulacao_tfd.pacientes
+                where (? = '' or nome ilike ? or cns ilike ? or cpf ilike ? or municipio ilike ?)
+                  and (? = '' or municipio = ?)
+                  and (? = '' or uf = ?)
+                  and (? = '' or data_nascimento >= ?::date)
+                  and (? = '' or data_nascimento <= ?::date)
+                """, Integer.class, q, like(q), like(q), like(q), like(q), municipio, municipio, uf, uf, dataInicio, dataInicio, dataFim, dataFim);
+        int totalRegistros = total == null ? 0 : total;
+        int totalPaginas = Math.max((int) Math.ceil(totalRegistros / (double) pageSize), 1);
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+        offset = (paginaAtual - 1) * pageSize;
+
         model.addAttribute("q", q);
         model.addAttribute("municipio", municipio);
         model.addAttribute("uf", uf);
         model.addAttribute("dataInicio", dataInicio);
         model.addAttribute("dataFim", dataFim);
+        model.addAttribute("page", paginaAtual);
+        model.addAttribute("totalPaginas", totalPaginas);
+        model.addAttribute("totalRegistros", totalRegistros);
+        model.addAttribute("temAnterior", paginaAtual > 1);
+        model.addAttribute("temProxima", paginaAtual < totalPaginas);
         model.addAttribute("municipios", jdbcTemplate.queryForList("select distinct municipio from regulacao_tfd.pacientes where municipio is not null and municipio <> '' order by municipio"));
         model.addAttribute("ufs", jdbcTemplate.queryForList("select distinct uf from regulacao_tfd.pacientes where uf is not null and uf <> '' order by uf"));
         model.addAttribute("itens", jdbcTemplate.queryForList("""
-                select row_number() over (order by nome) numero, *
+                select (? + row_number() over (order by nome)) numero, *
                 from regulacao_tfd.pacientes
                 where (? = '' or nome ilike ? or cns ilike ? or cpf ilike ? or municipio ilike ?)
                   and (? = '' or municipio = ?)
@@ -79,8 +103,8 @@ public class CadastroController {
                   and (? = '' or data_nascimento >= ?::date)
                   and (? = '' or data_nascimento <= ?::date)
                 order by nome
-                limit 300
-                """, q, like(q), like(q), like(q), like(q), municipio, municipio, uf, uf, dataInicio, dataInicio, dataFim, dataFim));
+                limit ? offset ?
+                """, offset, q, like(q), like(q), like(q), like(q), municipio, municipio, uf, uf, dataInicio, dataInicio, dataFim, dataFim, pageSize, offset));
         return "pacientes/list";
     }
 
