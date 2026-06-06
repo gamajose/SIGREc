@@ -14,23 +14,12 @@
       <h1 class="h3 mb-1">Usuários e permissões</h1>
       <p class="text-muted mb-0">Gerencie acessos, perfis e vínculo dos usuários às unidades.</p>
     </div>
-    <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#novoUsuarioModal">
-      Criar novo usuário
-    </button>
+    <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#novoUsuarioModal">Criar novo usuário</button>
   </div>
 
   <div class="panel">
     <table class="table align-middle">
-      <thead>
-        <tr>
-          <th>Usuário</th>
-          <th>E-mail</th>
-          <th>Unidade</th>
-          <th>Perfil</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Usuário</th><th>E-mail</th><th>Unidade</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
       <tbody>
         <tr th:each="u:${usuarios}">
           <form method="post" th:action="@{/usuarios/{id}(id=${u.id})}">
@@ -81,25 +70,12 @@
           <div class="row g-2 mb-3">
             <div class="col-md-6"><input class="form-control" name="nome" placeholder="Nome completo" required></div>
             <div class="col-md-3"><input class="form-control" name="username" placeholder="Username/login" required></div>
-            <div class="col-md-3"><input class="form-control" name="codigo_usuario" placeholder="Código do usuário"></div>
-            <div class="col-md-6"><input class="form-control" name="email" type="email" placeholder="E-mail"></div>
+            <div class="col-md-3"><input class="form-control" name="email" type="email" placeholder="E-mail"></div>
             <div class="col-md-3"><input class="form-control" name="telefone" placeholder="Telefone" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
             <div class="col-md-3"><input class="form-control" name="senha" type="password" placeholder="Senha inicial" required></div>
-            <div class="col-md-6">
-              <select class="form-select" name="unidade_id">
-                <option value="">Unidade vinculada</option>
-                <option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <select class="form-select" name="role" required>
-                <option value="SOLICITANTE">Solicitante</option>
-                <option value="REGULADOR">Regulador</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </div>
+            <div class="col-md-3"><select class="form-select" name="unidade_id"><option value="">Unidade vinculada</option><option th:each="u:${unidades}" th:value="${u.id}" th:text="${u.nome}"></option></select></div>
+            <div class="col-md-3"><select class="form-select" name="role" required><option value="SOLICITANTE">Solicitante</option><option value="REGULADOR">Regulador</option><option value="ADMIN">Admin</option></select></div>
           </div>
-
           <h6 class="mb-2">Dados da unidade do usuário</h6>
           <div class="row g-2">
             <div class="col-md-3"><input class="form-control" name="unidade_telefone" placeholder="Telefone da unidade" inputmode="numeric" autocomplete="off" data-mask="phone" data-digits="11"></div>
@@ -112,15 +88,11 @@
             <div class="col-md-6"><input class="form-control" name="unidade_complemento" placeholder="Complemento"></div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button class="btn btn-success">Criar usuário</button>
-        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success">Criar usuário</button></div>
       </form>
     </div>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
