@@ -39,6 +39,23 @@ public class CadastroController {
         return lista.isEmpty() ? Map.of() : lista.get(0);
     }
 
+    @GetMapping("/api/profissionais/conselho")
+    @ResponseBody
+    public Map<String, Object> profissionalPorConselho(@RequestParam String conselho,
+                                                       @RequestParam String registro,
+                                                       @RequestParam(defaultValue = "") String uf) {
+        var lista = jdbcTemplate.queryForList("""
+                select id, nome, cpf_cns, conselho, registro_conselho, uf_conselho, especialidade, unidade_id
+                from regulacao_tfd.profissionais
+                where upper(coalesce(conselho, '')) = upper(?)
+                  and regexp_replace(coalesce(registro_conselho, ''), '\\D', '', 'g') = ?
+                  and (? = '' or upper(coalesce(uf_conselho, '')) = upper(?))
+                order by id desc
+                limit 1
+                """, conselho, digits(registro), uf, uf);
+        return lista.isEmpty() ? Map.of() : lista.get(0);
+    }
+
     @GetMapping("/pacientes")
     public String pacientes(@RequestParam(defaultValue = "") String q,
                             @RequestParam(defaultValue = "") String municipio,
