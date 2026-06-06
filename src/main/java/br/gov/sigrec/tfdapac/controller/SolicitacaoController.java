@@ -52,9 +52,19 @@ public class SolicitacaoController {
 
     @GetMapping("/solicitacoes/nova/{tipo}")
     @PreAuthorize("hasAnyRole('ADMIN','SOLICITANTE')")
-    public String nova(@PathVariable String tipo, @RequestParam(defaultValue = "") String q, Model model) {
+    public String nova(@PathVariable String tipo,
+                       @RequestParam(defaultValue = "") String q,
+                       @RequestParam(required = false) Long pacienteId,
+                       Model model) {
         model.addAttribute("tipo", tipo.toUpperCase());
         model.addAttribute("pacientes", lookupService.pacientes(q));
+        model.addAttribute("pacientePreSelecionado", pacienteId);
+        if (pacienteId != null) {
+            lookupService.pacientes("").stream()
+                    .filter(p -> pacienteId.equals(((Number) p.get("id")).longValue()))
+                    .findFirst()
+                    .ifPresent(p -> model.addAttribute("pacientePreSelecionadoNome", p.get("nome")));
+        }
         model.addAttribute("unidades", lookupService.unidades());
         model.addAttribute("unidadesAutorizadoras", lookupService.unidadesAutorizadoras());
         model.addAttribute("profissionais", lookupService.profissionais());
