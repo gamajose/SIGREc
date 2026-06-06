@@ -110,6 +110,11 @@ public class CadastroController {
 
     @PostMapping("/pacientes")
     public String salvarPaciente(@RequestParam Map<String, String> f, RedirectAttributes ra) {
+        String duplicidade = verificarDuplicidadePaciente(f);
+        if (duplicidade != null) {
+            ra.addFlashAttribute("erro", duplicidade);
+            return "redirect:/pacientes";
+        }
         jdbcTemplate.update("""
                 insert into regulacao_tfd.pacientes
                 (nome, cns, cpf, rg, data_nascimento, sexo, raca_cor, nome_mae, endereco, bairro, municipio, uf, cep, telefone, email, responsavel)
@@ -119,6 +124,34 @@ public class CadastroController {
                 f.get("municipio"), f.get("uf"), digits(f.get("cep")), digits(f.get("telefone")), f.get("email"), f.get("responsavel"));
         ra.addFlashAttribute("ok", "Paciente cadastrado.");
         return "redirect:/pacientes";
+    }
+
+    private String verificarDuplicidadePaciente(Map<String, String> f) {
+        String cpf = digits(f.get("cpf"));
+        if (cpf != null && !cpf.isBlank()) {
+            var encontrado = jdbcTemplate.queryForList("select id, nome from regulacao_tfd.pacientes where cpf = ? limit 1", cpf);
+            if (!encontrado.isEmpty()) return "Paciente possivelmente duplicado: CPF ja cadastrado para " + encontrado.get(0).get("nome") + ".";
+        }
+        String cns = digits(f.get("cns"));
+        if (cns != null && !cns.isBlank()) {
+            var encontrado = jdbcTemplate.queryForList("select id, nome from regulacao_tfd.pacientes where cns = ? limit 1", cns);
+            if (!encontrado.isEmpty()) return "Paciente possivelmente duplicado: CNS ja cadastrado para " + encontrado.get(0).get("nome") + ".";
+        }
+        Date nascimento = date(f.get("data_nascimento"));
+        String nome = normalizar(f.get("nome"));
+        String mae = normalizar(f.get("nome_mae"));
+        if (!nome.isBlank() && !mae.isBlank() && nascimento != null) {
+            var encontrado = jdbcTemplate.queryForList("""
+                    select id, nome
+                    from regulacao_tfd.pacientes
+                    where upper(trim(nome)) = upper(trim(?))
+                      and data_nascimento = ?
+                      and upper(trim(coalesce(nome_mae, ''))) = upper(trim(?))
+                    limit 1
+                    """, nome, nascimento, mae);
+            if (!encontrado.isEmpty()) return "Paciente possivelmente duplicado: nome, nascimento e nome da mae ja constam para " + encontrado.get(0).get("nome") + ".";
+        }
+        return null;
     }
 
     @GetMapping("/unidades")
@@ -308,6 +341,10 @@ public class CadastroController {
 
     private String digits(String value) {
         return value == null ? null : value.replaceAll("\\D", "");
+    }
+
+    private String normalizar(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private boolean hasRole(Authentication authentication, String role) {
