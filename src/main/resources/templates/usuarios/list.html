@@ -12,48 +12,61 @@
     <div>
       <span class="eyebrow">Configurações</span>
       <h1 class="h3 mb-1">Usuários e permissões</h1>
-      <p class="text-muted mb-0">Gerencie acessos, perfis e vínculo dos usuários às unidades.</p>
+      <p class="text-muted mb-0">Gerencie acessos, perfis, vínculo e auditoria dos usuários.</p>
     </div>
     <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#novoUsuarioModal">Criar novo usuário</button>
   </div>
 
   <div class="panel">
-    <table class="table align-middle">
-      <thead><tr><th>Usuário</th><th>E-mail</th><th>Unidade</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
-      <tbody>
-        <tr th:each="u:${usuarios}">
-          <form method="post" th:action="@{/usuarios/{id}(id=${u.id})}">
-            <td>
-              <strong th:text="${u.nome != null ? u.nome : u.username}">Nome</strong>
-              <div class="small text-muted">
-                <span th:text="${u.username}">usuario</span>
-                <span th:if="${u.codigo_usuario != null and u.codigo_usuario != ''}"> · Código: <span th:text="${u.codigo_usuario}"></span></span>
-              </div>
-            </td>
-            <td><input class="form-control form-control-sm" name="email" th:value="${u.email}"></td>
-            <td>
-              <select class="form-select form-select-sm" name="unidade_id">
-                <option value="">Sem unidade</option>
-                <option th:each="un:${unidades}" th:value="${un.id}" th:text="${un.nome}" th:selected="${un.id == u.unidade_id}"></option>
-              </select>
-            </td>
-            <td>
-              <select class="form-select form-select-sm" name="role">
-                <option th:each="r:${roles}" th:value="${r}" th:selected="${r.name() == u.role}" th:text="${r.name()}"></option>
-              </select>
-            </td>
-            <td class="text-nowrap"><input class="form-check-input" type="checkbox" name="ativo" th:checked="${u.ativo}"> Ativo</td>
-            <td class="text-nowrap">
-              <input class="form-control form-control-sm mb-1" name="senha" type="password" placeholder="Nova senha">
-              <button class="btn btn-sm btn-outline-success">Salvar</button>
-          </form>
-          <form method="post" th:action="@{/usuarios/{id}/delete(id=${u.id})}" class="d-inline">
-            <button class="btn btn-sm btn-outline-danger">Excluir</button>
-          </form>
-            </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Usuário</th><th>E-mail</th><th>Unidade</th><th>Perfil</th><th>Status</th><th>Auditoria</th><th>Ações</th></tr></thead>
+        <tbody>
+          <tr th:each="u:${usuarios}">
+            <form method="post" th:action="@{/usuarios/{id}(id=${u.id})}">
+              <td>
+                <strong th:text="${u.nome != null ? u.nome : u.username}">Nome</strong>
+                <div class="small text-muted">
+                  <span th:text="${u.username}">usuario</span>
+                  <span th:if="${u.codigo_usuario != null and u.codigo_usuario != ''}"> · Código: <span th:text="${u.codigo_usuario}"></span></span>
+                </div>
+              </td>
+              <td><input class="form-control form-control-sm" name="email" th:value="${u.email}"></td>
+              <td>
+                <select class="form-select form-select-sm" name="unidade_id">
+                  <option value="">Sem unidade</option>
+                  <option th:each="un:${unidades}" th:value="${un.id}" th:text="${un.nome}" th:selected="${un.id == u.unidade_id}"></option>
+                </select>
+              </td>
+              <td>
+                <select class="form-select form-select-sm" name="role">
+                  <option th:each="r:${roles}" th:value="${r}" th:selected="${r.name() == u.role}" th:text="${r.name()}"></option>
+                </select>
+              </td>
+              <td class="text-nowrap">
+                <div><input class="form-check-input" type="checkbox" name="ativo" th:checked="${u.ativo}"> Ativo</div>
+                <span class="badge bg-warning text-dark" th:if="${u.primeiro_login}">Primeiro acesso</span>
+                <span class="badge bg-success" th:if="${u.perfil_completo}">Perfil completo</span>
+                <span class="badge bg-secondary" th:if="${!u.perfil_completo}">Perfil pendente</span>
+              </td>
+              <td class="small text-muted">
+                <div th:if="${u.created_at != null}">Criado: <span th:text="${#strings.substring(u.created_at.toString(),0,19)}"></span></div>
+                <div th:if="${u.updated_at != null}">Atualizado: <span th:text="${#strings.substring(u.updated_at.toString(),0,19)}"></span></div>
+                <div th:if="${u.ultimo_login != null}">Último login: <span th:text="${#strings.substring(u.ultimo_login.toString(),0,19)}"></span></div>
+                <div th:if="${u.data_perfil_atualizado != null}">Perfil: <span th:text="${#strings.substring(u.data_perfil_atualizado.toString(),0,19)}"></span></div>
+              </td>
+              <td class="text-nowrap">
+                <input class="form-control form-control-sm mb-1" name="senha" type="password" placeholder="Nova senha">
+                <button class="btn btn-sm btn-outline-success">Salvar</button>
+            </form>
+            <form method="post" th:action="@{/usuarios/{id}/delete(id=${u.id})}" class="d-inline">
+              <button class="btn btn-sm btn-outline-danger">Excluir</button>
+            </form>
+              </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </main>
 
